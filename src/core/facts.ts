@@ -59,11 +59,18 @@ export type ExtractOptions = {
 
 export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
   const facts: Fact[] = [];
-  const push = (f: Fact) => { if (!facts.some(x => x.type === f.type && x.start === f.start)) facts.push(f); };
+  // One fact per span: a later, more general pattern never duplicates a span an earlier one already covered.
+  const push = (f: Fact) => { if (!facts.some(x => x.type === f.type && (x.start === f.start || (x.start <= f.start && x.end >= f.end)))) facts.push(f); };
   const lower = text.toLowerCase();
 
   // --- dose: number + unit ("two tablets of 500 milligrams", "2.5 mg", "20 units", "half a tablet")
   for (const m of text.matchAll(new RegExp(`\\b${NUM}(?:[- ]${UNIT_RE})\\b`, "gi"))) {
+    const n = parseNumber(m[1]); const u = unitOf(m[2]);
+    if (n === null || !u) continue;
+    push({ type: "dose", value: `${fmt(n)} ${u}`, source: m[0], start: m.index!, end: m.index! + m[0].length });
+  }
+  // "one 10-milligram tablet of amlodipine": the count sits before the strength
+  for (const m of text.matchAll(new RegExp(`\\b${NUM} \\d+(?:[.,]\\d+)?[- ]?(?:mg|milligrams?|mcg|micrograms?|g|grams?|units?)\\s+(tablets?|pills?|capsules?)\\b`, "gi"))) {
     const n = parseNumber(m[1]); const u = unitOf(m[2]);
     if (n === null || !u) continue;
     push({ type: "dose", value: `${fmt(n)} ${u}`, source: m[0], start: m.index!, end: m.index! + m[0].length });
@@ -83,6 +90,8 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     [/\b(?:no|not) more than (\w+)(?: times?)? (?:a|per|each) day\b|\b(?:a )?maximum (?:of )?(\w+)(?: times?)? (?:a|per|each) day\b|\bat most (\w+)(?: times?)? (?:a|per|each) day\b/gi, m => { const n = parseNumber(m[1] || m[2] || m[3]); return n === null ? null : `max ${fmt(n)}/day`; }],
     [/\b(?:in the )?morning and (?:in the )?evening\b|\bmorning and night\b/gi, () => "2/day"],
     [/\b(before|after|with) (dinner|breakfast|lunch|meals|food)\b/gi, m => `${m[1].toLowerCase()} ${m[2].toLowerCase()}`],
+    [new RegExp(`\\b${NUM} (?:in the )?(morning|evening|night)\\b(?= and| ,|,|\\.|$)`, "gi"), m => { const n = parseNumber(m[1]); return n === null ? null : `${fmt(n)} ${m[2].toLowerCase()}`; }],
+    [new RegExp(`\\b(?:and )?${NUM} at (night|noon|bedtime)\\b`, "gi"), m => { const n = parseNumber(m[1]); return n === null ? null : `${fmt(n)} ${m[2].toLowerCase()}`; }],
     [/\b(every|each|at) (evening|night|morning)\b/gi, m => m[2].toLowerCase()],
     [/\bon (sundays?|mondays?|tuesdays?|wednesdays?|thursdays?|fridays?|saturdays?)\b/gi, m => m[1].toLowerCase().replace(/s$/, "")],
   ];
@@ -102,6 +111,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     // "every 8 hours" is a frequency, already captured
     const before = text.slice(Math.max(0, m.index! - 8), m.index!);
     if (/every\s$/i.test(before) || /(times|per|each|once|twice)\s$/i.test(before)) continue; // "every 8 hours", "times a day", "twice a day" are frequencies
+    if (/^(a|an)$/i.test(m[1]) && new RegExp(`${NUM}\\s$`, "i").test(text.slice(Math.max(0, m.index! - 12), m.index!))) continue; // "three a day" is a rate
     push({ type: "duration", value: `${fmt(n)} ${unit}${m[3] ? m[3].trim() === "ago" ? " ago" : " after" : ""}`, source: m[0].trim(), start: m.index!, end: m.index! + m[0].length });
   }
 

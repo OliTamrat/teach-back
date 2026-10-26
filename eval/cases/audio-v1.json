@@ -1,0 +1,1283 @@
+[
+ {
+  "id": "S01",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S01.webm",
+  "text": "ሐኪሙ 500 ሚሊግራም የሆኑ ሁለት ኪኒኖች እንድወስድ ነገረኝ።",
+  "said": "The doctor told me to take two tablets of 500 milligrams.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "2 tablet"
+   },
+   {
+    "type": "dose",
+    "value": "500 mg"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S02",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S02.webm",
+  "text": "Ilma kootiif siroppii miliilitira 5 nan kenna.",
+  "said": "I give my son 5 milliliters of the syrup.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "5 ml"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S03",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S03.webm",
+  "text": "ከእራት በፊት 20 ዩኒት ኢንሱሊን እወጋለሁ።",
+  "said": "I inject 20 units of insulin before dinner.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "20 unit"
+   },
+   {
+    "type": "drug",
+    "value": "insulin"
+   },
+   {
+    "type": "frequency",
+    "value": "before dinner"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S04",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S04.webm",
+  "text": "Kiniinii amloodiippiinii miligiraama 10 tokko akkan fudhadhu natti himame.",
+  "said": "I was told to take one 10-milligram tablet of amlodipine.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "1 tablet"
+   },
+   {
+    "type": "dose",
+    "value": "10 mg"
+   },
+   {
+    "type": "drug",
+    "value": "amlodipine"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S05",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S05.webm",
+  "text": "ጠዋት ግማሽ ኪኒን ነው፣ ሙሉ አይደለም።",
+  "said": "Half a tablet in the morning, not a whole one.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "0.5 tablet"
+   },
+   {
+    "type": "negation",
+    "value": "not a whole one"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S06",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S06.webm",
+  "text": "Dhukkubbii kanaaf ibuprofen miligiraama 400 fudhadheera.",
+  "said": "I took 400 milligrams of ibuprofen for the pain.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "400 mg"
+   },
+   {
+    "type": "drug",
+    "value": "ibuprofen"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S07",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S07.webm",
+  "text": "ነርሷ በየምሽቱ 2.5 ሚሊግራም ዋርፋሪን እንድወስድ ነገረችኝ።",
+  "said": "The nurse said 2.5 milligrams of warfarin every evening.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "2.5 mg"
+   },
+   {
+    "type": "drug",
+    "value": "warfarin"
+   },
+   {
+    "type": "frequency",
+    "value": "evening"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S08",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S08.webm",
+  "text": "Yeroon hafuura baafachuu dadhabu, inheelara si'a lama nan fayyadama.",
+  "said": "I use two puffs of the inhaler when I cannot breathe.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "2 puff"
+   },
+   {
+    "type": "frequency",
+    "value": "as needed"
+   },
+   {
+    "type": "negation",
+    "value": "cannot breathe"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S09",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S09.webm",
+  "text": "ከቁርስ ጋር 1,000 ሚሊግራም ሜትፎርሚን እወስዳለሁ።",
+  "said": "I take 1,000 milligrams of metformin with breakfast.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "1000 mg"
+   },
+   {
+    "type": "drug",
+    "value": "metformin"
+   },
+   {
+    "type": "frequency",
+    "value": "with breakfast"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S10",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S10.webm",
+  "text": "Qoricha copha 15 bishaan keessatti naaf kennite.",
+  "said": "She gave me 15 drops of the medicine in water.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "15 drop"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S11",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S11.webm",
+  "text": "ከምግብ በኋላ በቀን ሦስት ጊዜ እወስደዋለሁ።",
+  "said": "I take it three times a day after meals.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "3/day"
+   },
+   {
+    "type": "frequency",
+    "value": "after meals"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S12",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S12.webm",
+  "text": "Torbanitti al tokko qofa, Dilbata.",
+  "said": "Only once a week, on Sundays.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "1/week"
+   },
+   {
+    "type": "frequency",
+    "value": "sunday"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S13",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S13.webm",
+  "text": "በየስምንት ሰዓቱ፣ ማታም ቢሆን።",
+  "said": "Every eight hours, even at night.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "every 8 hour"
+   },
+   {
+    "type": "frequency",
+    "value": "night"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S14",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S14.webm",
+  "text": "Guyyaatti al lama, ganama fi galgala.",
+  "said": "Twice a day, morning and evening.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "2/day"
+   },
+   {
+    "type": "frequency",
+    "value": "2/day"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S15",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S15.webm",
+  "text": "መውሰድ ካቆምኩ ሁለት ቀን ሆኖኛል።",
+  "said": "I stopped taking it two days ago.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "stopped taking it two days ago"
+   },
+   {
+    "type": "duration",
+    "value": "2 day ago"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S16",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S16.webm",
+  "text": "Guyyaa torbaaf, guyyaatti al afur.",
+  "said": "Four times a day for seven days.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "4/day"
+   },
+   {
+    "type": "duration",
+    "value": "7 day"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S17",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S17.webm",
+  "text": "በየሁለት ቀኑ እንጂ በየቀኑ አይደለም።",
+  "said": "Every other day, not every day.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "every 2 day"
+   },
+   {
+    "type": "negation",
+    "value": "not every day"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S18",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S18.webm",
+  "text": "Yeroo dhukkubbiin cimu qofa; guyyaatti sadii hin caalu.",
+  "said": "Only when the pain is bad, no more than three a day.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "as needed"
+   },
+   {
+    "type": "frequency",
+    "value": "max 3/day"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S19",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S19.webm",
+  "text": "ጠዋት አንድ፣ ማታ ደግሞ ሁለት።",
+  "said": "One in the morning and two at night.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "1 morning"
+   },
+   {
+    "type": "frequency",
+    "value": "2 night"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S20",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S20.webm",
+  "text": "Kaleessa qoricha koo fudhachuu irraanfadhe, har'a lama fudhadhe.",
+  "said": "I forgot my dose yesterday and took two today.",
+  "truth": [],
+  "planted": []
+ },
+ {
+  "id": "S21",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S21.webm",
+  "text": "ለፔኒሲሊን አለርጂ የለብኝም።",
+  "said": "I am not allergic to penicillin.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "not allergic to penicillin"
+   },
+   {
+    "type": "drug",
+    "value": "penicillin"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S22",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S22.webm",
+  "text": "Dhukkubbii qomaa hin qabu.",
+  "said": "I do not have chest pain.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "do not have chest pain"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S23",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S23.webm",
+  "text": "ቀዶ ጥገና ተደርጎልኝ አያውቅም።",
+  "said": "I have never had surgery.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "never had surgery"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S24",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S24.webm",
+  "text": "Qorichi kun gonkumaa na hin gargaarre.",
+  "said": "The medicine did not help at all.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "did not help at all"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S25",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S25.webm",
+  "text": "እርጉዝ አይደለሁም።",
+  "said": "I am not pregnant.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "not pregnant"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S26",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S26.webm",
+  "text": "Ani tamboo hin xuuxu, garuu abbaan manaa koo ni xuuxa.",
+  "said": "I don't smoke, but my husband does.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "don't smoke"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S27",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S27.webm",
+  "text": "አሁን በሽንቴ ውስጥ ደም የለም።",
+  "said": "There is no blood in my urine anymore.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "no blood in my urine anymore"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S28",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S28.webm",
+  "text": "Asppiriinii fudhachuu hin danda'u; garaa koo dhiigsiisa.",
+  "said": "I cannot take aspirin; it makes my stomach bleed.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "cannot take aspirin"
+   },
+   {
+    "type": "drug",
+    "value": "aspirin"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S29",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S29.webm",
+  "text": "በዚህ ሳምንት የደም ግፊት መድኃኒቴን አልወሰድኩም።",
+  "said": "I did not take my blood pressure pills this week.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "did not take my blood pressure pills"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S30",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S30.webm",
+  "text": "Cittoon kun na hin hooqsisu.",
+  "said": "The rash is not itchy.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "not itchy"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S31",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S31.webm",
+  "text": "ሐኪሙ ለስኳሬ ሜትፎርሚን ሰጠኝ።",
+  "said": "The doctor gave me metformin for my sugar.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "metformin"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S32",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S32.webm",
+  "text": "Dhiibbaa dhiigaa kootiif lisinopriil nan fudhadha.",
+  "said": "I take lisinopril for my blood pressure.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "lisinopril"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S33",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S33.webm",
+  "text": "ለጉሮሮዬ አሞክሲሲሊን ተሰጠኝ።",
+  "said": "I was given amoxicillin for my throat.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "amoxicillin"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S34",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S34.webm",
+  "text": "Garaa kootiif omeppiraazoolii nan fudhadha.",
+  "said": "I take omeprazole for my stomach.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "omeprazole"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S35",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S35.webm",
+  "text": "የሳልቡታሞል መተንፈሻ ፓምፕ እጠቀማለሁ።",
+  "said": "I use a salbutamol inhaler.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "salbutamol"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S36",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S36.webm",
+  "text": "Paaraasitamoolii naaf kennan, ibuprofen miti.",
+  "said": "They gave me paracetamol, not ibuprofen.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "paracetamol"
+   },
+   {
+    "type": "negation",
+    "value": "not ibuprofen"
+   },
+   {
+    "type": "drug",
+    "value": "ibuprofen"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S37",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S37.webm",
+  "text": "ደሜን ለማቅጠን ዋርፋሪን እወስዳለሁ።",
+  "said": "I take warfarin to thin my blood.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "warfarin"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S38",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S38.webm",
+  "text": "Tiraamaadoolii biyya koo keessatti faarmaasii irraa bitadhe.",
+  "said": "I bought tramadol at a pharmacy back home.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "tramadol"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S39",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S39.webm",
+  "text": "ሕመሙ ያለው በግራ ጉልበቴ ነው፣ በቀኝ አይደለም።",
+  "said": "The pain is in my left knee, not the right.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "left knee"
+   },
+   {
+    "type": "negation",
+    "value": "not the right"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S40",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S40.webm",
+  "text": "Ijji koo inni mirgaa ni dukkanaa'a.",
+  "said": "My right eye is blurry.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "right eye"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S41",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S41.webm",
+  "text": "እብጠቱ በግራ እግሬ ታችኛው ክፍል ላይ ነው።",
+  "said": "The swelling is on my lower left leg.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "lower left leg"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S42",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S42.webm",
+  "text": "Dhukkubbiin garaa koo gama mirgaatiin, lafee cinaachaa jalatti argama.",
+  "said": "The pain is on the right side of my stomach, below the ribs.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "right stomach"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S43",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S43.webm",
+  "text": "ማታ ማታ የግራ እጄ ይደነዝዛል።",
+  "said": "My left arm goes numb at night.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "left arm"
+   },
+   {
+    "type": "frequency",
+    "value": "night"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S44",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S44.webm",
+  "text": "Iddoon dhagaa'e harma koo mirgaa keessa jira.",
+  "said": "The lump is in my right breast.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "right breast"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S45",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S45.webm",
+  "text": "ጀርባዬን በቀኝ በኩል ታችኛው ክፍል ያመኛል።",
+  "said": "My back hurts on the lower right side.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "lower right back"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S46",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S46.webm",
+  "text": "Dhukkubbiin mataa ija koo bitaa duubatti na dhaga'ama.",
+  "said": "The headache is behind my left eye.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "left eye"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S47",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S47.webm",
+  "text": "ትኩሳቱ የጀመረው ጥቅምት 3 ነው።",
+  "said": "The fever started on Tikimt 3.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-10-13"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S48",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S48.webm",
+  "text": "Laguun koo inni dhumaa Fulbaana 28 jalqabe.",
+  "said": "My last period began on Meskerem 28.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-10-08"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S49",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S49.webm",
+  "text": "የተወለድኩት ኅዳር 12 ቀን 1980 ዓ.ም. ነው።",
+  "said": "I was born on Hidar 12, 1980.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "1987-11-22"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S50",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S50.webm",
+  "text": "Amajjii 20, bara 2018 baqaqsanii na yaalan.",
+  "said": "I had surgery on Tir 20, 2018.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-01-28"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S51",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S51.webm",
+  "text": "ሕመሙ የጀመረው መስከረም 30 ነው።",
+  "said": "The pain began on Meskerem 30.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-10-10"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S52",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S52.webm",
+  "text": "Intalli koo Caamsaa 5, bara 2017 dhalatte.",
+  "said": "My daughter was born on Ginbot 5, 2017.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2025-05-13"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S53",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S53.webm",
+  "text": "የሚቀጥለው ቀጠሮዬ ታኅሣሥ 10 ነው።",
+  "said": "My next appointment is on Tahsas 10.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-12-19"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S54",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S54.webm",
+  "text": "Adooleessa 15, bara 2018 talaallii fudhadhe.",
+  "said": "I was vaccinated on Hamle 15, 2018.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-07-22"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S55",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S55.webm",
+  "text": "ሳሉ የጀመረው ጳጉሜ 3 ነው።",
+  "said": "The cough started on Pagume 3.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-09-08"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S56",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S56.webm",
+  "text": "Bitootessa 1, bara 2016 dhukkuba sukkaaraa akkan qabu naaf mirkanaa'e.",
+  "said": "I was diagnosed with diabetes on Megabit 1, 2016.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2024-03-10"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S57",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S57.webm",
+  "text": "ይህ ሳል ከያዘኝ ሦስት ሳምንት ሆኖኛል።",
+  "said": "I have had this cough for three weeks.",
+  "truth": [
+   {
+    "type": "duration",
+    "value": "3 week"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S58",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S58.webm",
+  "text": "Dhiigni guyyaa shan ture.",
+  "said": "The bleeding lasted five days.",
+  "truth": [
+   {
+    "type": "duration",
+    "value": "5 day"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S59",
+  "language": "am",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S59.webm",
+  "text": "ይህን መድኃኒት መውሰድ ከጀመርኩ ሁለት ዓመት ሆኖኛል።",
+  "said": "I have been taking this medicine for two years.",
+  "truth": [
+   {
+    "type": "duration",
+    "value": "2 year"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "S60",
+  "language": "om",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/S60.webm",
+  "text": "Mataa na naanneessuun erga lilmoo fudhadhee sa'aatii lama booda jalqabe.",
+  "said": "The dizziness started two hours after the injection.",
+  "truth": [
+   {
+    "type": "duration",
+    "value": "2 hour after"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "W01",
+  "language": "am",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W01.webm",
+  "text": "Nyaata galgalaa dura insuliinii yuunitii 20 nan lilmoofadha.",
+  "said": "I inject 20 units of insulin before dinner.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "20 unit"
+   },
+   {
+    "type": "drug",
+    "value": "insulin"
+   },
+   {
+    "type": "frequency",
+    "value": "before dinner"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W02",
+  "language": "am",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W02.webm",
+  "text": "Erga nyaadhee booda guyyaatti al sadii nan fudhadha.",
+  "said": "I take it three times a day after meals.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "3/day"
+   },
+   {
+    "type": "frequency",
+    "value": "after meals"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W03",
+  "language": "am",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W03.webm",
+  "text": "Peenisiliiniif alarjii hin qabu.",
+  "said": "I am not allergic to penicillin.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "not allergic to penicillin"
+   },
+   {
+    "type": "drug",
+    "value": "penicillin"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W04",
+  "language": "am",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W04.webm",
+  "text": "Dhukkubbiin jilba koo bitaa keessa jira, isa mirgaa miti.",
+  "said": "The pain is in my left knee, not the right.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "left knee"
+   },
+   {
+    "type": "negation",
+    "value": "not the right"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W05",
+  "language": "am",
+  "spoken": "om",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W05.webm",
+  "text": "Ho'i qaamaa Onkoloolessa 3 jalqabe.",
+  "said": "The fever started on Tikimt 3.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-10-13"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W06",
+  "language": "om",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W06.webm",
+  "text": "ለልጄ 5 ሚሊ ሊትር ሽሮፕ እሰጠዋለሁ።",
+  "said": "I give my son 5 milliliters of the syrup.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "5 ml"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W07",
+  "language": "om",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W07.webm",
+  "text": "በቀን ሁለት ጊዜ፣ ጠዋትና ማታ።",
+  "said": "Twice a day, morning and evening.",
+  "truth": [
+   {
+    "type": "frequency",
+    "value": "2/day"
+   },
+   {
+    "type": "frequency",
+    "value": "2/day"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W08",
+  "language": "om",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W08.webm",
+  "text": "የደረት ሕመም የለብኝም።",
+  "said": "I do not have chest pain.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "do not have chest pain"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W09",
+  "language": "om",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W09.webm",
+  "text": "የቀኝ ዓይኔ ብዥ ይልብኛል።",
+  "said": "My right eye is blurry.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "right eye"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "W10",
+  "language": "om",
+  "spoken": "am",
+  "reference": "2026-10-31",
+  "audio": "eval/audio/W10.webm",
+  "text": "የመጨረሻው የወር አበባዬ የጀመረው መስከረም 28 ነው።",
+  "said": "My last period began on Meskerem 28.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-10-08"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ }
+]

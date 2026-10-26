@@ -14,3 +14,6 @@ next-env.d.ts
 node_modules/
 out/
 recordings/
+eval/audio/*.webm
+eval/audio/*.m4a
+eval/audio/*.wav

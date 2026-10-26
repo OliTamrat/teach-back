@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { extractFacts } from "@/core/facts";
 import { analyzeTurn, compareWithLabel, languageMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
+import { localizedQuestion } from "@/core/question-i18n";
 import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
 import type { Fact, Flag, Language } from "@/core/types";
 
@@ -201,7 +202,10 @@ export default function Interpreter() {
                   <div className="question">
                     <span className="eyebrow">Teach-back question for the interpreter to ask</span>
                     <span className="q">{analysis.question.question}</span>
-                    <span className="hint">About the {TYPE_NAME[analysis.question.about.type]}: "{analysis.question.about.source}". {LANG_NAME[language]} wording arrives after native review.</span>
+                    {(() => { const lq = localizedQuestion(analysis.question.about, language); return (
+                      <span className={lq.reviewed ? "q" : "q draft"} lang={language}>{lq.text}</span>
+                    ); })()}
+                    <span className="hint">About the {TYPE_NAME[analysis.question.about.type]}: "{analysis.question.about.source}". {localizedQuestion(analysis.question.about, language).reviewed ? `${LANG_NAME[language]} wording reviewed by a native speaker.` : `${LANG_NAME[language]} wording is a draft awaiting native review; read it only if you agree with it.`}</span>
                   </div>
                 )}
                 {isFinal && (

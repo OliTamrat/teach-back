@@ -19,7 +19,7 @@ describe("doses", () => {
     expect(values("Half a tablet in the morning, not a whole one.", "dose")).toEqual(["0.5 tablet"]);
   });
   it("keeps the source words and offsets", () => {
-    const [f] = extractFacts("I was told to take one 10-milligram tablet of amlodipine.");
+    const f = extractFacts("I was told to take one 10-milligram tablet of amlodipine.").find(x => x.value === "10 mg")!;
     expect(f.type).toBe("dose");
     expect(f.source).toBe("10-milligram");
     expect("I was told to take one 10-milligram tablet of amlodipine.".slice(f.start, f.end)).toBe(f.source);
@@ -146,6 +146,24 @@ describe("found by the evaluation harness (Day 3)", () => {
       expect(f.map(x => x.type)).toContain("date");
       expect(f.find(x => x.type === "date")?.note).toContain("both calendars");
     }
+  });
+});
+
+describe("found by the recording script (Day 4)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 31 } };
+  const vals = (s: string) => extractFacts(s, opts).map(f => `${f.type}=${f.value}`);
+  it("a count before the strength is a dose", () => {
+    const v = vals("I was told to take one 10-milligram tablet of amlodipine.");
+    expect(v).toContain("dose=1 tablet"); expect(v).toContain("dose=10 mg"); expect(v).toContain("drug=amlodipine");
+  });
+  it("no more than three a day leaks no duration", () => {
+    const v = vals("Only when the pain is bad, no more than three a day.");
+    expect(v).toContain("frequency=max 3/day"); expect(v).toContain("frequency=as needed");
+    expect(v.filter(x => x.startsWith("duration"))).toEqual([]);
+  });
+  it("one in the morning and two at night keeps both counts", () => {
+    const v = vals("One in the morning and two at night.");
+    expect(v).toContain("frequency=1 morning"); expect(v).toContain("frequency=2 night");
   });
 });
 

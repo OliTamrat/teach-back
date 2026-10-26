@@ -44,3 +44,20 @@ score the whole pipeline and need the services configured. The same scorer runs 
 numbers are comparable. Truth values are written by hand, and the first run caught two mistakes in
 the truth itself (an Afaan Oromo month is the second month, not the third; next year's Tikimt 5 is
 October 16 because Ethiopian 2019 is a leap year). The code was right both times.
+
+## 5. The patient-language question is a template, shown as a draft until reviewed (Oct 26)
+
+The teach-back question is the one thing on the screen meant to be said to the patient, so it is
+the one thing that must never come from a model. The Amharic and Afaan Oromo versions are fixed
+templates per fact type in `src/core/question-i18n.ts`, written in the polite second person. Until
+a native speaker signs them off (`REVIEWED`), the screen shows them muted, labelled as drafts, and
+tells the interpreter to read them only if they agree with the wording. The volunteers on Oct 31
+are the first reviewers: where they would say a sentence differently, that is recorded on the sheet
+and the template changes. Revisit if reviewers want the questions to vary by region or register.
+
+## 6. Audio cases that cannot run are skipped, never failed (Oct 26)
+
+The harness carries 70 audio cases from the day the script exists, before a single recording does.
+A missing recording or an unconfigured server marks the case skipped and leaves it out of every
+rate, so the text cases keep guarding the core while the audio set fills in. A skipped case is
+listed by name in the report, so nobody can mistake an empty audio set for a passing one.

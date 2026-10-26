@@ -1,0 +1,717 @@
+{
+ "version": "recording-script-v1",
+ "reference": "2026-10-31",
+ "note": "Scripted clinic sentences for the Oct 31 recording session. 'text' is a draft translation awaiting native review; 'english' is the source the truth is derived from. No real patient data.",
+ "items": [
+  {
+   "id": "S01",
+   "language": "am",
+   "spoken": "am",
+   "factType": "dose",
+   "english": "The doctor told me to take two tablets of 500 milligrams.",
+   "text": "ሐኪሙ 500 ሚሊግራም የሆኑ ሁለት ኪኒኖች እንድወስድ ነገረኝ።",
+   "answerKey": "2 tablets, 500 mg each",
+   "reviewed": false
+  },
+  {
+   "id": "S02",
+   "language": "om",
+   "spoken": "om",
+   "factType": "dose",
+   "english": "I give my son 5 milliliters of the syrup.",
+   "text": "Ilma kootiif siroppii miliilitira 5 nan kenna.",
+   "answerKey": "5 mL",
+   "reviewed": false
+  },
+  {
+   "id": "S03",
+   "language": "am",
+   "spoken": "am",
+   "factType": "dose",
+   "english": "I inject 20 units of insulin before dinner.",
+   "text": "ከእራት በፊት 20 ዩኒት ኢንሱሊን እወጋለሁ።",
+   "answerKey": "20 units; before dinner",
+   "reviewed": false
+  },
+  {
+   "id": "S04",
+   "language": "om",
+   "spoken": "om",
+   "factType": "dose",
+   "english": "I was told to take one 10-milligram tablet of amlodipine.",
+   "text": "Kiniinii amloodiippiinii miligiraama 10 tokko akkan fudhadhu natti himame.",
+   "answerKey": "1 tablet, 10 mg",
+   "reviewed": false
+  },
+  {
+   "id": "S05",
+   "language": "am",
+   "spoken": "am",
+   "factType": "dose",
+   "english": "Half a tablet in the morning, not a whole one.",
+   "text": "ጠዋት ግማሽ ኪኒን ነው፣ ሙሉ አይደለም።",
+   "answerKey": "half tablet; morning",
+   "reviewed": false
+  },
+  {
+   "id": "S06",
+   "language": "om",
+   "spoken": "om",
+   "factType": "dose",
+   "english": "I took 400 milligrams of ibuprofen for the pain.",
+   "text": "Dhukkubbii kanaaf ibuprofen miligiraama 400 fudhadheera.",
+   "answerKey": "400 mg",
+   "reviewed": false
+  },
+  {
+   "id": "S07",
+   "language": "am",
+   "spoken": "am",
+   "factType": "dose",
+   "english": "The nurse said 2.5 milligrams of warfarin every evening.",
+   "text": "ነርሷ በየምሽቱ 2.5 ሚሊግራም ዋርፋሪን እንድወስድ ነገረችኝ።",
+   "answerKey": "2.5 mg; evening",
+   "reviewed": false
+  },
+  {
+   "id": "S08",
+   "language": "om",
+   "spoken": "om",
+   "factType": "dose",
+   "english": "I use two puffs of the inhaler when I cannot breathe.",
+   "text": "Yeroon hafuura baafachuu dadhabu, inheelara si'a lama nan fayyadama.",
+   "answerKey": "2 puffs; as needed",
+   "reviewed": false
+  },
+  {
+   "id": "S09",
+   "language": "am",
+   "spoken": "am",
+   "factType": "dose",
+   "english": "I take 1,000 milligrams of metformin with breakfast.",
+   "text": "ከቁርስ ጋር 1,000 ሚሊግራም ሜትፎርሚን እወስዳለሁ።",
+   "answerKey": "1,000 mg; with breakfast",
+   "reviewed": false
+  },
+  {
+   "id": "S10",
+   "language": "om",
+   "spoken": "om",
+   "factType": "dose",
+   "english": "She gave me 15 drops of the medicine in water.",
+   "text": "Qoricha copha 15 bishaan keessatti naaf kennite.",
+   "answerKey": "15 drops",
+   "reviewed": false
+  },
+  {
+   "id": "S11",
+   "language": "am",
+   "spoken": "am",
+   "factType": "frequency",
+   "english": "I take it three times a day after meals.",
+   "text": "ከምግብ በኋላ በቀን ሦስት ጊዜ እወስደዋለሁ።",
+   "answerKey": "3 times a day; after meals",
+   "reviewed": false
+  },
+  {
+   "id": "S12",
+   "language": "om",
+   "spoken": "om",
+   "factType": "frequency",
+   "english": "Only once a week, on Sundays.",
+   "text": "Torbanitti al tokko qofa, Dilbata.",
+   "answerKey": "once a week; Sunday",
+   "reviewed": false
+  },
+  {
+   "id": "S13",
+   "language": "am",
+   "spoken": "am",
+   "factType": "frequency",
+   "english": "Every eight hours, even at night.",
+   "text": "በየስምንት ሰዓቱ፣ ማታም ቢሆን።",
+   "answerKey": "every 8 hours, including night",
+   "reviewed": false
+  },
+  {
+   "id": "S14",
+   "language": "om",
+   "spoken": "om",
+   "factType": "frequency",
+   "english": "Twice a day, morning and evening.",
+   "text": "Guyyaatti al lama, ganama fi galgala.",
+   "answerKey": "2 times a day",
+   "reviewed": false
+  },
+  {
+   "id": "S15",
+   "language": "am",
+   "spoken": "am",
+   "factType": "frequency",
+   "english": "I stopped taking it two days ago.",
+   "text": "መውሰድ ካቆምኩ ሁለት ቀን ሆኖኛል።",
+   "answerKey": "stopped; 2 days ago",
+   "reviewed": false
+  },
+  {
+   "id": "S16",
+   "language": "om",
+   "spoken": "om",
+   "factType": "frequency",
+   "english": "Four times a day for seven days.",
+   "text": "Guyyaa torbaaf, guyyaatti al afur.",
+   "answerKey": "4 times a day; 7 days",
+   "reviewed": false
+  },
+  {
+   "id": "S17",
+   "language": "am",
+   "spoken": "am",
+   "factType": "frequency",
+   "english": "Every other day, not every day.",
+   "text": "በየሁለት ቀኑ እንጂ በየቀኑ አይደለም።",
+   "answerKey": "alternate days",
+   "reviewed": false
+  },
+  {
+   "id": "S18",
+   "language": "om",
+   "spoken": "om",
+   "factType": "frequency",
+   "english": "Only when the pain is bad, no more than three a day.",
+   "text": "Yeroo dhukkubbiin cimu qofa; guyyaatti sadii hin caalu.",
+   "answerKey": "as needed; maximum 3 a day",
+   "reviewed": false
+  },
+  {
+   "id": "S19",
+   "language": "am",
+   "spoken": "am",
+   "factType": "frequency",
+   "english": "One in the morning and two at night.",
+   "text": "ጠዋት አንድ፣ ማታ ደግሞ ሁለት።",
+   "answerKey": "1 morning, 2 night",
+   "reviewed": false
+  },
+  {
+   "id": "S20",
+   "language": "om",
+   "spoken": "om",
+   "factType": "frequency",
+   "english": "I forgot my dose yesterday and took two today.",
+   "text": "Kaleessa qoricha koo fudhachuu irraanfadhe, har'a lama fudhadhe.",
+   "answerKey": "missed yesterday; 2 today",
+   "reviewed": false
+  },
+  {
+   "id": "S21",
+   "language": "am",
+   "spoken": "am",
+   "factType": "negation",
+   "english": "I am not allergic to penicillin.",
+   "text": "ለፔኒሲሊን አለርጂ የለብኝም።",
+   "answerKey": "NOT allergic",
+   "reviewed": false
+  },
+  {
+   "id": "S22",
+   "language": "om",
+   "spoken": "om",
+   "factType": "negation",
+   "english": "I do not have chest pain.",
+   "text": "Dhukkubbii qomaa hin qabu.",
+   "answerKey": "NO chest pain",
+   "reviewed": false
+  },
+  {
+   "id": "S23",
+   "language": "am",
+   "spoken": "am",
+   "factType": "negation",
+   "english": "I have never had surgery.",
+   "text": "ቀዶ ጥገና ተደርጎልኝ አያውቅም።",
+   "answerKey": "never had surgery",
+   "reviewed": false
+  },
+  {
+   "id": "S24",
+   "language": "om",
+   "spoken": "om",
+   "factType": "negation",
+   "english": "The medicine did not help at all.",
+   "text": "Qorichi kun gonkumaa na hin gargaarre.",
+   "answerKey": "no effect",
+   "reviewed": false
+  },
+  {
+   "id": "S25",
+   "language": "am",
+   "spoken": "am",
+   "factType": "negation",
+   "english": "I am not pregnant.",
+   "text": "እርጉዝ አይደለሁም።",
+   "answerKey": "NOT pregnant",
+   "reviewed": false
+  },
+  {
+   "id": "S26",
+   "language": "om",
+   "spoken": "om",
+   "factType": "negation",
+   "english": "I don't smoke, but my husband does.",
+   "text": "Ani tamboo hin xuuxu, garuu abbaan manaa koo ni xuuxa.",
+   "answerKey": "patient does NOT smoke",
+   "reviewed": false
+  },
+  {
+   "id": "S27",
+   "language": "am",
+   "spoken": "am",
+   "factType": "negation",
+   "english": "There is no blood in my urine anymore.",
+   "text": "አሁን በሽንቴ ውስጥ ደም የለም።",
+   "answerKey": "no blood now",
+   "reviewed": false
+  },
+  {
+   "id": "S28",
+   "language": "om",
+   "spoken": "om",
+   "factType": "negation",
+   "english": "I cannot take aspirin; it makes my stomach bleed.",
+   "text": "Asppiriinii fudhachuu hin danda'u; garaa koo dhiigsiisa.",
+   "answerKey": "cannot take aspirin; bleeding",
+   "reviewed": false
+  },
+  {
+   "id": "S29",
+   "language": "am",
+   "spoken": "am",
+   "factType": "negation",
+   "english": "I did not take my blood pressure pills this week.",
+   "text": "በዚህ ሳምንት የደም ግፊት መድኃኒቴን አልወሰድኩም።",
+   "answerKey": "NOT taken this week",
+   "reviewed": false
+  },
+  {
+   "id": "S30",
+   "language": "om",
+   "spoken": "om",
+   "factType": "negation",
+   "english": "The rash is not itchy.",
+   "text": "Cittoon kun na hin hooqsisu.",
+   "answerKey": "NOT itchy",
+   "reviewed": false
+  },
+  {
+   "id": "S31",
+   "language": "am",
+   "spoken": "am",
+   "factType": "drug",
+   "english": "The doctor gave me metformin for my sugar.",
+   "text": "ሐኪሙ ለስኳሬ ሜትፎርሚን ሰጠኝ።",
+   "answerKey": "metformin; diabetes",
+   "reviewed": false
+  },
+  {
+   "id": "S32",
+   "language": "om",
+   "spoken": "om",
+   "factType": "drug",
+   "english": "I take lisinopril for my blood pressure.",
+   "text": "Dhiibbaa dhiigaa kootiif lisinopriil nan fudhadha.",
+   "answerKey": "lisinopril",
+   "reviewed": false
+  },
+  {
+   "id": "S33",
+   "language": "am",
+   "spoken": "am",
+   "factType": "drug",
+   "english": "I was given amoxicillin for my throat.",
+   "text": "ለጉሮሮዬ አሞክሲሲሊን ተሰጠኝ።",
+   "answerKey": "amoxicillin",
+   "reviewed": false
+  },
+  {
+   "id": "S34",
+   "language": "om",
+   "spoken": "om",
+   "factType": "drug",
+   "english": "I take omeprazole for my stomach.",
+   "text": "Garaa kootiif omeppiraazoolii nan fudhadha.",
+   "answerKey": "omeprazole",
+   "reviewed": false
+  },
+  {
+   "id": "S35",
+   "language": "am",
+   "spoken": "am",
+   "factType": "drug",
+   "english": "I use a salbutamol inhaler.",
+   "text": "የሳልቡታሞል መተንፈሻ ፓምፕ እጠቀማለሁ።",
+   "answerKey": "salbutamol (albuterol)",
+   "reviewed": false
+  },
+  {
+   "id": "S36",
+   "language": "om",
+   "spoken": "om",
+   "factType": "drug",
+   "english": "They gave me paracetamol, not ibuprofen.",
+   "text": "Paaraasitamoolii naaf kennan, ibuprofen miti.",
+   "answerKey": "paracetamol, NOT ibuprofen",
+   "reviewed": false
+  },
+  {
+   "id": "S37",
+   "language": "am",
+   "spoken": "am",
+   "factType": "drug",
+   "english": "I take warfarin to thin my blood.",
+   "text": "ደሜን ለማቅጠን ዋርፋሪን እወስዳለሁ።",
+   "answerKey": "warfarin",
+   "reviewed": false
+  },
+  {
+   "id": "S38",
+   "language": "om",
+   "spoken": "om",
+   "factType": "drug",
+   "english": "I bought tramadol at a pharmacy back home.",
+   "text": "Tiraamaadoolii biyya koo keessatti faarmaasii irraa bitadhe.",
+   "answerKey": "tramadol; not prescribed here",
+   "reviewed": false
+  },
+  {
+   "id": "S39",
+   "language": "am",
+   "spoken": "am",
+   "factType": "body_part",
+   "english": "The pain is in my left knee, not the right.",
+   "text": "ሕመሙ ያለው በግራ ጉልበቴ ነው፣ በቀኝ አይደለም።",
+   "answerKey": "LEFT knee",
+   "reviewed": false
+  },
+  {
+   "id": "S40",
+   "language": "om",
+   "spoken": "om",
+   "factType": "body_part",
+   "english": "My right eye is blurry.",
+   "text": "Ijji koo inni mirgaa ni dukkanaa'a.",
+   "answerKey": "RIGHT eye",
+   "reviewed": false
+  },
+  {
+   "id": "S41",
+   "language": "am",
+   "spoken": "am",
+   "factType": "body_part",
+   "english": "The swelling is on my lower left leg.",
+   "text": "እብጠቱ በግራ እግሬ ታችኛው ክፍል ላይ ነው።",
+   "answerKey": "lower LEFT leg",
+   "reviewed": false
+  },
+  {
+   "id": "S42",
+   "language": "om",
+   "spoken": "om",
+   "factType": "body_part",
+   "english": "The pain is on the right side of my stomach, below the ribs.",
+   "text": "Dhukkubbiin garaa koo gama mirgaatiin, lafee cinaachaa jalatti argama.",
+   "answerKey": "right upper abdomen",
+   "reviewed": false
+  },
+  {
+   "id": "S43",
+   "language": "am",
+   "spoken": "am",
+   "factType": "body_part",
+   "english": "My left arm goes numb at night.",
+   "text": "ማታ ማታ የግራ እጄ ይደነዝዛል።",
+   "answerKey": "LEFT arm; numb; night",
+   "reviewed": false
+  },
+  {
+   "id": "S44",
+   "language": "om",
+   "spoken": "om",
+   "factType": "body_part",
+   "english": "The lump is in my right breast.",
+   "text": "Iddoon dhagaa'e harma koo mirgaa keessa jira.",
+   "answerKey": "RIGHT breast",
+   "reviewed": false
+  },
+  {
+   "id": "S45",
+   "language": "am",
+   "spoken": "am",
+   "factType": "body_part",
+   "english": "My back hurts on the lower right side.",
+   "text": "ጀርባዬን በቀኝ በኩል ታችኛው ክፍል ያመኛል።",
+   "answerKey": "lower RIGHT back",
+   "reviewed": false
+  },
+  {
+   "id": "S46",
+   "language": "om",
+   "spoken": "om",
+   "factType": "body_part",
+   "english": "The headache is behind my left eye.",
+   "text": "Dhukkubbiin mataa ija koo bitaa duubatti na dhaga'ama.",
+   "answerKey": "behind LEFT eye",
+   "reviewed": false
+  },
+  {
+   "id": "S47",
+   "language": "am",
+   "spoken": "am",
+   "factType": "date",
+   "english": "The fever started on Tikimt 3.",
+   "text": "ትኩሳቱ የጀመረው ጥቅምት 3 ነው።",
+   "answerKey": "Oct 13, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S48",
+   "language": "om",
+   "spoken": "om",
+   "factType": "date",
+   "english": "My last period began on Meskerem 28.",
+   "text": "Laguun koo inni dhumaa Fulbaana 28 jalqabe.",
+   "answerKey": "Oct 8, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S49",
+   "language": "am",
+   "spoken": "am",
+   "factType": "date",
+   "english": "I was born on Hidar 12, 1980.",
+   "text": "የተወለድኩት ኅዳር 12 ቀን 1980 ዓ.ም. ነው።",
+   "answerKey": "Nov 22, 1987",
+   "reviewed": false
+  },
+  {
+   "id": "S50",
+   "language": "om",
+   "spoken": "om",
+   "factType": "date",
+   "english": "I had surgery on Tir 20, 2018.",
+   "text": "Amajjii 20, bara 2018 baqaqsanii na yaalan.",
+   "answerKey": "Jan 28, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S51",
+   "language": "am",
+   "spoken": "am",
+   "factType": "date",
+   "english": "The pain began on Meskerem 30.",
+   "text": "ሕመሙ የጀመረው መስከረም 30 ነው።",
+   "answerKey": "Oct 10, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S52",
+   "language": "om",
+   "spoken": "om",
+   "factType": "date",
+   "english": "My daughter was born on Ginbot 5, 2017.",
+   "text": "Intalli koo Caamsaa 5, bara 2017 dhalatte.",
+   "answerKey": "May 13, 2025",
+   "reviewed": false
+  },
+  {
+   "id": "S53",
+   "language": "am",
+   "spoken": "am",
+   "factType": "date",
+   "english": "My next appointment is on Tahsas 10.",
+   "text": "የሚቀጥለው ቀጠሮዬ ታኅሣሥ 10 ነው።",
+   "answerKey": "Dec 19, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S54",
+   "language": "om",
+   "spoken": "om",
+   "factType": "date",
+   "english": "I was vaccinated on Hamle 15, 2018.",
+   "text": "Adooleessa 15, bara 2018 talaallii fudhadhe.",
+   "answerKey": "Jul 22, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S55",
+   "language": "am",
+   "spoken": "am",
+   "factType": "date",
+   "english": "The cough started on Pagume 3.",
+   "text": "ሳሉ የጀመረው ጳጉሜ 3 ነው።",
+   "answerKey": "Sep 8, 2026",
+   "reviewed": false
+  },
+  {
+   "id": "S56",
+   "language": "om",
+   "spoken": "om",
+   "factType": "date",
+   "english": "I was diagnosed with diabetes on Megabit 1, 2016.",
+   "text": "Bitootessa 1, bara 2016 dhukkuba sukkaaraa akkan qabu naaf mirkanaa'e.",
+   "answerKey": "Mar 10, 2024",
+   "reviewed": false
+  },
+  {
+   "id": "S57",
+   "language": "am",
+   "spoken": "am",
+   "factType": "duration",
+   "english": "I have had this cough for three weeks.",
+   "text": "ይህ ሳል ከያዘኝ ሦስት ሳምንት ሆኖኛል።",
+   "answerKey": "3 weeks",
+   "reviewed": false
+  },
+  {
+   "id": "S58",
+   "language": "om",
+   "spoken": "om",
+   "factType": "duration",
+   "english": "The bleeding lasted five days.",
+   "text": "Dhiigni guyyaa shan ture.",
+   "answerKey": "5 days",
+   "reviewed": false
+  },
+  {
+   "id": "S59",
+   "language": "am",
+   "spoken": "am",
+   "factType": "duration",
+   "english": "I have been taking this medicine for two years.",
+   "text": "ይህን መድኃኒት መውሰድ ከጀመርኩ ሁለት ዓመት ሆኖኛል።",
+   "answerKey": "2 years",
+   "reviewed": false
+  },
+  {
+   "id": "S60",
+   "language": "om",
+   "spoken": "om",
+   "factType": "duration",
+   "english": "The dizziness started two hours after the injection.",
+   "text": "Mataa na naanneessuun erga lilmoo fudhadhee sa'aatii lama booda jalqabe.",
+   "answerKey": "2 hours after injection",
+   "reviewed": false
+  },
+  {
+   "id": "W01",
+   "language": "am",
+   "spoken": "om",
+   "factType": "dose",
+   "english": "I inject 20 units of insulin before dinner.",
+   "text": "Nyaata galgalaa dura insuliinii yuunitii 20 nan lilmoofadha.",
+   "answerKey": "20 units; before dinner; spoken in Afaan Oromo while the session expects Amharic",
+   "reviewed": false,
+   "reuses": "S03"
+  },
+  {
+   "id": "W02",
+   "language": "am",
+   "spoken": "om",
+   "factType": "frequency",
+   "english": "I take it three times a day after meals.",
+   "text": "Erga nyaadhee booda guyyaatti al sadii nan fudhadha.",
+   "answerKey": "3 times a day; after meals; spoken in Afaan Oromo while the session expects Amharic",
+   "reviewed": false,
+   "reuses": "S11"
+  },
+  {
+   "id": "W03",
+   "language": "am",
+   "spoken": "om",
+   "factType": "negation",
+   "english": "I am not allergic to penicillin.",
+   "text": "Peenisiliiniif alarjii hin qabu.",
+   "answerKey": "NOT allergic; spoken in Afaan Oromo while the session expects Amharic",
+   "reviewed": false,
+   "reuses": "S21"
+  },
+  {
+   "id": "W04",
+   "language": "am",
+   "spoken": "om",
+   "factType": "body_part",
+   "english": "The pain is in my left knee, not the right.",
+   "text": "Dhukkubbiin jilba koo bitaa keessa jira, isa mirgaa miti.",
+   "answerKey": "LEFT knee; spoken in Afaan Oromo while the session expects Amharic",
+   "reviewed": false,
+   "reuses": "S39"
+  },
+  {
+   "id": "W05",
+   "language": "am",
+   "spoken": "om",
+   "factType": "date",
+   "english": "The fever started on Tikimt 3.",
+   "text": "Ho'i qaamaa Onkoloolessa 3 jalqabe.",
+   "answerKey": "Oct 13, 2026; spoken in Afaan Oromo while the session expects Amharic",
+   "reviewed": false,
+   "reuses": "S47"
+  },
+  {
+   "id": "W06",
+   "language": "om",
+   "spoken": "am",
+   "factType": "dose",
+   "english": "I give my son 5 milliliters of the syrup.",
+   "text": "ለልጄ 5 ሚሊ ሊትር ሽሮፕ እሰጠዋለሁ።",
+   "answerKey": "5 mL; spoken in Amharic while the session expects Afaan Oromo",
+   "reviewed": false,
+   "reuses": "S02"
+  },
+  {
+   "id": "W07",
+   "language": "om",
+   "spoken": "am",
+   "factType": "frequency",
+   "english": "Twice a day, morning and evening.",
+   "text": "በቀን ሁለት ጊዜ፣ ጠዋትና ማታ።",
+   "answerKey": "2 times a day; spoken in Amharic while the session expects Afaan Oromo",
+   "reviewed": false,
+   "reuses": "S14"
+  },
+  {
+   "id": "W08",
+   "language": "om",
+   "spoken": "am",
+   "factType": "negation",
+   "english": "I do not have chest pain.",
+   "text": "የደረት ሕመም የለብኝም።",
+   "answerKey": "NO chest pain; spoken in Amharic while the session expects Afaan Oromo",
+   "reviewed": false,
+   "reuses": "S22"
+  },
+  {
+   "id": "W09",
+   "language": "om",
+   "spoken": "am",
+   "factType": "body_part",
+   "english": "My right eye is blurry.",
+   "text": "የቀኝ ዓይኔ ብዥ ይልብኛል።",
+   "answerKey": "RIGHT eye; spoken in Amharic while the session expects Afaan Oromo",
+   "reviewed": false,
+   "reuses": "S40"
+  },
+  {
+   "id": "W10",
+   "language": "om",
+   "spoken": "am",
+   "factType": "date",
+   "english": "My last period began on Meskerem 28.",
+   "text": "የመጨረሻው የወር አበባዬ የጀመረው መስከረም 28 ነው።",
+   "answerKey": "Oct 8, 2026; spoken in Amharic while the session expects Afaan Oromo",
+   "reviewed": false,
+   "reuses": "S48"
+  }
+ ]
+}

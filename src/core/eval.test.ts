@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { runCase, summarize, type EvalCase } from "./eval";
+import { cer, runCase, scoreTurn, summarize, type EvalCase } from "./eval";
 
 const cases = JSON.parse(readFileSync(join(__dirname, "..", "..", "eval", "cases", "text-v1.json"), "utf8")) as EvalCase[];
 
@@ -23,5 +23,18 @@ describe("evaluation harness", () => {
     expect(dirty).toEqual([]);
     expect(s.factRecall).toBe(1);
     expect(s.plantedCaught).toBe(s.plantedTotal);
+  });
+  it("character error rate counts edits over the reference length", () => {
+    expect(cer("ጥቅምት 3", "ጥቅምት 3")).toBe(0);
+    expect(cer("abcd", "abxd")).toBe(0.25);
+    expect(cer("abcd", "")).toBe(1);
+    expect(cer("a  b", "a b")).toBe(0);
+  });
+  it("scoreTurn scores what a pipeline produced and skipped cases stay out of the totals", () => {
+    const c: EvalCase = { id: "s", language: "am", reference: "2026-10-31", truth: [{ type: "dose", value: "500 mg" }], planted: [] };
+    const r = scoreTurn(c, [{ type: "dose", value: "500 mg", source: "500 mg", start: 0, end: 6 }], []);
+    expect(r.factsFound).toBe(1);
+    const s = summarize([r, { ...r, id: "k", factsFound: 0, skipped: "no recording" }]);
+    expect(s.cases).toBe(1); expect(s.skipped).toBe(1); expect(s.factRecall).toBe(1);
   });
 });

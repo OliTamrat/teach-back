@@ -155,3 +155,12 @@ footer { padding-block: 24px 40px; color: var(--faint); font-size: 12.5px; max-w
 .turns .when { color: var(--faint); font-size: 12px; }
 .turns .line { margin: 0 0 2px; color: var(--text); font-size: 15px; line-height: 1.5; }
 .panel h2 .hint { font-family: var(--stack-body); font-size: 13px; margin-left: 10px; }
+.question .q.draft { color: var(--muted); font-size: 20px; }
+.question .q:lang(om) { font-family: var(--stack-display); }
+
+/* recording session */
+.script .read { font-family: var(--stack-display); font-size: 34px; line-height: 1.35; color: var(--text); margin: 6px 0; }
+.script .read:lang(am) { font-family: var(--font-ethiopic-display), serif; }
+button.chip { cursor: pointer; background: transparent; }
+button.chip[data-done] { border-color: var(--good); color: var(--good); }
+button.chip[aria-current] { border-color: var(--accent); color: var(--text); }

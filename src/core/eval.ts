@@ -7,17 +7,21 @@
  */
 import { extractFacts } from "./facts";
 import { analyzeTurn, compareWithLabel, languageMismatch } from "./compare";
-import type { FactType, Flag, Language } from "./types";
+import type { Fact, FactType, Flag, Language } from "./types";
 
 export type EvalCase = {
   id: string;
   language: Language;
+  /** Path to a recording, relative to the repository root. Present on audio cases, which run through /api/turn. */
+  audio?: string;
+  /** What was read aloud, for a character error rate against the transcript. */
+  text?: string;
   /** ISO date the words were spoken; Ethiopian dates resolve against it. */
   reference: string;
   /** What the patient said, for the record. Not scored. */
   said?: string;
-  /** Listener A's English rendering. */
-  a: string;
+  /** Listener A's English rendering. Required for text cases; on audio cases the pipeline produces it. */
+  a?: string;
   /** Listener B's English rendering, if two listeners heard the turn. */
   b?: string;
   /** Medication label text, if a label was read. */
@@ -44,19 +48,29 @@ export type CaseResult = {
   falseAlarms: number;   // critical flags on facts where no error was planted
   flags: Flag[];
   missed: string[];
+  /** Audio cases only: character error rate of the first listener's transcript against the text read. */
+  cer?: number;
+  skipped?: string;
 };
 
+/** A text case: both renderings are given, the core does the rest. */
 export function runCase(c: EvalCase): CaseResult {
   const [y, m, d] = c.reference.split("-").map(Number);
   const opts = { reference: { year: y, month: m, day: d }, language: c.language };
-  const primary = { name: "A", english: c.a, facts: extractFacts(c.a, opts) };
+  const a = c.a ?? "";
+  const primary = { name: "A", english: a, facts: extractFacts(a, opts) };
   const secondary = c.b ? { name: "B", english: c.b, facts: extractFacts(c.b, opts) } : undefined;
   const extra: Flag[] = [];
   const mismatch = languageMismatch(c.language, c.spoken ?? null);
   if (mismatch) extra.push(mismatch);
   if (c.label) extra.push(...compareWithLabel(primary.facts, extractFacts(c.label, opts)));
   const { flags } = analyzeTurn(primary, secondary, extra);
+  return scoreTurn(c, primary.facts, flags);
+}
 
+/** Score what a turn produced, whichever path produced it: the core alone or the whole pipeline. */
+export function scoreTurn(c: EvalCase, primaryFacts: Fact[], flags: Flag[]): CaseResult {
+  const primary = { facts: primaryFacts };
   const found = new Set<string>();
   const missed: string[] = [];
   for (const t of c.truth) {
@@ -88,9 +102,15 @@ export type EvalSummary = {
   plantedCaught: number; plantedTotal: number;
   expectedCaught: number; expectedTotal: number;
   falseAlarms: number;
+  skipped: number;
+  /** Mean character error rate over audio cases that ran, or null when none did. */
+  meanCer: number | null;
 };
 
-export function summarize(results: CaseResult[]): EvalSummary {
+export function summarize(all: CaseResult[]): EvalSummary {
+  const skipped = all.filter(r => r.skipped).length;
+  const results = all.filter(r => !r.skipped);
+  const withCer = results.filter(r => typeof r.cer === "number");
   const sum = (f: (r: CaseResult) => number) => results.reduce((n, r) => n + f(r), 0);
   const found = sum(r => r.factsFound), total = sum(r => r.factsTotal), extra = sum(r => r.factsExtra);
   return {
@@ -100,6 +120,8 @@ export function summarize(results: CaseResult[]): EvalSummary {
     plantedCaught: sum(r => r.plantedCaught), plantedTotal: sum(r => r.plantedTotal),
     expectedCaught: sum(r => r.expectedCaught), expectedTotal: sum(r => r.expectedTotal),
     falseAlarms: sum(r => r.falseAlarms),
+    skipped,
+    meanCer: withCer.length ? withCer.reduce((n, r) => n + (r.cer as number), 0) / withCer.length : null,
   };
 }
 
@@ -115,10 +137,26 @@ export function reportMarkdown(results: CaseResult[], title: string): string {
     `| Planted errors flagged | ${s.plantedCaught} of ${s.plantedTotal} |`,
     `| Other expected flags raised | ${s.expectedCaught} of ${s.expectedTotal} |`,
     `| False alarms (critical flags with no planted error) | ${s.falseAlarms} |`,
-    "", `| Case | Facts | Planted | Flags | Missed |`, `| --- | --- | --- | --- | --- |`,
+    ...(s.meanCer !== null ? [`| Mean transcript character error rate (audio cases) | ${pct(s.meanCer)} |`] : []),
+    ...(s.skipped ? [`| Skipped (audio not run) | ${s.skipped} |`] : []),
+    "", `| Case | Facts | Planted | CER | Flags | Missed |`, `| --- | --- | --- | --- | --- | --- |`,
   ];
   for (const r of results) {
-    lines.push(`| ${r.id} | ${r.factsFound}/${r.factsTotal}${r.factsExtra ? ` (+${r.factsExtra} extra)` : ""} | ${r.plantedCaught}/${r.plantedTotal} | ${r.flags.map(f => `${f.severity === "crit" ? "crit" : "warn"} ${f.kind}${f.type ? ":" + f.type : ""}`).join(", ") || "none"} | ${r.missed.join("; ") || ""} |`);
+    if (r.skipped) { lines.push(`| ${r.id} | skipped | | | | ${r.skipped} |`); continue; }
+    lines.push(`| ${r.id} | ${r.factsFound}/${r.factsTotal}${r.factsExtra ? ` (+${r.factsExtra} extra)` : ""} | ${r.plantedCaught}/${r.plantedTotal} | ${typeof r.cer === "number" ? pct(r.cer) : ""} | ${r.flags.map(f => `${f.severity === "crit" ? "crit" : "warn"} ${f.kind}${f.type ? ":" + f.type : ""}`).join(", ") || "none"} | ${r.missed.join("; ") || ""} |`);
   }
   return lines.join("\n") + "\n";
+}
+
+/** Character error rate: Levenshtein distance over the reference length, whitespace collapsed, punctuation kept. */
+export function cer(reference: string, hypothesis: string): number {
+  const r = [...reference.replace(/\s+/g, " ").trim()], h = [...hypothesis.replace(/\s+/g, " ").trim()];
+  if (!r.length) return h.length ? 1 : 0;
+  let prev = Array.from({ length: h.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= r.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= h.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (r[i - 1] === h[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[h.length] / r.length;
 }
