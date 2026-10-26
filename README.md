@@ -23,6 +23,7 @@ can tell what is new.
 | Day | Date | Shipped |
 | --- | --- | --- |
 | 1 | Oct 26 | Repository created. Deterministic core: Ethiopian calendar conversion (`src/core/calendar.ts`), critical-fact extraction (`facts.ts`), two-listener comparison, label check and language-mismatch flags (`compare.ts`), teach-back question templates (`question.ts`), 71 unit tests. Interpreter screen in text mode (`src/app/Interpreter.tsx`). Health endpoint. |
+| 2 | Oct 26 | Audio path. Browser recorder, one patient turn per clip (`Interpreter.tsx`, Record tab). `POST /api/turn` runs both listeners in parallel: Omnilingual ASR over its HTTP contract (`src/server/asr.ts`) with Muse Spark 1.3 rendering the transcript into English, and Muse Spark 1.2 hearing the same audio directly and reporting language, transcript and English as JSON (`src/server/meta.ts`). Prompts are pure and tested (`src/core/prompts.ts`): they ask the models to render, never to advise or convert a date. Script-and-lexicon language fallback (`src/core/language.ts`). Either listener may be missing; the response says which and why, and the screen shows it. 80 unit tests. Verified end to end against local mocks of both services and a fake microphone in headless Chromium; the real services connect when the keys are in place. |
 
 Before the event, a throwaway test harness explored the same ideas (calendar logic, token budgets,
 model ids). None of its code is in this repository; the ideas were re-implemented here from scratch.
@@ -38,7 +39,7 @@ model ids). None of its code is in this repository; the ideas were re-implemente
 7. **Teach-back question** for the interpreter to ask, so the patient says the instruction back in their own words.
 8. **The reviewer confirms or corrects every flag.** Only then is the English summary final.
 
-Steps 1, 5 and 6 connect to the models on Days 2 to 5. Step 2, 3, 4, 7 and 8 are in the repository now and work offline.
+Steps 1, 2 and 5 are wired (Day 2) and run as soon as `META_MODEL_API_KEY` and `ASR_SERVICE_URL` are set. Step 6 connects on Day 5. Steps 3, 4, 7 and 8 work offline, and the Paste text tab exercises them without any key.
 
 ## Run it
 
@@ -49,7 +50,7 @@ npm run typecheck
 npm run dev       # http://localhost:3000
 ```
 
-Copy `.env.example` to `.env.local` for the model keys. The core and the text-mode screen need no key at all.
+Copy `.env.example` to `.env.local` for the model keys (`META_MODEL_API_KEY` for both Spark listeners, `ASR_SERVICE_URL` for Omnilingual ASR). The core and the Paste text tab need no key at all; the Record tab works with whichever listener is configured and says which one is missing.
 `GET /api/health` reports what is configured without printing a secret.
 
 ## Layout

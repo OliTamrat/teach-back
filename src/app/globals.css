@@ -131,3 +131,17 @@ main { padding-block: 22px 60px; display: grid; gap: 22px; }
 
 footer { padding-block: 24px 40px; color: var(--faint); font-size: 12.5px; max-width: 70ch; }
 @media (prefers-reduced-motion: no-preference) { .btn { transition: background 0.15s, color 0.15s, border-color 0.15s; } }
+
+/* record / paste */
+.tabs { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; background: var(--sunken); }
+.tab { font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--raised); color: var(--text); }
+.recorder { display: grid; gap: 10px; }
+.btn.rec { background: var(--crit-soft); border-color: var(--crit); color: var(--text); display: inline-flex; align-items: center; gap: 8px; }
+.btn.rec .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--crit); }
+@media (prefers-reduced-motion: no-preference) { .btn.rec .dot { animation: pulse 1.2s ease-in-out infinite; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.recorder[data-state="sending"] .btn { opacity: 0.7; }
+.turnmeta { display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid var(--line); }
+.transcript { font-size: 17px; line-height: 1.7; color: var(--text); margin: 0; }
+.notes { margin: 0; padding-left: 18px; color: var(--faint); font-size: 12.5px; display: grid; gap: 2px; }
