@@ -4,7 +4,7 @@
  * wrong. Every fact keeps the words it came from, so the reviewer can see the evidence.
  */
 import type { Fact, FactType, Language } from "./types";
-import { MONTH_ALIASES, formatGregorian, formatEthiopian, resolveYearless, toGregorian, type GregorianDate } from "./calendar";
+import { MONTH_ALIASES, formatGregorian, formatEthiopian, resolveYearless, toGregorian, type GregorianDate, OROMO_MONTHS } from "./calendar";
 
 const NUMBER_WORDS: Record<string, number> = {
   zero: 0, one: 1, a: 1, an: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
@@ -80,7 +80,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     [new RegExp(`\\bevery ${NUM} (hours?|days?|weeks?)\\b`, "gi"), m => { const n = parseNumber(m[1]); return n === null ? null : `every ${fmt(n)} ${m[2].toLowerCase().replace(/s$/, "")}`; }],
     [/\bevery other day\b/gi, () => "every 2 day"],
     [/\b(?:only )?(?:when|if) (?:the )?(?:pain is bad|needed|necessary|i cannot breathe|i can't breathe|required)\b|\bas needed\b/gi, () => "as needed"],
-    [/\bno more than (\w+) (?:a|per) day\b/gi, m => { const n = parseNumber(m[1]); return n === null ? null : `max ${fmt(n)}/day`; }],
+    [/\b(?:no|not) more than (\w+)(?: times?)? (?:a|per|each) day\b|\b(?:a )?maximum (?:of )?(\w+)(?: times?)? (?:a|per|each) day\b|\bat most (\w+)(?: times?)? (?:a|per|each) day\b/gi, m => { const n = parseNumber(m[1] || m[2] || m[3]); return n === null ? null : `max ${fmt(n)}/day`; }],
     [/\b(?:in the )?morning and (?:in the )?evening\b|\bmorning and night\b/gi, () => "2/day"],
     [/\b(before|after|with) (dinner|breakfast|lunch|meals|food)\b/gi, m => `${m[1].toLowerCase()} ${m[2].toLowerCase()}`],
     [/\b(every|each|at) (evening|night|morning)\b/gi, m => m[2].toLowerCase()],
@@ -89,6 +89,8 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
   for (const [re, val] of freqPatterns) {
     for (const m of text.matchAll(re)) {
       const v = val(m); if (!v) continue;
+      // "not more than three times a day" is a ceiling, captured by its own pattern, not a plain "3/day"
+      if (/^\d/.test(v) && /(more than|maximum(?: of)?|at most)\s$/i.test(text.slice(Math.max(0, m.index! - 12), m.index!))) continue;
       push({ type: "frequency", value: v, source: m[0], start: m.index!, end: m.index! + m[0].length });
     }
   }
@@ -99,7 +101,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     const unit = m[2].toLowerCase().replace(/s$/, "");
     // "every 8 hours" is a frequency, already captured
     const before = text.slice(Math.max(0, m.index! - 8), m.index!);
-    if (/every\s$/i.test(before) || /(times|per|each)\s$/i.test(before)) continue; // "every 8 hours", "times a day" are frequencies
+    if (/every\s$/i.test(before) || /(times|per|each|once|twice)\s$/i.test(before)) continue; // "every 8 hours", "times a day", "twice a day" are frequencies
     push({ type: "duration", value: `${fmt(n)} ${unit}${m[3] ? m[3].trim() === "ago" ? " ago" : " after" : ""}`, source: m[0].trim(), start: m.index!, end: m.index! + m[0].length });
   }
 
@@ -140,7 +142,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     const future = /\b(next|appointment|come back|return)\b/i.test(lower.slice(Math.max(0, m.index! - 40), m.index!));
     const eth = year !== null ? { year, month, day } : resolveYearless(month, day, reference, future);
     const greg = eth ? toGregorian(eth) : null;
-    const oromoName = /^(fulbaana|fulbana|onkoloolessa|onkololessa|sadaasa|sadasa|muddee|mudde|amajjii|amajji|guraandhala|gurandhala|bitootessa|bitotessa|elba|ebla|caamsaa|camsa|waxabajjii|waxabajji|adooleessa|adoolessa|adolessa|hagayya|hagaya|qaammee|qaamme)$/i.test(m[1]);
+    const oromoName = OROMO_MONTHS.has(m[1].toLowerCase());
     let note = eth && greg ? `${formatEthiopian(eth)} (Ethiopian) = ${formatGregorian(greg)}` : `${m[1]} ${m[2]}${year ? ", " + year : ""} does not exist in the Ethiopian calendar`;
     if (oromoName && opts.language === "om") note += ". Afaan Oromo uses this month name for both calendars: confirm which the patient meant";
     push({

@@ -16,7 +16,7 @@ export const MONTHS = [
 /** Spellings people actually use, in Latin, Amharic and Afaan Oromo. Lower-cased keys. */
 export const MONTH_ALIASES: Record<string, number> = {
   meskerem: 1, meskeram: 1, "መስከረም": 1, fulbaana: 1, fulbana: 1,
-  tikimt: 2, tikemt: 2, teqemt: 2, "ጥቅምት": 2, onkoloolessa: 2, onkololessa: 2,
+  tikimt: 2, tikemt: 2, teqemt: 2, "ጥቅምት": 2, onkoloolessa: 2, onkololessa: 2, onkololeessa: 2,
   hidar: 3, hedar: 3, "ኅዳር": 3, "ህዳር": 3, sadaasa: 3, sadasa: 3,
   tahsas: 4, tahisas: 4, tahesas: 4, "ታኅሣሥ": 4, "ታህሳስ": 4, muddee: 4, mudde: 4,
   tir: 5, ter: 5, "ጥር": 5, amajjii: 5, amajji: 5,
@@ -29,6 +29,9 @@ export const MONTH_ALIASES: Record<string, number> = {
   nehase: 12, nehasse: 12, "ነሐሴ": 12, "ነሃሴ": 12, hagayya: 12, hagaya: 12,
   pagume: 13, pagumen: 13, "ጳጉሜ": 13, "ጳጉሜን": 13, qaammee: 13, qaamme: 13,
 };
+
+/** Month names Afaan Oromo uses for the Ethiopian months; the same names serve the Gregorian months too. */
+export const OROMO_MONTHS = new Set(["fulbaana", "fulbana", "onkoloolessa", "onkololessa", "onkololeessa", "sadaasa", "sadasa", "muddee", "mudde", "amajjii", "amajji", "guraandhala", "gurandhala", "bitootessa", "bitotessa", "elba", "ebla", "caamsaa", "camsa", "waxabajjii", "waxabajji", "adooleessa", "adoolessa", "adolessa", "hagayya", "hagaya", "qaammee", "qaamme"]);
 
 export type EthiopianDate = { year: number; month: number; day: number };
 export type GregorianDate = { year: number; month: number; day: number };

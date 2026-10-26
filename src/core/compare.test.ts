@@ -18,7 +18,7 @@ describe("two listeners", () => {
     const b = listener("Spark", "I am allergic to penicillin.");
     const flags = compareListeners(a, b);
     expect(flags).toHaveLength(1);
-    expect(flags[0]).toMatchObject({ kind: "single_listener", severity: "warn", type: "negation" });
+    expect(flags[0]).toMatchObject({ kind: "single_listener", severity: "crit", type: "negation" });
   });
 
   it("different doses are a critical disagreement naming both", () => {

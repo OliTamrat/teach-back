@@ -125,3 +125,27 @@ describe("durations", () => {
     expect(values(text, "duration")[0]).toBe(expected);
   });
 });
+
+describe("found by the evaluation harness (Day 3)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 26 } };
+  const vals = (s: string, language?: "am" | "om") => extractFacts(s, { ...opts, language }).map(f => `${f.type}=${f.value}`);
+  it("twice a day is a frequency, not a one-day duration", () => {
+    const v = vals("Take one tablet of metformin 500 milligrams twice a day with food.");
+    expect(v).toContain("frequency=2/day");
+    expect(v.filter(x => x.startsWith("duration"))).toEqual([]);
+  });
+  it("not more than three times a day is a ceiling, not a plain frequency", () => {
+    const v = vals("Take half a tablet at night, as needed, not more than three times a day.");
+    expect(v).toContain("frequency=max 3/day");
+    expect(v).not.toContain("frequency=3/day");
+    expect(vals("At most two a day.")).toContain("frequency=max 2/day");
+  });
+  it("recognises the common spellings of the Afaan Oromo month", () => {
+    for (const s of ["Onkololeessa 5", "Onkoloolessa 5", "Onkololessa 5"]) {
+      const f = extractFacts(`My next appointment is on ${s}.`, { ...opts, language: "om" });
+      expect(f.map(x => x.type)).toContain("date");
+      expect(f.find(x => x.type === "date")?.note).toContain("both calendars");
+    }
+  });
+});
+

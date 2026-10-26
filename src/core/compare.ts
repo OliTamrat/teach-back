@@ -28,17 +28,25 @@ export function compareListeners(primary: Listener, secondary?: Listener): Flag[
     a.forEach((f, idx) => {
       const i = primary.facts.indexOf(f);
       if (bv.includes(av[idx])) return;
-      if (b.length === 0) {
-        flags.push({ kind: "single_listener", severity: "warn", type, factIndex: i, a: f.source, message: `Only ${primary.name} heard a ${LABELS[type]}: "${f.source}". ${secondary.name} heard none.` });
+      // A disagreement needs a value on each side the other lacks. If the other listener simply
+      // phrased this one differently and missed it, only one listener heard it.
+      const other = b.find(g => !av.includes(norm(g.value)));
+      if (other) {
+        flags.push({ kind: "listener_disagreement", severity: "crit", type, factIndex: i, a: f.source, b: other.source,
+          message: `The two listeners disagree on a ${LABELS[type]}: "${f.source}" versus "${other.source}". Confirm with the patient before anything is written down.` });
       } else {
-        const other = b.find(g => !av.includes(norm(g.value)));
-        flags.push({ kind: "listener_disagreement", severity: "crit", type, factIndex: i, a: f.source, b: other?.source ?? b[0].source,
-          message: `The two listeners disagree on a ${LABELS[type]}: "${f.source}" versus "${other?.source ?? b[0].source}". Confirm with the patient before anything is written down.` });
+        // A negation heard by one listener only is as dangerous as a disagreement: the other may have dropped the "not".
+        const sev = type === "negation" ? "crit" : "warn";
+        const tail = type === "negation" ? " The other listener may have dropped the \"not\". Confirm with the patient." : "";
+        flags.push({ kind: "single_listener", severity: sev, type, factIndex: i, a: f.source, message: `Only ${primary.name} heard a ${LABELS[type]}: "${f.source}". ${secondary.name} heard none.${tail}` });
       }
     });
     b.forEach((g, idx) => {
-      if (av.includes(bv[idx]) || a.length > 0) return;
-      flags.push({ kind: "single_listener", severity: "warn", type, b: g.source, message: `Only ${secondary.name} heard a ${LABELS[type]}: "${g.source}". ${primary.name} heard none.` });
+      if (av.includes(bv[idx])) return;
+      if (a.some(f => !bv.includes(norm(f.value)))) return; // already reported as a disagreement above
+      const sev = type === "negation" ? "crit" : "warn";
+      const tail = type === "negation" ? ` ${primary.name} may have dropped the "not". Confirm with the patient.` : "";
+      flags.push({ kind: "single_listener", severity: sev, type, b: g.source, message: `Only ${secondary.name} heard a ${LABELS[type]}: "${g.source}". ${primary.name} heard none.${tail}` });
     });
   }
   return dedupe(flags);

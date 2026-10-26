@@ -25,6 +25,8 @@ can tell what is new.
 | 1 | Oct 26 | Repository created. Deterministic core: Ethiopian calendar conversion (`src/core/calendar.ts`), critical-fact extraction (`facts.ts`), two-listener comparison, label check and language-mismatch flags (`compare.ts`), teach-back question templates (`question.ts`), 71 unit tests. Interpreter screen in text mode (`src/app/Interpreter.tsx`). Health endpoint. |
 | 2 | Oct 26 | Audio path. Browser recorder, one patient turn per clip (`Interpreter.tsx`, Record tab). `POST /api/turn` runs both listeners in parallel: Omnilingual ASR over its HTTP contract (`src/server/asr.ts`) with Muse Spark 1.3 rendering the transcript into English, and Muse Spark 1.2 hearing the same audio directly and reporting language, transcript and English as JSON (`src/server/meta.ts`). Prompts are pure and tested (`src/core/prompts.ts`): they ask the models to render, never to advise or convert a date. Script-and-lexicon language fallback (`src/core/language.ts`). Either listener may be missing; the response says which and why, and the screen shows it. 80 unit tests. Verified end to end against local mocks of both services and a fake microphone in headless Chromium; the real services connect when the keys are in place. |
 
+| 3 | Oct 26 | Reviewer flow closed. Corrections are written into the English at the fact's own words and the final line appears only when a person has decided every flag (`src/core/session.ts`). Session log kept on the device, exported as notes or JSON. Evaluation harness (`src/core/eval.ts`, `npm run eval`): 15 text cases with known facts and planted errors, scored on fact recall and precision, planted errors flagged and false alarms; the report lands in `eval/latest.md`. Its first run found three extraction gaps and one scoring rule worth changing, all fixed with tests: "twice a day" leaked a one-day duration, "not more than three times a day" lost its ceiling, one spelling of the Afaan Oromo month was unknown, and a dropped "not" was only a warning. 91 unit tests. |
+
 Before the event, a throwaway test harness explored the same ideas (calendar logic, token budgets,
 model ids). None of its code is in this repository; the ideas were re-implemented here from scratch.
 
@@ -46,6 +48,7 @@ Steps 1, 2 and 5 are wired (Day 2) and run as soon as `META_MODEL_API_KEY` and `
 ```sh
 npm install
 npm test          # core unit tests (vitest)
+npm run eval      # evaluation harness over eval/cases, report in eval/latest.md
 npm run typecheck
 npm run dev       # http://localhost:3000
 ```
@@ -62,7 +65,9 @@ src/app/       Next.js app: the interpreter screen and API routes. Screens call 
 
 ## Evaluation
 
-Measured results replace this section on Nov 1. The plan: 60 scripted clinic sentences, 30 Amharic and 30 Afaan Oromo, read by consenting volunteers; report transcription accuracy per language, the critical-fact error rate of unchecked machine interpreting, Teach-Back's catch rate, its false-flag rate, and wrong-language detection. No number appears here that was not produced by a run that can be repeated.
+`npm run eval` scores the deterministic core over `eval/cases/` and writes `eval/latest.md`. The text cases (15 as of Day 3) each carry the facts the patient actually stated and the errors planted in one listener's rendering; the report gives fact recall and precision, planted errors flagged, other expected flags, and false alarms. Text cases test the core without any model; they are not a claim about the models.
+
+Measured results over real recordings replace the rest of this section on Nov 1. The plan: 60 scripted clinic sentences, 30 Amharic and 30 Afaan Oromo, read by consenting volunteers; report transcription accuracy per language, the critical-fact error rate of unchecked machine interpreting, Teach-Back's catch rate, its false-flag rate, and wrong-language detection. No number appears here that was not produced by a run that can be repeated.
 
 ## Data and consent
 

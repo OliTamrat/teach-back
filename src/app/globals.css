@@ -145,3 +145,13 @@ footer { padding-block: 24px 40px; color: var(--faint); font-size: 12.5px; max-w
 .turnmeta { display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid var(--line); }
 .transcript { font-size: 17px; line-height: 1.7; color: var(--text); margin: 0; }
 .notes { margin: 0; padding-left: 18px; color: var(--faint); font-size: 12.5px; display: grid; gap: 2px; }
+
+/* final line and session log */
+.final { display: grid; gap: 8px; }
+.final .summary { font-size: 17px; line-height: 1.6; color: var(--text); margin: 0; }
+.render mark s { text-decoration: line-through; color: var(--faint); }
+.turns { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.turns li { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: baseline; padding-top: 10px; border-top: 1px solid var(--line); }
+.turns .when { color: var(--faint); font-size: 12px; }
+.turns .line { margin: 0 0 2px; color: var(--text); font-size: 15px; line-height: 1.5; }
+.panel h2 .hint { font-family: var(--stack-body); font-size: 13px; margin-left: 10px; }

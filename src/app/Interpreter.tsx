@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { extractFacts } from "@/core/facts";
 import { analyzeTurn, compareWithLabel, languageMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
+import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
 import type { Fact, Flag, Language } from "@/core/types";
 
 /**
@@ -21,9 +22,9 @@ const SAMPLE_B = "The doctor told me to take two tablets of 50 milligrams three 
 const SAMPLE_LABEL = "";
 
 const LANG_NAME: Record<Language, string> = { am: "Amharic", om: "Afaan Oromo" };
+const SESSION_KEY = "teach-back-session";
 const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "frequency", drug: "drug", negation: "negation", body_part: "body part", date: "date", duration: "duration" };
 
-type Decision = { state: "open" | "confirmed" | "corrected"; correction?: string };
 type Mode = "record" | "paste";
 type Health = { ready: boolean; metaModelApi: { key: string }; asr: { service: string } };
 type TurnResponse = {
@@ -46,6 +47,19 @@ export default function Interpreter() {
   const [mode, setMode] = useState<Mode>("record");
   const [health, setHealth] = useState<Health | null>(null);
   const [audio, setAudio] = useState<AudioMeta | null>(null);
+  const [turns, setTurns] = useState<TurnRecord[]>([]);
+  const [copied, setCopied] = useState<"summary" | "notes" | null>(null);
+
+  // The session log lives on this device only; it is the interpreter's own notes, never sent anywhere.
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      try { const raw = localStorage.getItem(SESSION_KEY); if (raw) setTurns(JSON.parse(raw) as TurnRecord[]); } catch { /* storage unavailable: the log is per page load */ }
+    });
+  }, []);
+  function saveTurns(next: TurnRecord[]) {
+    setTurns(next);
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -69,6 +83,29 @@ export default function Interpreter() {
 
   const open = analysis ? analysis.flags.filter((_, i) => (decisions[i]?.state ?? "open") === "open").length : 0;
   const crit = analysis ? analysis.flags.filter(f => f.severity === "crit").length : 0;
+  const isFinal = Boolean(analysis) && allDecided(analysis!.flags, decisions);
+  const summary = analysis && isFinal ? finalSummary(analysis.primary.english, analysis.primary.facts, analysis.flags, decisions) : "";
+
+  function addToSession() {
+    if (!analysis || !checked || !isFinal) return;
+    const rec = makeTurn({
+      language: checked.language, reference: checked.reference, transcript: audio?.transcript || undefined,
+      english: analysis.primary.english, facts: analysis.primary.facts, flags: analysis.flags,
+      decisions: analysis.flags.map((_, i) => decisions[i] ?? { state: "confirmed" as const }),
+    });
+    saveTurns([...turns, rec]);
+    nextTurn();
+  }
+  function nextTurn() { setChecked(null); setDecisions({}); setAudio(null); if (mode === "paste") { setA(""); setB(""); setLabel(""); } }
+  async function copy(text: string, what: "summary" | "notes") {
+    try { await navigator.clipboard.writeText(text); setCopied(what); setTimeout(() => setCopied(null), 1500); } catch { /* clipboard blocked: the text is on screen */ }
+  }
+  function downloadSession() {
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), turns }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const el = document.createElement("a"); el.href = url; el.download = `teach-back-session-${new Date().toISOString().slice(0, 10)}.json`; el.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 
   function check(next?: Partial<{ a: string; b: string; spoken: Language | "" }>) {
     setChecked({ a: next?.a ?? a, b: next?.b ?? b, label, language, spoken: next?.spoken ?? spokenLanguage, reference });
@@ -157,7 +194,6 @@ export default function Interpreter() {
                 <div className="facts">
                   {analysis.primary.facts.map((f, i) => <span className="chip" key={i}>{TYPE_NAME[f.type]} <b>{f.value}</b></span>)}
                 </div>
-                {analysis.flags.length === 0 && <div className="final">No disagreements. Confirm the facts above with the patient as usual.</div>}
                 <div className="flags">
                   {analysis.flags.map((f, i) => <FlagCard key={i} flag={f} decision={decisions[i] ?? { state: "open" }} onDecide={d => decide(i, d)} />)}
                 </div>
@@ -168,16 +204,53 @@ export default function Interpreter() {
                     <span className="hint">About the {TYPE_NAME[analysis.question.about.type]}: "{analysis.question.about.source}". {LANG_NAME[language]} wording arrives after native review.</span>
                   </div>
                 )}
-                {analysis.flags.length > 0 && open === 0 && (
-                  <div className="final">Every flag has been reviewed by a person. The English summary can now be written down.</div>
+                {isFinal && (
+                  <div className="final">
+                    <span className="eyebrow">{analysis.flags.length ? "Final line, every flag reviewed by a person" : "Final line, no disagreements"}</span>
+                    <p className="summary">{summary}</p>
+                    <div className="row">
+                      <button className="btn small primary" onClick={addToSession}>Add to session and next turn</button>
+                      <button className="btn small" onClick={() => void copy(summary, "summary")}>{copied === "summary" ? "Copied" : "Copy line"}</button>
+                      <button className="btn small quiet" onClick={nextTurn}>Discard turn</button>
+                    </div>
+                  </div>
                 )}
-                {analysis.flags.length > 0 && open > 0 && (
-                  <p className="hint">The summary stays provisional until each flag is confirmed or corrected.</p>
+                {!isFinal && (
+                  <p className="hint">The line stays provisional until each flag is confirmed or corrected.</p>
                 )}
               </>
             )}
           </section>
         </div>
+
+        <section className="panel" aria-labelledby="session-h">
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            <h2 id="session-h">Session <span className="hint">{turns.length} turn{turns.length === 1 ? "" : "s"}, kept on this device only</span></h2>
+            {turns.length > 0 && (
+              <div className="row">
+                <button className="btn small" onClick={() => void copy(sessionNotes(turns), "notes")}>{copied === "notes" ? "Copied" : "Copy notes"}</button>
+                <button className="btn small" onClick={downloadSession}>Download JSON</button>
+                <ClearButton onClear={() => saveTurns([])} />
+              </div>
+            )}
+          </div>
+          {turns.length === 0 && <p className="hint">Finished turns collect here, each with what was confirmed or corrected, ready to copy into the interpreter's notes.</p>}
+          {turns.length > 0 && (
+            <ol className="turns">
+              {turns.map((t, n) => (
+                <li key={t.id}>
+                  <span className="mono when">{n + 1}. {t.at.slice(11, 16)}</span>
+                  <div>
+                    <p className="line">{t.summary}</p>
+                    <p className="hint">
+                      {LANG_NAME[t.language]}. {t.flags.length === 0 ? "No flags." : t.flags.map((f, i) => `${t.decisions[i]?.state === "corrected" ? "corrected" : "confirmed"} ${f.type ? TYPE_NAME[f.type] : f.kind.replace("_", " ")}`).join(", ") + "."}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
       </main>
 
       <footer className="wrap">
@@ -198,9 +271,12 @@ function Recorder({ language, reference, health, onTurn }: { language: Language;
   const rec = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const supported = typeof window !== "undefined" && typeof MediaRecorder !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
-
-  useEffect(() => () => { if (timer.current) clearInterval(timer.current); rec.current?.stream.getTracks().forEach(t => t.stop()); }, []);
+  // Decided after mount, not during render: the server cannot know, and a guess there breaks hydration.
+  const [supported, setSupported] = useState(true);
+  useEffect(() => {
+    void Promise.resolve().then(() => setSupported(typeof MediaRecorder !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia)));
+    return () => { if (timer.current) clearInterval(timer.current); rec.current?.stream.getTracks().forEach(t => t.stop()); };
+  }, []);
 
   async function start() {
     setError("");
@@ -261,6 +337,14 @@ function Recorder({ language, reference, health, onTurn }: { language: Language;
   );
 }
 
+function ClearButton({ onClear }: { onClear: () => void }) {
+  const [arm, setArm] = useState(false);
+  useEffect(() => { if (!arm) return; const t = setTimeout(() => setArm(false), 4000); return () => clearTimeout(t); }, [arm]);
+  return arm
+    ? <button className="btn small" style={{ borderColor: "var(--crit)", color: "var(--crit)" }} onClick={() => { onClear(); setArm(false); }}>Tap again to clear the session</button>
+    : <button className="btn small quiet" onClick={() => setArm(true)}>Clear</button>;
+}
+
 function TurnMeta({ meta, language }: { meta: AudioMeta; language: Language }) {
   const lang = meta.detected.language ?? language;
   return (
@@ -288,6 +372,10 @@ function TurnMeta({ meta, language }: { meta: AudioMeta; language: Language }) {
 }
 
 function Rendering({ text, facts, flags, decisions }: { text: string; facts: Fact[]; flags: Flag[]; decisions: Record<number, Decision> }) {
+  const correctionOf = (factIndex: number): string | undefined => {
+    const i = flags.findIndex(f => f.factIndex === factIndex && decisions[flags.indexOf(f)]?.state === "corrected");
+    return i >= 0 ? decisions[i]?.correction : undefined;
+  };
   const stateOf = (factIndex: number): "crit" | "warn" | "ok" | "none" => {
     const related = flags.map((f, i) => ({ f, i })).filter(x => x.f.factIndex === factIndex);
     if (!related.length) return "none";
@@ -300,7 +388,12 @@ function Rendering({ text, facts, flags, decisions }: { text: string; facts: Fac
     if (f.start < cursor) return;
     parts.push(text.slice(cursor, f.start));
     const st = stateOf(i);
-    parts.push(<mark key={i} data-flag={st === "none" ? undefined : st} title={`${TYPE_NAME[f.type]}: ${f.value}${f.note ? " — " + f.note : ""}`}>{text.slice(f.start, f.end)}</mark>);
+    const fix = correctionOf(i);
+    parts.push(
+      <mark key={i} data-flag={st === "none" ? undefined : st} title={`${TYPE_NAME[f.type]}: ${f.value}${f.note ? ". " + f.note : ""}`}>
+        {fix ? <><s>{text.slice(f.start, f.end)}</s> {fix}</> : text.slice(f.start, f.end)}
+      </mark>,
+    );
     cursor = f.end;
   });
   parts.push(text.slice(cursor));

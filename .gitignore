@@ -1,18 +1,16 @@
+
+!.env.example
+# dependencies and build output
+# recordings and evaluation runs are released separately, with consent
 # secrets: keys live in the environment, never in the repo
+*.pem
+*.tsbuildinfo
+.DS_Store
 .env
 .env.*
-!.env.example
-*.pem
-
-# dependencies and build output
-node_modules/
 .next/
-out/
-*.tsbuildinfo
-next-env.d.ts
-
-# recordings and evaluation runs are released separately, with consent
-recordings/
 eval/runs/
-
-.DS_Store
+next-env.d.ts
+node_modules/
+out/
+recordings/
