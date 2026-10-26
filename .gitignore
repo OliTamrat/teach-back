@@ -1,0 +1,18 @@
+# secrets: keys live in the environment, never in the repo
+.env
+.env.*
+!.env.example
+*.pem
+
+# dependencies and build output
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# recordings and evaluation runs are released separately, with consent
+recordings/
+eval/runs/
+
+.DS_Store

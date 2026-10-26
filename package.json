@@ -1,0 +1,27 @@
+{
+  "name": "teach-back",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A safety net for medical interpreting in Amharic and Afaan Oromo. Flags the facts a human must confirm; never advises a patient.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}
