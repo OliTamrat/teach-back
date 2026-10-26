@@ -72,7 +72,7 @@ export default function Recorder({ items }: { items: Item[] }) {
             {done[item.id] !== undefined && <span className="eyebrow" style={{ color: "var(--good)" }}>recorded, {done[item.id]}s</span>}
           </div>
           <p className="read" lang={item.spoken}>{item.text}</p>
-          <p className="hint">English source: {item.english}{item.reviewed ? "" : ". Draft translation: if the wording is not what you would say, say it your way and tell us."}</p>
+          <p className="hint">English source: {item.english}{item.reviewed ? "" : " Draft translation: if the wording is not what you would say, say it your way and tell us."}</p>
           <div className="row">
             <button className="btn quiet" onClick={() => setI(Math.max(0, n - 1))} disabled={n === 0 || state === "recording"}>Previous</button>
             {state === "idle" && <button className="btn primary" onClick={start}>{done[item.id] !== undefined ? "Record again" : "Record"}</button>}
