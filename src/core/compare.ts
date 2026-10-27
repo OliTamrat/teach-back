@@ -53,16 +53,27 @@ export function compareListeners(primary: Listener, secondary?: Listener): Flag[
 }
 
 /** A label photo was read; its dose, frequency and drug must not contradict what was spoken. */
+/**
+ * A dose is either a count ("2 tablet", "2 puff") or an amount ("500 mg", "5 ml"). The two are
+ * compared only with their own kind: a patient saying "two tablets of 500 mg" against a label
+ * reading "500 mg, take one tablet" conflicts on the count, not on the strength.
+ */
+const COUNT_UNITS = new Set(["tablet", "pill", "capsule", "puff", "drop", "teaspoon", "tablespoon", "unit", "inhalation"]);
+function doseKind(value: string): "count" | "amount" { const u = value.split(" ")[1] || ""; return COUNT_UNITS.has(u) ? "count" : "amount"; }
+
 export function compareWithLabel(spoken: Fact[], label: Fact[]): Flag[] {
   const flags: Flag[] = [];
   for (const type of ["dose", "frequency", "drug"] as FactType[]) {
     const s = spoken.filter(f => f.type === type), l = label.filter(f => f.type === type);
     if (!s.length || !l.length) continue;
-    const lv = l.map(f => norm(f.value));
     for (const f of s) {
-      if (lv.includes(norm(f.value))) continue;
-      flags.push({ kind: "label_conflict", severity: "crit", type, a: f.source, b: l[0].source,
-        message: `The patient said "${f.source}" but the label reads "${l[0].source}". Check the ${LABELS[type]} before the patient leaves.` });
+      // Compare like with like: for doses, only the label values of the same kind count.
+      const peers = type === "dose" ? l.filter(g => doseKind(g.value) === doseKind(f.value)) : l;
+      if (!peers.length) continue;
+      if (peers.some(g => norm(g.value) === norm(f.value))) continue;
+      const other = peers.find(g => !s.some(h => norm(h.value) === norm(g.value))) ?? peers[0];
+      flags.push({ kind: "label_conflict", severity: "crit", type, a: f.source, b: other.source,
+        message: `The patient said "${f.source}" but the label reads "${other.source}". Check the ${LABELS[type]} before the patient leaves.` });
     }
   }
   return flags;

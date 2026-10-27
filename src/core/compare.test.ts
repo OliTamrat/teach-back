@@ -81,3 +81,22 @@ describe("language mismatch", () => {
     expect(languageMismatch("am", "om", 0.3)).toBeNull();
   });
 });
+
+describe("label comparison matches like with like (found by the Day 5 walkthrough)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 27 } };
+  it("a tablet count is compared with the label's count, not its strength", () => {
+    const spoken = extractFacts("The doctor told me to take two tablets of 500 milligrams three times a day.", opts);
+    const label = extractFacts("Metformin 500 mg Take one tablet twice a day with food.", opts);
+    const flags = compareWithLabel(spoken, label);
+    const dose = flags.filter(f => f.type === "dose");
+    expect(dose).toHaveLength(1);
+    expect(dose[0]).toMatchObject({ a: "two tablets", b: "one tablet" });
+    expect(flags.some(f => f.type === "frequency" && f.a === "three times a day" && f.b === "twice a day")).toBe(true);
+  });
+  it("a strength that matches raises nothing even when the label also carries a count", () => {
+    const spoken = extractFacts("I take 500 milligrams.", opts);
+    const label = extractFacts("Metformin 500 mg. Take one tablet daily.", opts);
+    expect(compareWithLabel(spoken, label)).toEqual([]);
+  });
+});
+
