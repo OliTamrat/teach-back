@@ -1,0 +1,1002 @@
+{
+ "ranAt": "2026-10-27T16:03:55.621Z",
+ "files": [
+  "audio-v1.json",
+  "text-v1.json"
+ ],
+ "summary": {
+  "cases": 15,
+  "byLanguage": [
+   {
+    "language": "am",
+    "cases": 12,
+    "factRecall": 1,
+    "meanCer": null,
+    "expectedCaught": 2,
+    "expectedTotal": 2
+   },
+   {
+    "language": "om",
+    "cases": 3,
+    "factRecall": 1,
+    "meanCer": null,
+    "expectedCaught": 1,
+    "expectedTotal": 1
+   }
+  ],
+  "factRecall": 1,
+  "factPrecision": 1,
+  "plantedCaught": 11,
+  "plantedTotal": 11,
+  "expectedCaught": 3,
+  "expectedTotal": 3,
+  "falseAlarms": 0,
+  "skipped": 70,
+  "meanCer": null
+ },
+ "cases": [
+  {
+   "id": "S01",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S02",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S03",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S04",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S05",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S06",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S07",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S08",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S09",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S10",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S11",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S12",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S13",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S14",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S15",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S16",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S17",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S18",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S19",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S20",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 0,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S21",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S22",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S23",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S24",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S25",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S26",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S27",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S28",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S29",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S30",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S31",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S32",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S33",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S34",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S35",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S36",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S37",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S38",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S39",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S40",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S41",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S42",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S43",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S44",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S45",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S46",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S47",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S48",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S49",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S50",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S51",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S52",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S53",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S54",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S55",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S56",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S57",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S58",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S59",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "S60",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W01",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W02",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W03",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W04",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W05",
+   "language": "am",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W06",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W07",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W08",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W09",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "W10",
+   "language": "om",
+   "audio": true,
+   "factsFound": 0,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": "set EVAL_SERVER_URL to run audio cases"
+  },
+  {
+   "id": "T01-dose-planted-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 3,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:dose"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T02-negation-dropped-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 2,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [
+    "crit single_listener:negation"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T03-date-planted-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:date"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T04-agree-no-flags",
+   "language": "am",
+   "audio": false,
+   "factsFound": 5,
+   "factsTotal": 5,
+   "cer": null,
+   "flags": [
+    "warn single_listener:dose"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T05-side-planted-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:body_part"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T06-duration-planted-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:duration"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T07-invalid-date",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [
+    "crit invalid_date:date"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T08-future-date-agree",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T09-oromo-month-ambiguous",
+   "language": "om",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [
+    "warn ambiguous_calendar:date"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T10-label-conflict",
+   "language": "am",
+   "audio": false,
+   "factsFound": 3,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [
+    "crit label_conflict:frequency"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T11-language-mismatch",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [
+    "crit language_mismatch"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T12-single-listener",
+   "language": "am",
+   "audio": false,
+   "factsFound": 4,
+   "factsTotal": 4,
+   "cer": null,
+   "flags": [],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T13-child-dose-planted-b",
+   "language": "om",
+   "audio": false,
+   "factsFound": 3,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:dose"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T14-frequency-planted-b",
+   "language": "om",
+   "audio": false,
+   "factsFound": 3,
+   "factsTotal": 3,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:frequency"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T15-two-errors-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 6,
+   "factsTotal": 6,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:dose",
+    "crit single_listener:negation",
+    "crit listener_disagreement:date"
+   ],
+   "missed": [],
+   "skipped": null
+  }
+ ]
+}

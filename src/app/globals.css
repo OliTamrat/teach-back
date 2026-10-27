@@ -200,3 +200,12 @@ button.chip[aria-current] { border-color: var(--accent); color: var(--text); }
   .flag input[type="text"], input[type="password"] { width: 100%; }
 }
 input[type="password"] { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
+
+/* native review */
+.reviewlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.reviewrow { display: grid; gap: 6px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--raised); }
+.reviewrow[data-state="approved"] { border-color: var(--good); }
+.reviewrow[data-state="changed"] { border-color: var(--accent); }
+.reviewrow .draft { font-size: 19px; line-height: 1.6; color: var(--text); margin: 0; }
+.reviewrow .draft:lang(am) { font-family: var(--stack-ethiopic); }
+.session input[type="text"], .notein { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }

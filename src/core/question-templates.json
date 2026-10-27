@@ -1,0 +1,23 @@
+{
+  "_note": "Teach-back questions in the patient's language, one per fact type. {source} is replaced by the patient's own words, {value} by the fact's canonical value. Drafts until reviewed by a native speaker through /review; npm run review:apply writes the review back here.",
+  "am": {
+    "reviewed": false,
+    "dose": "በእያንዳንዱ ጊዜ ምን ያህል ይወስዳሉ? እባክዎ በራስዎ ቃላት ይንገሩኝ።",
+    "frequency": "በቀን ስንት ጊዜ ይወስዱታል፣ መቼ መቼ?",
+    "drug": "ይህ የትኛው መድኃኒት ነው? እባክዎ ስሙን ይድገሙልኝ፤ {source} ነው?",
+    "negation": "በትክክል መስማቴን ማረጋገጥ እፈልጋለሁ። \"{source}\" ብለዋል። ትክክል ነው?",
+    "date": "\"{source}\" ሲሉ የትኛውን ቀን ማለትዎ ነው? በየትኛው ወርና ዓመት፣ በሚጠቀሙት አቆጣጠር?",
+    "body_part": "እባክዎ የት እንደሆነ ያሳዩኝ።",
+    "duration": "ለምን ያህል ጊዜ? \"{source}\" ብለዋል።"
+  },
+  "om": {
+    "reviewed": false,
+    "dose": "Yeroo tokkoon hammam fudhattu? Maaloo jecha keessaniin natti himaa.",
+    "frequency": "Guyyaatti si'a meeqa fudhattu, yoomii fi yoom?",
+    "drug": "Qorichi kun kami? Maaloo maqaa isaa naaf irra deebi'aa; {source} dhaa?",
+    "negation": "Sirriitti dhaga'uu koo mirkaneeffachuun barbaada. \"{source}\" jettan. Sirriidhaa?",
+    "date": "\"{source}\" jechuun guyyaa kam jechuu keessan? Ji'a fi bara kam, lakkoofsa yeroo isin fayyadamtaniin?",
+    "body_part": "Maaloo eessa akka ta'e natti agarsiisaa.",
+    "duration": "Hammam dheeratee? \"{source}\" jettan."
+  }
+}

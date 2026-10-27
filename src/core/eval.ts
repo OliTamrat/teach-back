@@ -38,6 +38,8 @@ export type EvalCase = {
 
 export type CaseResult = {
   id: string;
+  language: Language;
+  audio: boolean;
   factsFound: number;    // truth facts the extractor found in listener A's rendering
   factsTotal: number;
   factsExtra: number;    // facts extracted that are not in the truth (noise)
@@ -93,11 +95,14 @@ export function scoreTurn(c: EvalCase, primaryFacts: Fact[], flags: Flag[]): Cas
   let expectedCaught = 0;
   for (const k of expected) { if (flags.some(f => f.kind === k)) expectedCaught++; else missed.push(`expected flag ${k}`); }
 
-  return { id: c.id, factsFound: found.size, factsTotal: c.truth.length, factsExtra: extraFacts, plantedCaught, plantedTotal: c.planted.length, expectedCaught, expectedTotal: expected.length, falseAlarms, flags, missed };
+  return { id: c.id, language: c.language, audio: Boolean(c.audio), factsFound: found.size, factsTotal: c.truth.length, factsExtra: extraFacts, plantedCaught, plantedTotal: c.planted.length, expectedCaught, expectedTotal: expected.length, falseAlarms, flags, missed };
 }
 
+export type LanguageSummary = { language: Language; cases: number; factRecall: number; meanCer: number | null; expectedCaught: number; expectedTotal: number };
 export type EvalSummary = {
   cases: number;
+  byLanguage: LanguageSummary[];
+  speakers?: number;
   factRecall: number; factPrecision: number;
   plantedCaught: number; plantedTotal: number;
   expectedCaught: number; expectedTotal: number;
@@ -113,8 +118,15 @@ export function summarize(all: CaseResult[]): EvalSummary {
   const withCer = results.filter(r => typeof r.cer === "number");
   const sum = (f: (r: CaseResult) => number) => results.reduce((n, r) => n + f(r), 0);
   const found = sum(r => r.factsFound), total = sum(r => r.factsTotal), extra = sum(r => r.factsExtra);
+  const byLanguage: LanguageSummary[] = (["am", "om"] as Language[]).map(language => {
+    const rs = results.filter(r => r.language === language);
+    const f = rs.reduce((n, r) => n + r.factsFound, 0), t = rs.reduce((n, r) => n + r.factsTotal, 0);
+    const c = rs.filter(r => typeof r.cer === "number");
+    return { language, cases: rs.length, factRecall: t ? f / t : 1, meanCer: c.length ? c.reduce((n, r) => n + (r.cer as number), 0) / c.length : null, expectedCaught: rs.reduce((n, r) => n + r.expectedCaught, 0), expectedTotal: rs.reduce((n, r) => n + r.expectedTotal, 0) };
+  }).filter(l => l.cases > 0);
   return {
     cases: results.length,
+    byLanguage,
     factRecall: total ? found / total : 1,
     factPrecision: found + extra ? found / (found + extra) : 1,
     plantedCaught: sum(r => r.plantedCaught), plantedTotal: sum(r => r.plantedTotal),
@@ -139,6 +151,7 @@ export function reportMarkdown(results: CaseResult[], title: string): string {
     `| False alarms (critical flags with no planted error) | ${s.falseAlarms} |`,
     ...(s.meanCer !== null ? [`| Mean transcript character error rate (audio cases) | ${pct(s.meanCer)} |`] : []),
     ...(s.skipped ? [`| Skipped (audio not run) | ${s.skipped} |`] : []),
+    ...s.byLanguage.filter(l => l.meanCer !== null).map(l => `| ${l.language === "am" ? "Amharic" : "Afaan Oromo"}: transcript character error rate | ${pct(l.meanCer as number)} over ${l.cases} clip${l.cases === 1 ? "" : "s"} |`),
     "", `| Case | Facts | Planted | CER | Flags | Missed |`, `| --- | --- | --- | --- | --- | --- |`,
   ];
   for (const r of results) {
@@ -159,4 +172,44 @@ export function cer(reference: string, hypothesis: string): number {
     prev = cur;
   }
   return prev[h.length] / r.length;
+}
+
+/**
+ * The results paragraph and table for the README and the submission text, from a summary. Written
+ * only when audio cases have run; until then the text says so, so a reader never mistakes the text
+ * cases for a measurement of the models.
+ */
+export function resultsMarkdown(s: EvalSummary, ranAt: string): string {
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const audio = s.byLanguage.filter(l => l.meanCer !== null);
+  if (!audio.length) {
+    return [
+      `_No audio cases have run yet (${s.skipped} skipped). The numbers below are the deterministic core on ${s.cases} text cases and say nothing about the models._`, "",
+      `| Measure | Value |`, `| --- | --- |`,
+      `| Critical facts found in the English (recall) | ${pct(s.factRecall)} |`,
+      `| Planted errors flagged | ${s.plantedCaught} of ${s.plantedTotal} |`,
+      `| False alarms | ${s.falseAlarms} |`,
+    ].join("\n");
+  }
+  const am = audio.find(l => l.language === "am"), om = audio.find(l => l.language === "om");
+  const clips = audio.reduce((n, l) => n + l.cases, 0);
+  const lines = [
+    `Measured ${ranAt.slice(0, 10)} over ${clips} recorded clip${clips === 1 ? "" : "s"}${s.speakers ? ` from ${s.speakers} speaker${s.speakers === 1 ? "" : "s"}` : ""}, scripted sentences read by consenting volunteers. Regenerate with \`EVAL_SERVER_URL=<server> npm run eval && npm run results\`.`, "",
+    `| Measure | Amharic | Afaan Oromo |`, `| --- | --- | --- |`,
+    `| Clips | ${am?.cases ?? 0} | ${om?.cases ?? 0} |`,
+    `| Transcript character error rate (Omnilingual ASR) | ${am ? pct(am.meanCer as number) : "n/a"} | ${om ? pct(om.meanCer as number) : "n/a"} |`,
+    `| Critical facts that survived to the English | ${am ? pct(am.factRecall) : "n/a"} | ${om ? pct(om.factRecall) : "n/a"} |`,
+    `| Wrong-language items caught | ${am ? `${am.expectedCaught} of ${am.expectedTotal}` : "n/a"} | ${om ? `${om.expectedCaught} of ${om.expectedTotal}` : "n/a"} |`, "",
+    `Across all cases: ${s.plantedCaught} of ${s.plantedTotal} planted errors flagged, ${s.falseAlarms} false alarm${s.falseAlarms === 1 ? "" : "s"}.`,
+  ];
+  return lines.join("\n");
+}
+
+/** The sentence the submission text and the video narration use. */
+export function resultsSentence(s: EvalSummary): string | null {
+  const am = s.byLanguage.find(l => l.language === "am" && l.meanCer !== null), om = s.byLanguage.find(l => l.language === "om" && l.meanCer !== null);
+  if (!am && !om) return null;
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const clips = (am?.cases ?? 0) + (om?.cases ?? 0);
+  return `${s.speakers ? `${s.speakers} speakers, ` : ""}${clips} clips, character error rate of ${am ? pct(am.meanCer as number) : "n/a"} in Amharic and ${om ? pct(om.meanCer as number) : "n/a"} in Afaan Oromo; ${s.plantedCaught} of ${s.plantedTotal} planted errors caught, ${s.falseAlarms} false alarm${s.falseAlarms === 1 ? "" : "s"}.`;
 }

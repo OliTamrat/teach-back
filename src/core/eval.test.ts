@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cer, runCase, scoreTurn, summarize, type EvalCase } from "./eval";
+import { cer, resultsMarkdown, resultsSentence, runCase, scoreTurn, summarize, type EvalCase } from "./eval";
 
 const cases = JSON.parse(readFileSync(join(__dirname, "..", "..", "eval", "cases", "text-v1.json"), "utf8")) as EvalCase[];
 
@@ -36,5 +36,19 @@ describe("evaluation harness", () => {
     expect(r.factsFound).toBe(1);
     const s = summarize([r, { ...r, id: "k", factsFound: 0, skipped: "no recording" }]);
     expect(s.cases).toBe(1); expect(s.skipped).toBe(1); expect(s.factRecall).toBe(1);
+  });
+  it("results text is honest before any audio has run, and per language after", () => {
+    const text = summarize(cases.map(runCase));
+    expect(resultsMarkdown(text, "2026-10-27T00:00:00Z")).toContain("No audio cases have run yet");
+    expect(resultsSentence(text)).toBeNull();
+    const am = { ...runCase(cases[0]), language: "am" as const, audio: true, cer: 0.06 };
+    const om = { ...runCase(cases[0]), language: "om" as const, audio: true, cer: 0.1 };
+    const s = summarize([am, om, { ...am, id: "skip", skipped: "no recording" }]);
+    s.speakers = 4;
+    expect(s.byLanguage.map(l => [l.language, l.meanCer])).toEqual([["am", 0.06], ["om", 0.1]]);
+    const md = resultsMarkdown(s, "2026-11-01T10:00:00Z");
+    expect(md).toContain("| Transcript character error rate (Omnilingual ASR) | 6% | 10% |");
+    expect(md).toContain("from 4 speakers");
+    expect(resultsSentence(s)).toBe("4 speakers, 2 clips, character error rate of 6% in Amharic and 10% in Afaan Oromo; 2 of 2 planted errors caught, 0 false alarms.");
   });
 });

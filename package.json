@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval": "tsx scripts/eval.ts"
+    "eval": "tsx scripts/eval.ts",
+    "review:apply": "tsx scripts/review-apply.ts",
+    "results": "tsx scripts/results.ts"
   },
   "dependencies": {
     "next": "16.4.3",

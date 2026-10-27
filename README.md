@@ -102,11 +102,22 @@ The audio cases run the whole pipeline through `/api/turn` when `EVAL_SERVER_URL
 server with the services configured, and add each transcript's character error rate against the
 sentence read. A case with no recording is reported as skipped and never counts as a miss.
 
-**Measured results over real recordings land here on Nov 1**, from the Oct 31 session described in
-[`docs/recording-session.md`](docs/recording-session.md): transcription accuracy per language,
-critical-fact survival, catch rate on planted errors, false-flag rate, wrong-language detection, and
-the speaker count. No number appears here that was not produced by a run that can be repeated from
-the files in `eval/`.
+### Results
+
+Measured results over real recordings land here on Nov 1, from the Oct 31 session described in
+[`docs/recording-session.md`](docs/recording-session.md). This block is written by `npm run results`
+from `eval/latest.json`; no number appears here that was not produced by a run that can be repeated
+from the files in `eval/`.
+
+<!-- results:start -->
+_No audio cases have run yet (70 skipped). The numbers below are the deterministic core on 15 text cases and say nothing about the models._
+
+| Measure | Value |
+| --- | --- |
+| Critical facts found in the English (recall) | 100% |
+| Planted errors flagged | 11 of 11 |
+| False alarms | 0 |
+<!-- results:end -->
 
 ## Run it
 

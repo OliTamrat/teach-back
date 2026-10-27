@@ -19,7 +19,7 @@ const cases: EvalCase[] = files.flatMap(f => JSON.parse(readFileSync(join(casesD
  */
 const server = (process.env.EVAL_SERVER_URL || "").replace(/\/$/, "");
 async function runAudio(c: EvalCase): Promise<CaseResult> {
-  const skip = (why: string): CaseResult => ({ id: c.id, factsFound: 0, factsTotal: c.truth.length, factsExtra: 0, plantedCaught: 0, plantedTotal: c.planted.length, expectedCaught: 0, expectedTotal: (c.expectFlags ?? []).length, falseAlarms: 0, flags: [], missed: [], skipped: why });
+  const skip = (why: string): CaseResult => ({ id: c.id, language: c.language, audio: true, factsFound: 0, factsTotal: c.truth.length, factsExtra: 0, plantedCaught: 0, plantedTotal: c.planted.length, expectedCaught: 0, expectedTotal: (c.expectFlags ?? []).length, falseAlarms: 0, flags: [], missed: [], skipped: why });
   if (!server) return skip("set EVAL_SERVER_URL to run audio cases");
   const file = join(root, c.audio!);
   if (!existsSync(file)) return skip(`no recording at ${c.audio}`);
@@ -45,6 +45,8 @@ mkdirSync(join(root, "eval", "runs"), { recursive: true });
 writeFileSync(join(root, "eval", "runs", `${stamp}.md`), md);
 writeFileSync(join(root, "eval", "latest.md"), md);
 const s = summarize(results);
+if (process.env.EVAL_SPEAKERS) s.speakers = Number(process.env.EVAL_SPEAKERS) || undefined;
+writeFileSync(join(root, "eval", "latest.json"), JSON.stringify({ ranAt: new Date().toISOString(), files, summary: s, cases: results.map(r => ({ id: r.id, language: r.language, audio: r.audio, factsFound: r.factsFound, factsTotal: r.factsTotal, cer: r.cer ?? null, flags: r.flags.map(f => `${f.severity} ${f.kind}${f.type ? ":" + f.type : ""}`), missed: r.missed, skipped: r.skipped ?? null })) }, null, 1) + "\n");
 console.log(md);
 const bad = results.filter(r => !r.skipped && (r.missed.length || r.falseAlarms));
 if (bad.length) { console.error(`${bad.length} case(s) with misses or false alarms.`); process.exit(1); }
