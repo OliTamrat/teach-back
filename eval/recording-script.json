@@ -11,9 +11,7 @@
    "english": "The doctor told me to take two tablets of 500 milligrams.",
    "text": "ሐኪሙ 500 ሚሊግራም የሆኑ ሁለት ኪኒኖች እንድወስድ ነገረኝ።",
    "answerKey": "2 tablets, 500 mg each",
-   "reviewed": true,
-   "reviewer": "Test Reviewer",
-   "reviewedOn": "2026-10-27"
+   "reviewed": false
   },
   {
    "id": "S02",
@@ -31,11 +29,9 @@
    "spoken": "am",
    "factType": "dose",
    "english": "I inject 20 units of insulin before dinner.",
-   "text": "ከእራት በፊት 20 ዩኒት ኢንሱሊን እወስዳለሁ።",
+   "text": "ከእራት በፊት 20 ዩኒት ኢንሱሊን እወጋለሁ።",
    "answerKey": "20 units; before dinner",
-   "reviewed": true,
-   "reviewer": "Test Reviewer",
-   "reviewedOn": "2026-10-27"
+   "reviewed": false
   },
   {
    "id": "S04",

@@ -95,3 +95,18 @@ instance. The code is the real protection; the caps stop an accident, and on ser
 they are per instance, which is why health shows the counts. Unset, the routes are open and health
 says so, because a demo that asks a judge for a password before the first screen is a demo that
 gets skipped. Revisit the daily cap once the first live turns show what a turn costs.
+
+## 11. Results are generated from a run, never typed (Oct 27)
+
+The README's Results block and the submission sentence are written by `npm run results` from
+`eval/latest.json`, which only `npm run eval` writes. Until audio cases have run, the generator
+writes a placeholder that says so in its first line. This closes the easiest way to overstate a
+hackathon project: a number in the README that no run produced.
+
+## 12. Native review goes through a file, not a chat (Oct 27)
+
+A reviewer's corrections arrive as one JSON file from `/review`, carrying their name and date, and
+are applied by a script that refuses the whole file on any problem. The script and the templates
+then carry `reviewed`, `reviewer` and `reviewedOn`, so the screen can stop calling a question a
+draft, and so a judge can see who signed off which language. Reviewers' names stay in the
+repository data with their permission and never on the website.
