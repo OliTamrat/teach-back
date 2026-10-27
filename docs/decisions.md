@@ -85,3 +85,13 @@ SAM 3.1 finds the label; when it finds several, the person chooses, and when it 
 whole photo is read. The crop is made in the browser from the box the reviewer sees, so the server
 needs no image library and the reader is shown exactly what the reviewer approved. This keeps the
 label path on the same footing as the rest of the product: the model proposes, the person decides.
+
+## 10. A public URL is guarded, open by default, capped regardless (Oct 27)
+
+The live site spends a shared $150 credit on every recorded turn and label photo. Three layers
+guard it: an optional access code asked once per device (judges and reviewers get it with the
+submission; Paste text never needs it), a per-caller limit per minute, and a daily cap per server
+instance. The code is the real protection; the caps stop an accident, and on serverless hosting
+they are per instance, which is why health shows the counts. Unset, the routes are open and health
+says so, because a demo that asks a judge for a password before the first screen is a demo that
+gets skipped. Revisit the daily cap once the first live turns show what a turn costs.

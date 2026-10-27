@@ -174,3 +174,29 @@ button.chip[aria-current] { border-color: var(--accent); color: var(--text); }
 .photo .box[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .photo .box span { position: absolute; left: -1px; top: -1px; font-family: var(--stack-mono); font-size: 11px; padding: 1px 6px; background: var(--warn); color: var(--accent-ink); border-radius: 3px 0 4px 0; }
 .photo .box[aria-pressed="true"] span { background: var(--accent); }
+
+/* phones: one column, full-width actions, nothing scrolls sideways */
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  .top { padding-block: 12px 10px; gap: 8px 16px; }
+  .brand h1 { font-size: 24px; }
+  .session { width: 100%; justify-content: space-between; }
+  .session label { font-size: 12px; }
+  main { padding-block: 14px 48px; gap: 14px; }
+  .panel { padding: 14px; gap: 12px; border-radius: 10px; }
+  .panel h2 { font-size: 20px; }
+  .render { font-size: 17px; line-height: 1.6; }
+  .btn { min-height: 44px; }
+  .btn.small { min-height: 40px; }
+  .row > .btn.primary, .recorder .row > .btn, .final .row > .btn.primary { flex: 1 1 100%; }
+  .flag .vs { grid-template-columns: 1fr; }
+  .question .q { font-size: 20px; }
+  .question .q.draft { font-size: 18px; }
+  .turns li { grid-template-columns: 1fr; gap: 2px; }
+  .script .read { font-size: 26px; }
+  .photo { max-width: 100%; }
+  .tabs { width: 100%; justify-content: stretch; }
+  .tab { flex: 1; text-align: center; }
+  .flag input[type="text"], input[type="password"] { width: 100%; }
+}
+input[type="password"] { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }

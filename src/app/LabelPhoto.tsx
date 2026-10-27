@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { apiPost, refusal } from "./api-client";
 
 /**
  * The label check. A phone photo of the medication label goes to SAM 3.1, which finds the label(s)
@@ -13,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 type Box = { x: number; y: number; w: number; h: number; score?: number; label?: string };
 type Read = { legible: boolean; drug: string; strength: string; instructions: string; text: string };
 
-export default function LabelPhoto({ onText }: { onText: (text: string, read: Read | null) => void }) {
+export default function LabelPhoto({ onText, onAccessNeeded }: { onText: (text: string, read: Read | null) => void; onAccessNeeded?: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [img, setImg] = useState<{ w: number; h: number } | null>(null);
@@ -33,8 +34,11 @@ export default function LabelPhoto({ onText }: { onText: (text: string, read: Re
     setBusy("find"); setNote("");
     try {
       const form = new FormData(); form.append("photo", file, file.name || "label.jpg");
-      const res = await fetch("/api/label/find", { method: "POST", body: form });
-      const j = await res.json() as { boxes?: Box[]; error?: string; ms?: number };
+      const res = await apiPost("/api/label/find", form);
+      const j = await res.json() as { boxes?: Box[]; error?: string; ms?: number; message?: string };
+      const why = refusal(res.status, j);
+      if (why === "access_required") { onAccessNeeded?.(); setNote("This deployment asks for an access code first."); return; }
+      if (why) { setNote(why); return; }
       const found = normalise(j.boxes || []);
       setBoxes(found);
       if (!res.ok) setNote(j.error === "meta_not_configured" ? "SAM 3.1 needs the Meta Model API key. You can still read the whole photo." : `SAM 3.1 did not answer: ${j.error}. You can still read the whole photo.`);
@@ -64,8 +68,11 @@ export default function LabelPhoto({ onText }: { onText: (text: string, read: Re
     try {
       const blob = await cropBlob();
       const form = new FormData(); form.append("image", blob, "label.jpg");
-      const res = await fetch("/api/label/read", { method: "POST", body: form });
-      const j = await res.json() as { label?: Read; text?: string; error?: string; ms?: number };
+      const res = await apiPost("/api/label/read", form);
+      const j = await res.json() as { label?: Read; text?: string; error?: string; ms?: number; message?: string };
+      const why = refusal(res.status, j);
+      if (why === "access_required") { onAccessNeeded?.(); setNote("This deployment asks for an access code first."); return; }
+      if (why) { setNote(why); return; }
       if (!res.ok || !j.label) { setNote(j.error === "meta_not_configured" ? "Reading a label needs the Meta Model API key. Type the label text instead." : `The reader did not answer: ${j.error}`); return; }
       setRead(j.label);
       if (!j.label.legible) { setNote("The reader could not make out the label. Retake the photo closer and in better light, or type the text."); return; }

@@ -6,6 +6,7 @@ import { analyzeTurn, compareWithLabel, languageMismatch } from "@/core/compare"
 import { teachBackQuestion } from "@/core/question";
 import { localizedQuestion } from "@/core/question-i18n";
 import LabelPhoto from "./LabelPhoto";
+import { apiPost, getAccessCode, refusal, setAccessCode } from "./api-client";
 import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
 import type { Fact, Flag, Language } from "@/core/types";
 
@@ -51,6 +52,7 @@ export default function Interpreter() {
   const [audio, setAudio] = useState<AudioMeta | null>(null);
   const [turns, setTurns] = useState<TurnRecord[]>([]);
   const [copied, setCopied] = useState<"summary" | "notes" | null>(null);
+  const [needAccess, setNeedAccess] = useState(false);
 
   // The session log lives on this device only; it is the interpreter's own notes, never sent anywhere.
   useEffect(() => {
@@ -142,6 +144,7 @@ export default function Interpreter() {
         <div className="notice">
           Nothing here advises a patient: it marks what a qualified interpreter must confirm, and a person decides every flag.
         </div>
+        {needAccess && <AccessPrompt onDone={() => setNeedAccess(false)} />}
 
         <div className="grid">
           <section className="panel" aria-labelledby="turn-h">
@@ -153,12 +156,12 @@ export default function Interpreter() {
               </div>
             </div>
             {mode === "record" && (
-              <Recorder language={language} reference={reference} health={health} onTurn={onTurn} />
+              <Recorder language={language} reference={reference} health={health} onTurn={onTurn} onAccessNeeded={() => setNeedAccess(true)} />
             )}
             {mode === "record" && audio && <TurnMeta meta={audio} language={language} />}
             <div className="field labelcheck">
               <label htmlFor="in-label">Medication label, optional. Photograph it, or type what it says; a contradiction with what was spoken is a flag.</label>
-              <LabelPhoto onText={(t) => setLabel(t)} />
+              <LabelPhoto onText={(t) => setLabel(t)} onAccessNeeded={() => setNeedAccess(true)} />
               <textarea id="in-label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Metformin 500 mg. Take one tablet twice a day with food." style={{ minHeight: 56 }} />
               {mode === "record" && checked && <button className="btn small" onClick={() => check()}>Re-check this turn with the label</button>}
             </div>
@@ -271,7 +274,7 @@ export default function Interpreter() {
  * One turn, one recording. MediaRecorder in the browser, the whole clip to /api/turn when it stops.
  * No streaming: a clinic turn is seconds long and the two listeners need the whole utterance.
  */
-function Recorder({ language, reference, health, onTurn }: { language: Language; reference: string; health: Health | null; onTurn: (t: TurnResponse) => void }) {
+function Recorder({ language, reference, health, onTurn, onAccessNeeded }: { language: Language; reference: string; health: Health | null; onTurn: (t: TurnResponse) => void; onAccessNeeded: () => void }) {
   const [state, setState] = useState<"idle" | "recording" | "sending" | "error">("idle");
   const [error, setError] = useState("");
   const [seconds, setSeconds] = useState(0);
@@ -314,8 +317,11 @@ function Recorder({ language, reference, health, onTurn }: { language: Language;
     form.append("language", language);
     form.append("reference", reference);
     try {
-      const res = await fetch("/api/turn", { method: "POST", body: form });
+      const res = await apiPost("/api/turn", form);
       const json = await res.json();
+      const why = refusal(res.status, json);
+      if (why === "access_required") { setState("idle"); onAccessNeeded(); return; }
+      if (why) throw new Error(why);
       if (!res.ok) throw new Error(json.error === "no_listener" ? `Neither listener produced a rendering. ${(json.notes || []).join(" ")}` : json.error || `HTTP ${res.status}`);
       onTurn(json as TurnResponse);
       setState("idle");
@@ -340,6 +346,22 @@ function Recorder({ language, reference, health, onTurn }: { language: Language;
         </p>
       )}
       {state === "error" && <div className="flag" data-sev="crit"><div className="msg">{error}</div></div>}
+    </div>
+  );
+}
+
+/** Shown once when this deployment asks for an access code before spending model calls. */
+function AccessPrompt({ onDone }: { onDone: () => void }) {
+  const [code, setCode] = useState(() => getAccessCode());
+  return (
+    <div className="flag" data-sev="warn">
+      <div className="head"><span className="kind">access code needed</span></div>
+      <div className="msg">This deployment spends a shared model budget, so it asks for an access code once per device. Paste text works without one.</div>
+      <div className="row">
+        <input type="password" value={code} onChange={e => setCode(e.target.value)} placeholder="Access code" aria-label="Access code" autoComplete="off" />
+        <button className="btn small primary" disabled={!code.trim()} onClick={() => { setAccessCode(code.trim()); onDone(); }}>Save on this device</button>
+        <button className="btn small quiet" onClick={onDone}>Not now</button>
+      </div>
     </div>
   );
 }

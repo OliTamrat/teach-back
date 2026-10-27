@@ -31,6 +31,8 @@ can tell what is new.
 
 | 5 | Oct 27 | Label path and the real ASR contract. The Omnilingual adapter now speaks the Kintale Space's actual contract, read from that service's code: raw audio body, `X-Language-3` header, Hugging Face token, segments back (`src/server/asr.ts`, tested with a fake fetch). `GET /api/health?probe=asr` asks the Space whether its model is loaded. Muse Voice Transcribe is wired as a fallback first listener only, used when the Space is asleep or absent and named as such on the turn. Label check: SAM 3.1 finds the label in a phone photo (`src/server/sam.ts`, tolerant parsing of the preview's response), the reviewer picks the box when there are several, the browser crops it, Spark reads what is printed (`/api/label/read`), and the existing label-conflict flag gets its real input (`src/app/LabelPhoto.tsx`). Verified end to end in headless Chromium against local mocks of the Space (real contract), the Responses endpoint and Spark vision: record, find two boxes, pick one, read, re-check, label flag raised. The walkthrough caught a wrong pairing in the label comparison (a tablet count against a strength); doses are now compared count with count and amount with amount. 110 unit tests. The first live calls to the Meta API and the Space are still pending the keys. |
 
+| 6 | Oct 27 | Hardened for a public URL. A guard on every model-spending route (`src/core/guard.ts`, pure and tested): an optional access code asked once per device, a per-caller limit per minute, and a daily cap per instance, so a public link cannot drain the shared credit; `/api/health` reports the guard's state and counts. Security headers, an error page that never shows a stack trace, and one structured log line per call with timings and counts and never the content. Phone layout: one column, full-width actions, no sideways scroll at 390 px, verified in headless Chromium on the interpreter and recording screens. Demo video script with shot list and rules of the cut (`docs/demo-script.md`). 115 unit tests. |
+
 Before the event, a throwaway test harness explored the same ideas (calendar logic, token budgets,
 model ids). None of its code is in this repository; the ideas were re-implemented here from scratch.
 
@@ -58,7 +60,7 @@ npm run typecheck
 npm run dev       # http://localhost:3000
 ```
 
-Copy `.env.example` to `.env.local` for the model keys (`META_MODEL_API_KEY` for both Spark listeners, `ASR_SERVICE_URL` for Omnilingual ASR). The core and the Paste text tab need no key at all; the Record tab works with whichever listener is configured and says which one is missing.
+For a public deployment set `TEACH_BACK_ACCESS_CODE`, so each device is asked once before it may spend model calls; the per-minute and daily caps are on regardless. Copy `.env.example` to `.env.local` for the model keys (`META_MODEL_API_KEY` for both Spark listeners, `ASR_SERVICE_URL` for Omnilingual ASR). The core and the Paste text tab need no key at all; the Record tab works with whichever listener is configured and says which one is missing.
 `GET /api/health` reports what is configured without printing a secret.
 
 ## Layout

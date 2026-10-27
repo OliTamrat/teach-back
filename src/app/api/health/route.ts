@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { asrReady } from "@/server/asr";
+import { accessCodeConfigured, guardStats } from "@/server/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,11 @@ export async function GET(req: Request) {
       token: has("ASR_SERVICE_TOKEN") ? "set" : "missing",
     },
     core: { calendar: "deterministic", facts: "deterministic", flags: "deterministic" },
+    guard: {
+      accessCode: accessCodeConfigured() ? "set" : "open",
+      voiceFallback: process.env.META_VOICE_FALLBACK === "off" ? "off" : "on",
+      ...guardStats(),
+    },
   };
   // ?probe=asr asks the Space whether its model is loaded (a cold start takes 15 to 25 minutes).
   const probe = new URL(req.url).searchParams.get("probe") === "asr" && body.asr.service === "set" ? await asrReady() : undefined;

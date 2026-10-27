@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { guardRequest, logCall } from "@/server/guard";
 import { extractFacts } from "@/core/facts";
 import { analyzeTurn, languageMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
@@ -20,6 +21,8 @@ export const maxDuration = 120;
  * the screen says so rather than pretending.
  */
 export async function POST(req: Request) {
+  const refused = guardRequest(req);
+  if (refused) return refused;
   const form = await req.formData();
   const audio = form.get("audio");
   const language = form.get("language") === "om" ? "om" : "am";
@@ -79,6 +82,7 @@ export async function POST(req: Request) {
   if (mismatch) extra.push(mismatch);
 
   const turn = analyzeTurn(primary, secondary, extra);
+  logCall("turn", { language, firstListener, second: Boolean(secondary), asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null, facts: turn.primary.facts.length, flags: turn.flags.length, crit: turn.flags.filter(f => f.severity === "crit").length, notes: notes.length, bytes: audio.size });
   return NextResponse.json({
     language, reference: iso(reference), detected, notes, firstListener,
     transcript: asr?.text ?? second?.reply?.transcript ?? "",
