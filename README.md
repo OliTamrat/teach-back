@@ -1,87 +1,151 @@
 # Teach-Back
 
-A safety net for medical interpreting in Amharic and Afaan Oromo.
+**A safety net for medical interpreting in Amharic and Afaan Oromo.** Two Meta models hear the
+patient; code marks every fact that would hurt someone if it were wrong; a qualified interpreter
+confirms each one before anything is written down.
 
-When interpreting goes wrong in a clinic, nobody in the room can see it: the patient cannot read
-the English and the clinician cannot hear the Amharic. Teach-Back listens to the patient, renders
-what they said in English, and stops on every fact that would hurt someone if it were wrong, a
-dose, a drug name, a frequency, a date, a "not", a body part, until a qualified interpreter
-confirms it. Two Meta models hear the same audio; where they disagree, the line turns red.
+Live: https://teach-back-phi.vercel.app · Built Oct 26 to Nov 4, 2026 for the **Meta Global AI
+Developer Hackathon** (Indie Developer track, theme Build for Your World) by Oli Tamrat.
+
+## The problem
+
+When interpreting goes wrong in a clinic, nobody in the room can see it. The patient cannot read
+the English and the clinician cannot hear the Amharic. A dropped "not", a dose off by a factor of
+ten, a date read in the wrong calendar: each is invisible to everyone present. Amharic is among the
+top three most-served languages at District of Columbia agencies, after Spanish, and there is no
+certification exam for medical interpreters in it or in Afaan Oromo. The 2025 federal shift toward
+machine translation makes the gap wider, not narrower.
+
+## What Teach-Back does
+
+1. The patient speaks. **Omnilingual ASR** (Meta, open weights, self-hosted) transcribes.
+2. **Muse Spark** renders the transcript in English, and a second Spark call hears the same audio on
+   its own and renders it again. Two listeners, one utterance.
+3. **Code, not a model,** extracts the critical facts from both renderings: dose, frequency, drug,
+   negation, body part and side, date, duration. Ethiopian-calendar dates are converted
+   arithmetically; a date that does not exist is a flag, not a guess.
+4. Where the listeners disagree on a fact, the line turns **red**. A negation heard by one listener
+   only is red too, because the other may have dropped the "not".
+5. A phone photo of the medication label: **SAM 3.1** finds the label, the interpreter picks the box,
+   Spark reads what is printed, and a contradiction with what was spoken is a flag.
+6. A **teach-back question**, from a reviewed template, for the interpreter to ask so the patient
+   says the instruction back in their own words.
+7. The interpreter **confirms or corrects every flag**. Only then is the English line final, and it
+   joins a session log that exports as notes.
 
 **What it is not.** Teach-Back is not a medical device, does not give medical or health advice,
-does not diagnose, and does not tell a patient what to do. It flags lines for a qualified human to
-confirm. Nothing becomes final until a person confirms or corrects each flag.
+does not diagnose, and never addresses a patient. No model output reaches a patient: the only
+sentence meant to be spoken to them is a human-reviewed template, read by the interpreter.
 
-Built for the **Meta Global AI Developer Hackathon**, Oct 26 to Nov 4, 2026, by Oli Tamrat
-(Indie Developer track, theme: Build for Your World).
+## Architecture
 
-## What was built during the hackathon (Oct 26 to Nov 4, 2026)
+```mermaid
+flowchart LR
+  P([Patient speaks]) --> R[Browser recorder]
+  R -->|audio| T[/api/turn]
+  T --> A[Omnilingual ASR 7B<br/>self-hosted Space]
+  T --> B[Muse Spark 1.2<br/>hears the audio]
+  A -->|transcript| S[Muse Spark 1.3<br/>renders English]
+  S -->|English A| C
+  B -->|English B + language| C
+  subgraph C[Deterministic core, no model]
+    F[extract facts] --> K[Ethiopian calendar] --> D[compare listeners<br/>and label] --> Q[teach-back template]
+  end
+  L([Label photo]) --> M[SAM 3.1 finds label] --> X[Interpreter picks box<br/>browser crops] --> V[Spark reads label] --> D
+  C --> U[Interpreter screen:<br/>red flags, confirm or correct]
+  U --> N[Final line, session notes]
+```
 
-Everything in this repository was written during the event. The log is kept day by day so judges
-can tell what is new.
+Everything inside the core is pure and unit-tested (`src/core/`). The server adapters
+(`src/server/`) are the only code that talks to a model, and each is tested against a fake fetch
+that asserts the exact request. Screens decide nothing.
 
-| Day | Date | Shipped |
+## Meta tools, and why each one
+
+| Tool | Role | Why this one |
 | --- | --- | --- |
-| 1 | Oct 26 | Repository created. Deterministic core: Ethiopian calendar conversion (`src/core/calendar.ts`), critical-fact extraction (`facts.ts`), two-listener comparison, label check and language-mismatch flags (`compare.ts`), teach-back question templates (`question.ts`), 71 unit tests. Interpreter screen in text mode (`src/app/Interpreter.tsx`). Health endpoint. |
-| 2 | Oct 26 | Audio path. Browser recorder, one patient turn per clip (`Interpreter.tsx`, Record tab). `POST /api/turn` runs both listeners in parallel: Omnilingual ASR over its HTTP contract (`src/server/asr.ts`) with Muse Spark 1.3 rendering the transcript into English, and Muse Spark 1.2 hearing the same audio directly and reporting language, transcript and English as JSON (`src/server/meta.ts`). Prompts are pure and tested (`src/core/prompts.ts`): they ask the models to render, never to advise or convert a date. Script-and-lexicon language fallback (`src/core/language.ts`). Either listener may be missing; the response says which and why, and the screen shows it. 80 unit tests. Verified end to end against local mocks of both services and a fake microphone in headless Chromium; the real services connect when the keys are in place. |
+| **Omnilingual ASR 7B** (open weights) | First listener | The one speech model with published Amharic (5.7% CER) and Afaan Oromo (7.8% CER) results. Self-hosted on an L4 as a Hugging Face Space, reused from the author's Kintale project; the adapter speaks the Space's real contract. |
+| **Muse Spark 1.3** (Meta Model API) | Renders the transcript into English; reads the label crop | Reasoning model; prompts forbid adding, inferring, summarising or advising, and are unit-tested for that wording. |
+| **Muse Spark 1.2** (Meta Model API) | Second listener, hears the audio directly | Audio input; reports language, transcript and English as JSON. Independent of the first listener, which is what makes a disagreement meaningful. |
+| **SAM 3.1** (Meta Model API, Responses) | Finds the medication label in a phone photo | Concept segmentation from a text prompt, so the reader sees the label and not the counter top, and the interpreter picks when there are several. |
+| **Muse Voice Transcribe 1.0** | Fallback first listener only | Runs when the Space is asleep (a cold start takes 15 to 25 minutes) and is named as such on the turn. Its coverage of these languages is unverified, so it is never the headline. |
 
-| 3 | Oct 26 | Reviewer flow closed. Corrections are written into the English at the fact's own words and the final line appears only when a person has decided every flag (`src/core/session.ts`). Session log kept on the device, exported as notes or JSON. Evaluation harness (`src/core/eval.ts`, `npm run eval`): 15 text cases with known facts and planted errors, scored on fact recall and precision, planted errors flagged and false alarms; the report lands in `eval/latest.md`. Its first run found three extraction gaps and one scoring rule worth changing, all fixed with tests: "twice a day" leaked a one-day duration, "not more than three times a day" lost its ceiling, one spelling of the Afaan Oromo month was unknown, and a dropped "not" was only a warning. 91 unit tests. |
+## What was built during the event
 
-| 4 | Oct 26 | Ready for the Oct 31 recording session. `docs/recording-session.md`: protocol, what is measured, consent form, volunteer brief. `eval/recording-script.json`: 60 scripted clinic sentences (30 Amharic, 30 Afaan Oromo, draft translations awaiting native review) plus 10 wrong-language items, with the English source each truth is derived from. `/record` page: one clip per sentence, saved on the device under its case id. Harness extended to audio cases: 70 generated from the script, run through `/api/turn` when `EVAL_SERVER_URL` is set, scored with transcript character error rate as well as fact survival and flags; skipped, never failed, when a recording or the server is absent. Teach-back questions in Amharic and Afaan Oromo as templates (`src/core/question-i18n.ts`), shown as drafts until a native speaker signs them off. Three more extraction gaps found by the script and fixed with tests. 99 unit tests. |
+All of it. The repository was created on Oct 26 and every line is new work; the day-by-day log is in
+[`docs/build-log.md`](docs/build-log.md) and the reasoning behind each design decision in
+[`docs/decisions.md`](docs/decisions.md). In short:
 
-| 5 | Oct 27 | Label path and the real ASR contract. The Omnilingual adapter now speaks the Kintale Space's actual contract, read from that service's code: raw audio body, `X-Language-3` header, Hugging Face token, segments back (`src/server/asr.ts`, tested with a fake fetch). `GET /api/health?probe=asr` asks the Space whether its model is loaded. Muse Voice Transcribe is wired as a fallback first listener only, used when the Space is asleep or absent and named as such on the turn. Label check: SAM 3.1 finds the label in a phone photo (`src/server/sam.ts`, tolerant parsing of the preview's response), the reviewer picks the box when there are several, the browser crops it, Spark reads what is printed (`/api/label/read`), and the existing label-conflict flag gets its real input (`src/app/LabelPhoto.tsx`). Verified end to end in headless Chromium against local mocks of the Space (real contract), the Responses endpoint and Spark vision: record, find two boxes, pick one, read, re-check, label flag raised. The walkthrough caught a wrong pairing in the label comparison (a tablet count against a strength); doses are now compared count with count and amount with amount. 110 unit tests. The first live calls to the Meta API and the Space are still pending the keys. |
+- **Core:** Ethiopian calendar, fact extraction, two-listener and label comparison, teach-back
+  templates in English, Amharic and Afaan Oromo, session finalisation. 115 unit tests.
+- **Audio path:** browser recorder, Omnilingual ASR adapter, Spark renderer and second listener,
+  language check, Voice Transcribe fallback.
+- **Label path:** SAM 3.1 finder, reviewer-chosen crop, Spark reader, label-conflict flag.
+- **Reviewer flow:** confirm or correct every flag, corrections written into the final line, session
+  log and export, phone layout.
+- **Evaluation harness:** text cases with planted errors, audio cases scored through the live
+  pipeline with character error rate, a report that can be regenerated by anyone.
+- **Recording kit:** 60 scripted sentences plus 10 wrong-language items, a `/record` page, protocol
+  and consent form for the Oct 31 session.
+- **Hardening:** access code, per-caller and daily caps, security headers, structured logs without
+  content.
 
-| 6 | Oct 27 | Hardened for a public URL. A guard on every model-spending route (`src/core/guard.ts`, pure and tested): an optional access code asked once per device, a per-caller limit per minute, and a daily cap per instance, so a public link cannot drain the shared credit; `/api/health` reports the guard's state and counts. Security headers, an error page that never shows a stack trace, and one structured log line per call with timings and counts and never the content. Phone layout: one column, full-width actions, no sideways scroll at 390 px, verified in headless Chromium on the interpreter and recording screens. Demo video script with shot list and rules of the cut (`docs/demo-script.md`). 115 unit tests. |
+## Evaluation
 
-Before the event, a throwaway test harness explored the same ideas (calendar logic, token budgets,
-model ids). None of its code is in this repository; the ideas were re-implemented here from scratch.
+`npm run eval` scores the deterministic core over `eval/cases/` and writes `eval/latest.md`. The
+text cases carry the facts the patient actually stated and the errors planted in one listener's
+rendering; the report gives fact recall and precision, planted errors flagged, and false alarms. The
+harness found seven extraction gaps and two scoring rules worth changing in its first two days, all
+fixed with tests. Text cases test the code, not the models.
 
-## How it works
+The audio cases run the whole pipeline through `/api/turn` when `EVAL_SERVER_URL` points at a
+server with the services configured, and add each transcript's character error rate against the
+sentence read. A case with no recording is reported as skipped and never counts as a miss.
 
-1. **Patient speaks** in Amharic or Afaan Oromo. Omnilingual ASR (Meta, open weights) transcribes.
-2. **Language check.** If the spoken language does not match the session, a warning fires at once.
-3. **English rendering with every critical fact marked:** dose, frequency, drug, negation, body part and side, date, duration. Extraction is code (`src/core/facts.ts`), and every fact keeps the exact words it came from.
-4. **Ethiopian dates are converted by code**, never by a model (`src/core/calendar.ts`). A date that does not exist, such as Pagume 6 in a non-leap year, is a flag, not a guess.
-5. **Second listener.** Muse Spark (Meta Model API) hears the same audio. Where the two listeners disagree on a critical fact, the line turns red.
-6. **Label check.** SAM 3.1 finds the medication label in a phone photo; Muse Spark reads it; a contradiction with what was spoken is a flag.
-7. **Teach-back question** for the interpreter to ask, so the patient says the instruction back in their own words.
-8. **The reviewer confirms or corrects every flag.** Only then is the English summary final.
-
-Steps 1, 2 and 5 are wired (Day 2) and run as soon as `META_MODEL_API_KEY` and `ASR_SERVICE_URL` are set. Step 6 connects on Day 5. Steps 3, 4, 7 and 8 work offline, and the Paste text tab exercises them without any key.
+**Measured results over real recordings land here on Nov 1**, from the Oct 31 session described in
+[`docs/recording-session.md`](docs/recording-session.md): transcription accuracy per language,
+critical-fact survival, catch rate on planted errors, false-flag rate, wrong-language detection, and
+the speaker count. No number appears here that was not produced by a run that can be repeated from
+the files in `eval/`.
 
 ## Run it
 
 ```sh
 npm install
-npm test          # core unit tests (vitest)
-npm run eval      # evaluation harness over eval/cases, report in eval/latest.md
-EVAL_SERVER_URL=http://localhost:3000 npm run eval   # also runs the audio cases through a running server
+npm test            # 115 unit tests (vitest)
+npm run eval        # evaluation harness; report in eval/latest.md
 npm run typecheck
-npm run dev       # http://localhost:3000
+npm run dev         # http://localhost:3000
 ```
 
-For a public deployment set `TEACH_BACK_ACCESS_CODE`, so each device is asked once before it may spend model calls; the per-minute and daily caps are on regardless. Copy `.env.example` to `.env.local` for the model keys (`META_MODEL_API_KEY` for both Spark listeners, `ASR_SERVICE_URL` for Omnilingual ASR). The core and the Paste text tab need no key at all; the Record tab works with whichever listener is configured and says which one is missing.
-`GET /api/health` reports what is configured without printing a secret.
+The core and the **Paste text** tab need no key. Copy `.env.example` to `.env.local` for the rest:
+
+| Variable | What it unlocks |
+| --- | --- |
+| `META_MODEL_API_KEY` | Both Spark listeners, the label reader, SAM 3.1, the Voice Transcribe fallback. One key, base URL `https://api.meta.ai/v1`. |
+| `ASR_SERVICE_URL`, `ASR_SERVICE_TOKEN` | Omnilingual ASR: the Space's own address and a Hugging Face read token. `GET /api/health?probe=asr` says whether its model is loaded. |
+| `TEACH_BACK_ACCESS_CODE` | For a public deployment: each device is asked once before it may spend model calls. Caps per minute and per day are on regardless. |
+
+`GET /api/health` reports what is configured without printing a secret. Environment variables
+reach a Vercel deployment only after a redeploy.
 
 ## Layout
 
 ```
-src/core/      pure, tested logic: calendar, facts, compare, question. No I/O.
-src/app/       Next.js app: the interpreter screen and API routes. Screens call the core; they decide nothing themselves.
+src/core/      pure, tested logic: calendar, facts, compare, question, session, eval, guard. No I/O.
+src/server/    the only code that talks to a model or the Space: asr, meta, sam, guard.
+src/app/       Next.js screens and API routes. They call the core and decide nothing themselves.
+eval/          cases, the recording script, and the latest report.
+docs/          build log, decisions, recording session and consent, demo script, submission text.
 ```
-
-## Evaluation
-
-`npm run eval` scores the deterministic core over `eval/cases/` and writes `eval/latest.md`. The text cases (15 as of Day 3) each carry the facts the patient actually stated and the errors planted in one listener's rendering; the report gives fact recall and precision, planted errors flagged, other expected flags, and false alarms. Text cases test the core without any model; they are not a claim about the models.
-
-The audio cases (70, generated from `eval/recording-script.json`) run the whole pipeline through `/api/turn` when `EVAL_SERVER_URL` points at a server with the services configured, and add the transcript's character error rate against the text read. A case with no recording yet is reported as skipped and never counts as a miss. The recordings come from the Oct 31 session described in `docs/recording-session.md`.
-
-Measured results over real recordings replace the rest of this section on Nov 1. The plan: 60 scripted clinic sentences, 30 Amharic and 30 Afaan Oromo, read by consenting volunteers; report transcription accuracy per language, the critical-fact error rate of unchecked machine interpreting, Teach-Back's catch rate, its false-flag rate, and wrong-language detection. No number appears here that was not produced by a run that can be repeated.
 
 ## Data and consent
 
-No real patient data is used or stored. Test recordings are scripted sentences read by volunteers who sign a consent form; the recordings are released only with that consent.
+No real patient data is used or stored. Test recordings are scripted sentences read by volunteers
+who sign the consent form in `docs/recording-session.md`; recordings are published only with the
+release box ticked, and never with a name. The session log lives in the interpreter's browser and
+nowhere else. Server logs carry timings and counts, never content.
 
 ## Licence
 
-MIT. See `LICENSE`. Open-source components keep their own licences; Meta models are used under their respective terms.
+MIT. See `LICENSE`. Meta models are used under their respective terms.
