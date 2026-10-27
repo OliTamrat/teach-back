@@ -58,8 +58,20 @@ export function compareListeners(primary: Listener, secondary?: Listener): Flag[
  * compared only with their own kind: a patient saying "two tablets of 500 mg" against a label
  * reading "500 mg, take one tablet" conflicts on the count, not on the strength.
  */
-const COUNT_UNITS = new Set(["tablet", "pill", "capsule", "puff", "drop", "teaspoon", "tablespoon", "unit", "inhalation"]);
+// Canonical unit names as facts.ts writes them. Spoonfuls are amounts (they measure a volume, like ml); units of insulin are an amount too.
+const COUNT_UNITS = new Set(["tablet", "puff", "drop", "injection"]);
 function doseKind(value: string): "count" | "amount" { const u = value.split(" ")[1] || ""; return COUNT_UNITS.has(u) ? "count" : "amount"; }
+/** Spoonfuls in millilitres (metric teaspoon 5 ml, tablespoon 15 ml), so "one teaspoon" and "5 ml" agree. */
+function normDose(value: string): string {
+  const [n, u] = value.split(" ");
+  const x = Number(n);
+  if (!Number.isFinite(x)) return norm(value);
+  if (u === "tsp") return `${+(x * 5).toFixed(2)} ml`;
+  if (u === "tbsp") return `${+(x * 15).toFixed(2)} ml`;
+  if (u === "g") return `${+(x * 1000).toFixed(2)} mg`;
+  return norm(value);
+}
+const normValue = (type: FactType, v: string) => type === "dose" ? normDose(v) : norm(v);
 
 export function compareWithLabel(spoken: Fact[], label: Fact[]): Flag[] {
   const flags: Flag[] = [];
@@ -70,8 +82,8 @@ export function compareWithLabel(spoken: Fact[], label: Fact[]): Flag[] {
       // Compare like with like: for doses, only the label values of the same kind count.
       const peers = type === "dose" ? l.filter(g => doseKind(g.value) === doseKind(f.value)) : l;
       if (!peers.length) continue;
-      if (peers.some(g => norm(g.value) === norm(f.value))) continue;
-      const other = peers.find(g => !s.some(h => norm(h.value) === norm(g.value))) ?? peers[0];
+      if (peers.some(g => normValue(type, g.value) === normValue(type, f.value))) continue;
+      const other = peers.find(g => !s.some(h => normValue(type, h.value) === normValue(type, g.value))) ?? peers[0];
       flags.push({ kind: "label_conflict", severity: "crit", type, a: f.source, b: other.source,
         message: `The patient said "${f.source}" but the label reads "${other.source}". Check the ${LABELS[type]} before the patient leaves.` });
     }

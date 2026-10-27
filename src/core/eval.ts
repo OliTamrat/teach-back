@@ -118,8 +118,10 @@ export function summarize(all: CaseResult[]): EvalSummary {
   const withCer = results.filter(r => typeof r.cer === "number");
   const sum = (f: (r: CaseResult) => number) => results.reduce((n, r) => n + f(r), 0);
   const found = sum(r => r.factsFound), total = sum(r => r.factsTotal), extra = sum(r => r.factsExtra);
+  // Once audio has run, the per-language figures describe recorded clips only; text cases never pose as clips.
+  const audioRan = results.some(r => r.audio);
   const byLanguage: LanguageSummary[] = (["am", "om"] as Language[]).map(language => {
-    const rs = results.filter(r => r.language === language);
+    const rs = results.filter(r => r.language === language && (!audioRan || r.audio));
     const f = rs.reduce((n, r) => n + r.factsFound, 0), t = rs.reduce((n, r) => n + r.factsTotal, 0);
     const c = rs.filter(r => typeof r.cer === "number");
     return { language, cases: rs.length, factRecall: t ? f / t : 1, meanCer: c.length ? c.reduce((n, r) => n + (r.cer as number), 0) / c.length : null, expectedCaught: rs.reduce((n, r) => n + r.expectedCaught, 0), expectedTotal: rs.reduce((n, r) => n + r.expectedTotal, 0) };

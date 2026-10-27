@@ -466,21 +466,31 @@ function Rendering({ text, facts, flags, decisions }: { text: string; facts: Fac
     if (related.every(x => (decisions[x.i]?.state ?? "open") !== "open")) return "ok";
     return related.some(x => x.f.severity === "crit") ? "crit" : "warn";
   };
-  const parts: React.ReactNode[] = [];
-  let cursor = 0;
-  facts.forEach((f, i) => {
-    if (f.start < cursor) return;
-    parts.push(text.slice(cursor, f.start));
-    const st = stateOf(i);
-    const fix = correctionOf(i);
-    parts.push(
-      <mark key={i} data-flag={st === "none" ? undefined : st} title={`${TYPE_NAME[f.type]}: ${f.value}${f.note ? ". " + f.note : ""}`}>
-        {fix ? <><s>{text.slice(f.start, f.end)}</s> {fix}</> : text.slice(f.start, f.end)}
-      </mark>,
-    );
-    cursor = f.end;
-  });
-  parts.push(text.slice(cursor));
+  // Spans nest (a negation contains the drug inside it), so marks are rendered recursively: a fact
+  // whose span sits inside another is drawn inside that mark, not dropped.
+  const order = facts.map((f, i) => i).sort((p, q) => facts[p].start - facts[q].start || facts[q].end - facts[p].end);
+  const render = (from: number, to: number, pool: number[]): React.ReactNode[] => {
+    const out: React.ReactNode[] = [];
+    let cursor = from;
+    for (let k = 0; k < pool.length; k++) {
+      const i = pool[k]; const f = facts[i];
+      if (f.start < cursor || f.end > to) continue; // partial overlap: skip, the first mark wins
+      out.push(text.slice(cursor, f.start));
+      const inner: number[] = [];
+      while (k + 1 < pool.length && facts[pool[k + 1]].start >= f.start && facts[pool[k + 1]].end <= f.end) { inner.push(pool[k + 1]); k++; }
+      const st = stateOf(i);
+      const fix = correctionOf(i);
+      out.push(
+        <mark key={i} data-flag={st === "none" ? undefined : st} title={`${TYPE_NAME[f.type]}: ${f.value}${f.note ? ". " + f.note : ""}`}>
+          {fix ? <><s>{text.slice(f.start, f.end)}</s> {fix}</> : render(f.start, f.end, inner)}
+        </mark>,
+      );
+      cursor = f.end;
+    }
+    out.push(text.slice(cursor, to));
+    return out;
+  };
+  const parts = render(0, text.length, order);
   return <p className="render">{parts}</p>;
 }
 

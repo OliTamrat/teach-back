@@ -100,3 +100,16 @@ describe("label comparison matches like with like (found by the Day 5 walkthroug
   });
 });
 
+describe("dose kinds use the canonical units (Day 10 review)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 27 } };
+  it("a teaspoon is an amount and is not set against a count", () => {
+    const spoken = extractFacts("One teaspoon twice a day.", opts);
+    const label = extractFacts("Take 5 ml twice a day.", opts);
+    expect(compareWithLabel(spoken, label)).toEqual([]); // a metric teaspoon is 5 ml
+    expect(compareWithLabel(extractFacts("Two teaspoons twice a day.", opts), label).some(f => f.type === "dose")).toBe(true);
+    expect(compareWithLabel(extractFacts("I take 1 gram.", opts), extractFacts("1000 mg", opts))).toEqual([]);
+    const agree = compareWithLabel(extractFacts("Take two tablets.", opts), extractFacts("500 mg. Take two tablets.", opts));
+    expect(agree).toEqual([]);
+  });
+});
+

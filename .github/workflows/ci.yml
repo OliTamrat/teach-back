@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Evaluation harness (text cases; audio cases are skipped without a server)
+        run: npm run eval
+      - name: Build
+        run: npm run build
+      - name: Results block is in sync with the latest run
+        run: |
+          npm run results >/dev/null
+          git diff --exit-code -- README.md docs/submission.md || (echo "README results block is out of date: run npm run eval && npm run results and commit" && exit 1)

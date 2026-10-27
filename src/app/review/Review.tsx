@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { QUESTION_TEMPLATES_EN } from "@/core/question";
+import { FACT_TYPES } from "@/core/review";
 
 type Lang = "am" | "om";
 type Item = { id: string; spoken: Lang; english: string; text: string; factType: string; reviewed: boolean; reviewer?: string };
 type Templates = Record<Lang, { reviewed: boolean; reviewer?: string } & Record<string, string | boolean | undefined>>;
 type State = { state: "approved" | "changed"; text?: string; note?: string };
 const LANG: Record<Lang, string> = { am: "Amharic", om: "Afaan Oromo" };
-const FACT_TYPES = ["dose", "frequency", "drug", "negation", "body_part", "date", "duration"];
 const TYPE_LABEL: Record<string, string> = { dose: "dose", frequency: "frequency", drug: "drug name", negation: "negation", body_part: "body part", date: "date", duration: "duration" };
 const EXAMPLE: Record<string, string> = { dose: "two tablets", frequency: "three times a day", drug: "metformin", negation: "I am not allergic to penicillin", body_part: "left knee", date: "Tikimt 3", duration: "three weeks" };
 
@@ -87,17 +88,7 @@ export default function Review({ items, templates }: { items: Item[]; templates:
   );
 }
 
-function englishQuestion(t: string): string {
-  return {
-    dose: "How much will you take each time? Please tell me in your own words.",
-    frequency: "How many times a day will you take it, and when?",
-    drug: "Which medicine is this? Please say its name back to me: is it {source}?",
-    negation: "I want to be sure I heard you. You said \"{source}\". Is that right?",
-    date: "Which date did you mean by \"{source}\"? Which month and year, in the calendar you use?",
-    body_part: "Please show me where.",
-    duration: "For how long? You said \"{source}\".",
-  }[t] || "";
-}
+function englishQuestion(t: string): string { return QUESTION_TEMPLATES_EN[t as keyof typeof QUESTION_TEMPLATES_EN] || ""; }
 
 function ReviewRow({ id, label, lang, english, draft, state, onChange }: { id: string; label: string; lang: Lang; english: string; draft: string; state?: State; onChange: (s: State | null) => void }) {
   const [editing, setEditing] = useState(false);

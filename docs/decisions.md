@@ -110,3 +110,25 @@ are applied by a script that refuses the whole file on any problem. The script a
 then carry `reviewed`, `reviewer` and `reviewedOn`, so the screen can stop calling a question a
 draft, and so a judge can see who signed off which language. Reviewers' names stay in the
 repository data with their permission and never on the website.
+
+## 13. An outside review before anything goes live (Oct 27)
+
+Before the first live call, the source was reviewed by a reader who had not written it. Ten
+findings came back and every one was a real defect, several of them the kind a demo would hit: a
+decimal comma turning 2,5 mg into 25 mg, a corrected dose vanishing from the final line because the
+negation around it was corrected too, a third language never raising a flag. All are fixed with
+tests that name the finding. The lesson is recorded so it is repeated: the author's own walkthroughs
+test what the author imagined, and the week before submission is when someone else should read it.
+
+## 14. Spoonfuls and grams are normalised before comparison (Oct 27)
+
+A metric teaspoon is 5 ml and a tablespoon 15 ml; a gram is 1,000 mg. The comparison converts
+these before deciding whether a spoken dose and a printed one agree, because "one teaspoon" against
+"5 ml" is agreement, not a conflict, and a flag that cries wolf there teaches an interpreter to
+ignore the red ones. No other unit is converted: a tablet count is never set against a strength.
+
+## 15. CI keeps the README honest (Oct 27)
+
+Every push runs the tests, the typecheck, the harness and the build, and then regenerates the
+Results block and fails if the README would change. A number can enter the README only through a
+run, and the check makes sure nobody edits it by hand afterwards.

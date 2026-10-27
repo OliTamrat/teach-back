@@ -4,6 +4,8 @@
 patient; code marks every fact that would hurt someone if it were wrong; a qualified interpreter
 confirms each one before anything is written down.
 
+[![CI](https://github.com/OliTamrat/teach-back/actions/workflows/ci.yml/badge.svg)](https://github.com/OliTamrat/teach-back/actions/workflows/ci.yml)
+
 Live: https://teach-back-phi.vercel.app · Built Oct 26 to Nov 4, 2026 for the **Meta Global AI
 Developer Hackathon** (Indie Developer track, theme Build for Your World) by Oli Tamrat.
 
@@ -77,7 +79,7 @@ All of it. The repository was created on Oct 26 and every line is new work; the 
 [`docs/decisions.md`](docs/decisions.md). In short:
 
 - **Core:** Ethiopian calendar, fact extraction, two-listener and label comparison, teach-back
-  templates in English, Amharic and Afaan Oromo, session finalisation. 115 unit tests.
+  templates in English, Amharic and Afaan Oromo, session finalisation. 124 unit tests.
 - **Audio path:** browser recorder, Omnilingual ASR adapter, Spark renderer and second listener,
   language check, Voice Transcribe fallback.
 - **Label path:** SAM 3.1 finder, reviewer-chosen crop, Spark reader, label-conflict flag.
@@ -123,7 +125,7 @@ _No audio cases have run yet (70 skipped). The numbers below are the determinist
 
 ```sh
 npm install
-npm test            # 115 unit tests (vitest)
+npm test            # unit tests (vitest)
 npm run eval        # evaluation harness; report in eval/latest.md
 npm run typecheck
 npm run dev         # http://localhost:3000

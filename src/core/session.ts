@@ -45,11 +45,14 @@ export function finalSummary(english: string, facts: Fact[], flags: Flag[], deci
     if (f.factIndex !== undefined && facts[f.factIndex]) byFact.set(f.factIndex, d.correction);
     else notes.push(d.correction);
   });
+  // Spans can nest: a negation ("not allergic to penicillin") contains the drug inside it. A
+  // correction to the outer span replaces the whole of it, so any correction to a span inside it
+  // cannot be placed in the text and is kept as a note instead of being silently overwritten.
+  const corrected = [...byFact.entries()].map(([idx, correction]) => ({ idx, correction, f: facts[idx] }));
+  const placed = corrected.filter(c => !corrected.some(o => o.idx !== c.idx && o.f.start <= c.f.start && o.f.end >= c.f.end && (o.f.end - o.f.start) > (c.f.end - c.f.start)));
+  for (const c of corrected) if (!placed.includes(c)) notes.push(`${c.f.type.replace("_", " ")} "${c.f.source}" corrected to "${c.correction}"`);
   let out = english;
-  [...byFact.entries()].sort((x, y) => y[0] - x[0]).forEach(([idx, correction]) => {
-    const f = facts[idx];
-    out = out.slice(0, f.start) + correction + out.slice(f.end);
-  });
+  placed.sort((x, y) => y.f.start - x.f.start).forEach(({ f, correction }) => { out = out.slice(0, f.start) + correction + out.slice(f.end); });
   if (notes.length) out += ` (Reviewer: ${notes.join("; ")})`;
   return out;
 }

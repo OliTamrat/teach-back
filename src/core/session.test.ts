@@ -63,4 +63,20 @@ describe("session notes", () => {
     expect(notes).toContain("confirmed: date");
     expect(notes).toContain("not medical advice");
   });
+
+  it("a correction inside a corrected outer span is kept as a note, not overwritten", () => {
+    const english = "I do not take two tablets of metformin.";
+    const facts = extractFacts(english, ref);
+    const neg = facts.findIndex(f => f.type === "negation"), dose = facts.findIndex(f => f.type === "dose"), drug = facts.findIndex(f => f.type === "drug");
+    expect(neg).toBeGreaterThanOrEqual(0); expect(dose).toBeGreaterThanOrEqual(0); expect(drug).toBeGreaterThanOrEqual(0);
+    const flags = [neg, dose, drug].map(i => ({ kind: "listener_disagreement" as const, severity: "crit" as const, type: facts[i].type, message: "", factIndex: i }));
+    const out = finalSummary(english, facts, flags, { 0: { state: "corrected", correction: "I take" }, 1: { state: "corrected", correction: "one tablet" }, 2: { state: "corrected", correction: "glipizide" } });
+    expect(out.startsWith("I I take.")).toBe(true);
+    expect(out).toContain('dose "two tablets" corrected to "one tablet"');
+    expect(out).toContain('drug "metformin" corrected to "glipizide"');
+    // inner corrections alone are placed normally
+    const inner = finalSummary(english, facts, flags, { 1: { state: "corrected", correction: "one tablet" }, 2: { state: "corrected", correction: "glipizide" } });
+    expect(inner).toBe("I do not take one tablet of glipizide.");
+  });
 });
+

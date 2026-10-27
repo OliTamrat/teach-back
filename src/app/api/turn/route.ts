@@ -58,7 +58,9 @@ export async function POST(req: Request) {
       try { english = (await renderEnglish(asr.text, language as Language)).text; }
       catch (e) { notes.push(`Rendering failed: ${msg(e)}`); }
     } else notes.push("No English rendering without the Meta Model API key");
-    primary = { name: firstListener, english, facts: english ? extractFacts(english, { reference, language: language as Language }) : [] };
+    // No rendering, no listener: an empty primary would turn every fact the second listener heard into a false flag.
+    if (english) primary = { name: firstListener, english, facts: extractFacts(english, { reference, language: language as Language }) };
+    else notes.push("The first listener transcribed but produced no English rendering");
   }
 
   let secondary: Listener | undefined;
@@ -78,8 +80,13 @@ export async function POST(req: Request) {
     const guess = detectLanguage(second?.reply?.transcript || asr?.text || "");
     detected = { ...guess, by: "script heuristic" };
   }
-  const mismatch = languageMismatch(language as Language, detected.language, detected.confidence);
-  if (mismatch) extra.push(mismatch);
+  if (second?.reply?.language === "other" && second.reply.confidence >= 0.6) {
+    // A third language is as much a mismatch as the other of the two, and the script heuristic cannot see it.
+    extra.push({ kind: "language_mismatch", severity: "crit", message: `The second listener heard neither Amharic nor Afaan Oromo (confidence ${Math.round(second.reply.confidence * 100)}%). Check which language the patient is speaking before going on.` });
+  } else {
+    const mismatch = languageMismatch(language as Language, detected.language, detected.confidence);
+    if (mismatch) extra.push(mismatch);
+  }
 
   const turn = analyzeTurn(primary, secondary, extra);
   logCall("turn", { language, firstListener, second: Boolean(secondary), asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null, facts: turn.primary.facts.length, flags: turn.flags.length, crit: turn.flags.filter(f => f.severity === "crit").length, notes: notes.length, bytes: audio.size });

@@ -15,6 +15,7 @@ export default function Recorder({ items }: { items: Item[] }) {
   const rec = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsed = useRef(0);
   const list = items.filter(it => filter === "all" || it.spoken === filter);
   const item = list[Math.min(i, list.length - 1)];
 
@@ -35,10 +36,10 @@ export default function Recorder({ items }: { items: Item[] }) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a"); a.href = url; a.download = `${item.id}.${ext}`; a.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setDone(d => ({ ...d, [item.id]: seconds }));
+        setDone(d => ({ ...d, [item.id]: elapsed.current }));
       };
-      r.start(); rec.current = r; setSeconds(0);
-      timer.current = setInterval(() => setSeconds(s => s + 1), 1000);
+      r.start(); rec.current = r; setSeconds(0); elapsed.current = 0;
+      timer.current = setInterval(() => { elapsed.current += 1; setSeconds(elapsed.current); }, 1000);
       setState("recording");
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }

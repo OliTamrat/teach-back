@@ -16,7 +16,11 @@ const NUM = "(\\d+(?:[.,]\\d+)?|half(?: a| an)?|a|an|one|two|three|four|five|six
 
 export function parseNumber(s: string): number | null {
   const t = s.trim().toLowerCase();
-  if (/^\d/.test(t)) return parseFloat(t.replace(/,/g, ""));
+  if (/^\d/.test(t)) {
+    // "1,000" is a thousands separator; "2,5" is a decimal comma (European and Ethiopian labels both use it).
+    if (/^\d{1,3}(,\d{3})+$/.test(t)) return parseFloat(t.replace(/,/g, ""));
+    return parseFloat(t.replace(",", "."));
+  }
   if (t.startsWith("half")) return 0.5;
   return t in NUMBER_WORDS ? NUMBER_WORDS[t] : null;
 }
@@ -144,7 +148,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
 
   // --- Ethiopian-calendar dates: <month> <day>[, <year>]
   const monthAlt = Object.keys(MONTH_ALIASES).filter(k => /^[a-z]/.test(k)).sort((a, b) => b.length - a.length).join("|");
-  for (const m of text.matchAll(new RegExp(`\\b(${monthAlt})\\s+(\\d{1,2})(?:(?:,|\\s+bara|\\s+ቀን)?\\s+(\\d{4}))?(?:\\s*(?:e\\.?c\\.?|ዓ\\.?ም\\.?))?`, "gi"))) {
+  for (const m of text.matchAll(new RegExp(`\\b(${monthAlt})\\s+(\\d{1,2})(?!\\d)(?:(?:,|\\s+bara|\\s+ቀን)?\\s+(\\d{4}))?(?:\\s*(?:e\\.?c\\.?|ዓ\\.?ም\\.?))?`, "gi"))) {
     const month = MONTH_ALIASES[m[1].toLowerCase()];
     const day = parseInt(m[2], 10);
     const year = m[3] ? parseInt(m[3], 10) : null;

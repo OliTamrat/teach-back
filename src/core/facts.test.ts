@@ -167,3 +167,16 @@ describe("found by the recording script (Day 4)", () => {
   });
 });
 
+describe("found by the Day 10 code review", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 27 } };
+  const vals = (s: string) => extractFacts(s, opts).map(f => `${f.type}=${f.value}`);
+  it("a decimal comma is a decimal, a thousands comma is not", () => {
+    expect(vals("Take 2,5 mg of warfarin.")).toContain("dose=2.5 mg");
+    expect(vals("I take 1,000 milligrams of metformin.")).toContain("dose=1000 mg");
+  });
+  it("a month followed by a bare year is not a day", () => {
+    expect(vals("She was born in Meskerem 2019.").filter(v => v.startsWith("date"))).toEqual([]);
+    expect(vals("The pain began on Meskerem 30.")).toContain("date=2026-10-10");
+  });
+});
+

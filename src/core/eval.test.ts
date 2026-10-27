@@ -43,12 +43,13 @@ describe("evaluation harness", () => {
     expect(resultsSentence(text)).toBeNull();
     const am = { ...runCase(cases[0]), language: "am" as const, audio: true, cer: 0.06 };
     const om = { ...runCase(cases[0]), language: "om" as const, audio: true, cer: 0.1 };
-    const s = summarize([am, om, { ...am, id: "skip", skipped: "no recording" }]);
+    const textCase = { ...runCase(cases[0]), id: "text-am", language: "am" as const, audio: false };
+    const s = summarize([am, om, textCase, { ...am, id: "skip", skipped: "no recording" }]);
     s.speakers = 4;
-    expect(s.byLanguage.map(l => [l.language, l.meanCer])).toEqual([["am", 0.06], ["om", 0.1]]);
+    expect(s.byLanguage.map(l => [l.language, l.cases, l.meanCer])).toEqual([["am", 1, 0.06], ["om", 1, 0.1]]);
     const md = resultsMarkdown(s, "2026-11-01T10:00:00Z");
     expect(md).toContain("| Transcript character error rate (Omnilingual ASR) | 6% | 10% |");
     expect(md).toContain("from 4 speakers");
-    expect(resultsSentence(s)).toBe("4 speakers, 2 clips, character error rate of 6% in Amharic and 10% in Afaan Oromo; 2 of 2 planted errors caught, 0 false alarms.");
+    expect(resultsSentence(s)).toBe("4 speakers, 2 clips, character error rate of 6% in Amharic and 10% in Afaan Oromo; 3 of 3 planted errors caught, 0 false alarms.");
   });
 });
