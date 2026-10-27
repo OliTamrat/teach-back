@@ -4,8 +4,8 @@ import { analyzeTurn, languageMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
 import { detectLanguage } from "@/core/language";
 import type { Flag, Language, Listener } from "@/core/types";
-import { asrConfigured, transcribe } from "@/server/asr";
-import { listen, metaConfigured, renderEnglish } from "@/server/meta";
+import { AsrError, asrConfigured, transcribe } from "@/server/asr";
+import { listen, metaConfigured, renderEnglish, voiceTranscribe } from "@/server/meta";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -31,10 +31,22 @@ export async function POST(req: Request) {
   const buf = Buffer.from(await audio.arrayBuffer());
   const notes: string[] = [];
 
-  const [asr, second] = await Promise.all([
-    asrConfigured() ? transcribe(audio, language as Language, `turn.${format}`).catch(e => { notes.push(`ASR failed: ${msg(e)}`); return null; }) : (notes.push("ASR service not configured"), Promise.resolve(null)),
+  let firstListener = "Listener A (Omnilingual ASR)";
+  const [asrResult, second] = await Promise.all([
+    asrConfigured()
+      ? transcribe(audio, language as Language).catch(e => { notes.push(e instanceof AsrError ? `Omnilingual ASR: ${e.hint}` : `Omnilingual ASR failed: ${msg(e)}`); return null; })
+      : (notes.push("Omnilingual ASR not configured (ASR_SERVICE_URL)"), Promise.resolve(null)),
     metaConfigured() ? listen(buf, format, language as Language).catch(e => { notes.push(`Second listener failed: ${msg(e)}`); return null; }) : (notes.push("Meta Model API key not configured"), Promise.resolve(null)),
   ]);
+  let asr = asrResult;
+  // Fallback first listener: Meta's hosted Voice Transcribe, when the Space is asleep or absent. Said on the turn, never silently.
+  if (!asr && metaConfigured() && process.env.META_VOICE_FALLBACK !== "off") {
+    try {
+      const v = await voiceTranscribe(buf, format, language as Language);
+      if (v.text) { asr = { text: v.text, segments: [], ms: v.ms }; firstListener = "Listener A (Muse Voice Transcribe, fallback)"; notes.push("First listener was Muse Voice Transcribe, whose Amharic and Afaan Oromo coverage is unverified"); }
+      else notes.push("Voice Transcribe returned no text");
+    } catch (e) { notes.push(`Voice Transcribe failed: ${msg(e)}`); }
+  }
 
   let primary: Listener | null = null;
   if (asr && asr.text) {
@@ -43,7 +55,7 @@ export async function POST(req: Request) {
       try { english = (await renderEnglish(asr.text, language as Language)).text; }
       catch (e) { notes.push(`Rendering failed: ${msg(e)}`); }
     } else notes.push("No English rendering without the Meta Model API key");
-    primary = { name: "Listener A (Omnilingual ASR)", english, facts: english ? extractFacts(english, { reference, language: language as Language }) : [] };
+    primary = { name: firstListener, english, facts: english ? extractFacts(english, { reference, language: language as Language }) : [] };
   }
 
   let secondary: Listener | undefined;
@@ -68,7 +80,7 @@ export async function POST(req: Request) {
 
   const turn = analyzeTurn(primary, secondary, extra);
   return NextResponse.json({
-    language, reference: iso(reference), detected, notes,
+    language, reference: iso(reference), detected, notes, firstListener,
     transcript: asr?.text ?? second?.reply?.transcript ?? "",
     secondTranscript: second?.reply?.transcript ?? "",
     timings: { asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null },

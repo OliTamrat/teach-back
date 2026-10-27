@@ -61,3 +61,27 @@ The harness carries 70 audio cases from the day the script exists, before a sing
 A missing recording or an unconfigured server marks the case skipped and leaves it out of every
 rate, so the text cases keep guarding the core while the audio set fills in. A skipped case is
 listed by name in the report, so nobody can mistake an empty audio set for a passing one.
+
+## 7. The ASR adapter follows the service's code, not anyone's memory of it (Oct 27)
+
+Two independent descriptions of the Omnilingual Space's contract, the Day 2 adapter and a partner's
+resource pack, both said multipart upload with a `language` form field. The service's own code
+says otherwise: raw audio body, `X-Language-3: amh_Ethi | orm_Latn`, a Hugging Face read token,
+and segments with no top-level text. The adapter was rewritten to that and tested against a fake
+fetch that asserts every header. Rule going forward: an integration is written from the other
+side's code or a live call, never from a summary.
+
+## 8. Voice Transcribe is a named fallback, never the headline listener (Oct 27)
+
+The Space sleeps and takes 15 to 25 minutes to wake. A demo or a judge's test that lands on a cold
+Space would show nothing, so Meta's hosted Voice Transcribe runs as the first listener only when
+Omnilingual is asleep or unconfigured, and the turn says so in plain words. Its Amharic and Afaan
+Oromo coverage is unverified, which is why it cannot be the story. Set `META_VOICE_FALLBACK=off`
+to disable it entirely, for an evaluation run that must measure Omnilingual alone.
+
+## 9. The reviewer picks the label box; the browser crops (Oct 27)
+
+SAM 3.1 finds the label; when it finds several, the person chooses, and when it finds none, the
+whole photo is read. The crop is made in the browser from the box the reviewer sees, so the server
+needs no image library and the reader is shown exactly what the reviewer approved. This keeps the
+label path on the same footing as the rest of the product: the model proposes, the person decides.

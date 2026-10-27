@@ -46,3 +46,32 @@ export function parseListenReply(raw: string): ListenReply | null {
     return null;
   }
 }
+
+/** Label reader: Spark looks at the (cropped) photo of a medication label and reports what is printed, as JSON. */
+export function labelReadPrompt(): string {
+  return [
+    "This is a photo of a medication label. Report only what is printed on it, as JSON, no prose, with exactly these keys:",
+    '{"legible":true|false,"drug":"<name as printed, or empty>","strength":"<e.g. 500 mg, or empty>","instructions":"<the directions sentence as printed, or empty>","text":"<all legible text, in reading order>"}',
+    "Rules: copy numbers, units and names exactly as printed; do not correct, infer, expand abbreviations or add anything that is not visible;",
+    "if the label is unreadable, set legible to false and the other fields to empty strings.",
+  ].join("\n");
+}
+
+export type LabelReply = { legible: boolean; drug: string; strength: string; instructions: string; text: string };
+
+export function parseLabelReply(raw: string): LabelReply | null {
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const j = JSON.parse(m[0]) as Partial<LabelReply>;
+    const str = (v: unknown) => String(v ?? "").trim();
+    return { legible: Boolean(j.legible), drug: str(j.drug), strength: str(j.strength), instructions: str(j.instructions), text: str(j.text) };
+  } catch {
+    return null;
+  }
+}
+
+/** The label as one English line for the fact extractor: drug, strength, then the directions. */
+export function labelAsText(l: LabelReply): string {
+  return [l.drug, l.strength, l.instructions].filter(Boolean).join(" ").trim() || l.text;
+}

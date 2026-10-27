@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { asrReady } from "@/server/asr";
 
 export const dynamic = "force-dynamic";
 
 /** Reports what is configured without ever printing a secret. */
-export async function GET() {
+export async function GET(req: Request) {
   const has = (k: string) => Boolean(process.env[k] && process.env[k]!.trim());
   const body = {
     ok: true,
@@ -22,6 +23,8 @@ export async function GET() {
     },
     core: { calendar: "deterministic", facts: "deterministic", flags: "deterministic" },
   };
+  // ?probe=asr asks the Space whether its model is loaded (a cold start takes 15 to 25 minutes).
+  const probe = new URL(req.url).searchParams.get("probe") === "asr" && body.asr.service === "set" ? await asrReady() : undefined;
   const ready = body.metaModelApi.key === "set" && body.asr.service === "set";
-  return NextResponse.json({ ...body, ready }, { status: ready ? 200 : 503 });
+  return NextResponse.json({ ...body, asr: { ...body.asr, ...(probe ? { probe } : {}) }, ready }, { status: ready ? 200 : 503 });
 }

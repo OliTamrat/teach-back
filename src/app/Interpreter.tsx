@@ -5,6 +5,7 @@ import { extractFacts } from "@/core/facts";
 import { analyzeTurn, compareWithLabel, languageMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
 import { localizedQuestion } from "@/core/question-i18n";
+import LabelPhoto from "./LabelPhoto";
 import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
 import type { Fact, Flag, Language } from "@/core/types";
 
@@ -155,6 +156,12 @@ export default function Interpreter() {
               <Recorder language={language} reference={reference} health={health} onTurn={onTurn} />
             )}
             {mode === "record" && audio && <TurnMeta meta={audio} language={language} />}
+            <div className="field labelcheck">
+              <label htmlFor="in-label">Medication label, optional. Photograph it, or type what it says; a contradiction with what was spoken is a flag.</label>
+              <LabelPhoto onText={(t) => setLabel(t)} />
+              <textarea id="in-label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Metformin 500 mg. Take one tablet twice a day with food." style={{ minHeight: 56 }} />
+              {mode === "record" && checked && <button className="btn small" onClick={() => check()}>Re-check this turn with the label</button>}
+            </div>
             {mode === "paste" && <>
             <div className="field">
               <label htmlFor="in-a">Listener A rendering (Omnilingual ASR path)</label>
@@ -163,10 +170,6 @@ export default function Interpreter() {
             <div className="field">
               <label htmlFor="in-b">Listener B rendering (second listener), optional</label>
               <textarea id="in-b" value={b} onChange={e => setB(e.target.value)} />
-            </div>
-            <div className="field">
-              <label htmlFor="in-label">Medication label text, optional (SAM 3.1 and Spark read this from a photo on Day 5)</label>
-              <textarea id="in-label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Metformin 500 mg. Take one tablet twice a day with food." style={{ minHeight: 56 }} />
             </div>
             <div className="row">
               <label className="hint">Detected spoken language

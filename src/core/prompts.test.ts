@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { listenPrompt, parseListenReply, renderPrompt } from "./prompts";
+import { labelAsText, labelReadPrompt, listenPrompt, parseLabelReply, parseListenReply, renderPrompt } from "./prompts";
 
 describe("prompts never ask a model to decide", () => {
   it("rendering keeps dates unconverted and forbids advice", () => {
@@ -31,3 +31,19 @@ describe("parsing the second listener", () => {
     expect(parseListenReply("no json here")).toBeNull();
   });
 });
+
+describe("label reading", () => {
+  it("asks for what is printed and forbids inference", () => {
+    const p = labelReadPrompt();
+    expect(p).toContain("exactly as printed");
+    expect(p).toContain("do not correct, infer");
+  });
+  it("parses the reply and lines it up for the fact extractor", () => {
+    const r = parseLabelReply('```json\n{"legible":true,"drug":"Metformin","strength":"500 mg","instructions":"Take one tablet twice a day with food.","text":"Metformin 500 mg ..."}\n```')!;
+    expect(r.drug).toBe("Metformin");
+    expect(labelAsText(r)).toBe("Metformin 500 mg Take one tablet twice a day with food.");
+    expect(parseLabelReply('{"legible":false,"drug":"","strength":"","instructions":"","text":""}')?.legible).toBe(false);
+    expect(parseLabelReply("nothing")).toBeNull();
+  });
+});
+
