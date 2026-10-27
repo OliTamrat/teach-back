@@ -23,6 +23,21 @@ import type { Fact, Flag, Language } from "@/core/types";
 const SAMPLE_A = "The doctor told me to take two tablets of 500 milligrams three times a day after meals. I am not allergic to penicillin. The fever started on Tikimt 3. The pain is in my left knee.";
 const SAMPLE_B = "The doctor told me to take two tablets of 50 milligrams three times a day after meals. I am allergic to penicillin. The fever started on Tikimt 13. The pain is in my left knee.";
 const SAMPLE_LABEL = "";
+const TOUR_KEY = "teach-back-toured";
+
+/**
+ * The guided first visit: a judge on a laptop in a quiet room, no microphone, under a minute to the
+ * dropped "not". Each step loads a real failure pattern into Paste text and checks it; the screen
+ * does the rest exactly as it would for a recorded turn.
+ */
+type TourStep = { title: string; body: string; a?: string; b?: string; label?: string; language?: Language; action?: "record" };
+const TOUR: TourStep[] = [
+  { title: "Two listeners, one sentence", body: "A patient said this in Amharic. Two Meta models rendered it in English independently. Code compared every critical fact. Where they disagree, the line is red. The second listener dropped the \"not\" before \"allergic\": that is the most dangerous error in interpreting, and it is the first flag.", a: SAMPLE_A, b: SAMPLE_B, language: "am" },
+  { title: "A person decides every flag", body: "Nothing is final until an interpreter confirms or corrects each red line with the patient. Try it: press Confirmed with patient on one flag, or Correct it and type what the patient actually said. The final English line appears only when none are open." },
+  { title: "Dates are arithmetic, not guesses", body: "Ethiopian dates are converted by code and shown in both calendars. This one, Pagume 6 in the year 2018, does not exist, because 2018 is not a leap year. A model would round it; Teach-Back flags it.", a: "The baby was born on Pagume 6 2018. She has had a fever for two days.", b: "The baby was born on Pagume 6 2018. She has had a fever for two days.", language: "am" },
+  { title: "The label check", body: "A phone photo of the medication label goes to SAM 3.1, which finds the label; Spark reads what is printed; code compares it with what was said. Here the label is typed in so you can see the comparison without a camera: two tablets spoken, one tablet printed.", a: "I take two tablets of metformin twice a day.", b: "I take two tablets of metformin twice a day.", label: "Metformin 500 mg. Take one tablet twice a day with food.", language: "am" },
+  { title: "Now with a microphone", body: "The Record tab does all of this from a few seconds of speech: Omnilingual ASR and Muse Spark hear the patient, and the same code marks the facts. Teach-Back never advises a patient and never speaks to one; the only sentence meant for them is a human-reviewed question the interpreter reads aloud.", action: "record" },
+];
 
 const LANG_NAME: Record<Language, string> = { am: "Amharic", om: "Afaan Oromo" };
 const SESSION_KEY = "teach-back-session";
@@ -53,6 +68,29 @@ export default function Interpreter() {
   const [turns, setTurns] = useState<TurnRecord[]>([]);
   const [copied, setCopied] = useState<"summary" | "notes" | null>(null);
   const [needAccess, setNeedAccess] = useState(false);
+  const [tour, setTour] = useState<number | null>(null);
+  const flagsHeading = useRef<HTMLHeadingElement | null>(null);
+
+  // First visit: open the walkthrough, once per device.
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      try { if (!localStorage.getItem(TOUR_KEY) && !new URLSearchParams(location.search).has("notour")) startTour(0); } catch { /* ignore */ }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  function startTour(step: number) {
+    const st = TOUR[step]; if (!st) return;
+    setTour(step);
+    if (st.action === "record") { setMode("record"); setChecked(null); setDecisions({}); return; }
+    if (st.a !== undefined) {
+      setMode("paste");
+      if (st.language) setLanguage(st.language);
+      setA(st.a); setB(st.b ?? ""); setLabel(st.label ?? ""); setSpokenLanguage("");
+      setChecked({ a: st.a, b: st.b ?? "", label: st.label ?? "", language: st.language ?? language, spoken: "", reference });
+      setDecisions({});
+    }
+  }
+  function endTour() { setTour(null); try { localStorage.setItem(TOUR_KEY, "1"); } catch { /* ignore */ } }
 
   // The session log lives on this device only; it is the interpreter's own notes, never sent anywhere.
   useEffect(() => {
@@ -114,6 +152,8 @@ export default function Interpreter() {
   function check(next?: Partial<{ a: string; b: string; spoken: Language | "" }>) {
     setChecked({ a: next?.a ?? a, b: next?.b ?? b, label, language, spoken: next?.spoken ?? spokenLanguage, reference });
     setDecisions({});
+    // Move keyboard and screen-reader focus to the result, which is where the work now is.
+    setTimeout(() => flagsHeading.current?.focus(), 50);
   }
   function onTurn(t: TurnResponse) {
     const bText = t.secondary?.english ?? "";
@@ -126,8 +166,9 @@ export default function Interpreter() {
 
   return (
     <>
+      <a className="skip" href="#flags-h">Skip to the flags</a>
       <header className="wrap top">
-        <div className="brand"><h1>Teach-Back</h1><span>interpreting safety check</span></div>
+        <div className="brand"><h1>Teach-Back</h1><span>interpreting safety check</span><button className="btn small quiet" onClick={() => startTour(0)}>How it works</button></div>
         <div className="session">
           <label>Session language
             <select value={language} onChange={e => setLanguage(e.target.value as Language)} aria-label="Session language">
@@ -145,6 +186,20 @@ export default function Interpreter() {
           Nothing here advises a patient: it marks what a qualified interpreter must confirm, and a person decides every flag.
         </div>
         {needAccess && <AccessPrompt onDone={() => setNeedAccess(false)} />}
+        {tour !== null && (
+          <section className="tour" aria-label="Guided walkthrough" aria-live="polite">
+            <span className="eyebrow">Walkthrough {tour + 1} of {TOUR.length}</span>
+            <h2 className="serif">{TOUR[tour].title}</h2>
+            <p>{TOUR[tour].body}</p>
+            {tour === 1 && analysis && <p className="hint">{open === 0 ? "Every flag is decided. The final line is on the right." : `${open} flag${open === 1 ? "" : "s"} still open.`}</p>}
+            <div className="row">
+              {tour > 0 && <button className="btn small quiet" onClick={() => startTour(tour - 1)}>Back</button>}
+              {tour < TOUR.length - 1 && <button className="btn small primary" onClick={() => startTour(tour + 1)}>{tour === 0 ? "Next: decide a flag" : "Next"}</button>}
+              {tour === TOUR.length - 1 && <button className="btn small primary" onClick={endTour}>Done, try it myself</button>}
+              <button className="btn small quiet" onClick={endTour}>Skip</button>
+            </div>
+          </section>
+        )}
 
         <div className="grid">
           <section className="panel" aria-labelledby="turn-h">
@@ -187,7 +242,7 @@ export default function Interpreter() {
           </section>
 
           <section className="panel" aria-labelledby="flags-h" aria-live="polite">
-            <h2 id="flags-h">What a human must confirm</h2>
+            <h2 id="flags-h" ref={flagsHeading} tabIndex={-1}>What a human must confirm</h2>
             {!analysis && mode === "record" && <p className="hint">Record one patient turn. Both listeners render it in English, the critical facts are marked, and anything they disagree on appears here for a person to settle.</p>}
             {!analysis && mode === "paste" && <p className="hint">Press Check this turn. The sample is a real failure pattern: the two listeners disagree on a dose, a date, and whether the patient said "not".</p>}
             {analysis && (
@@ -458,7 +513,7 @@ function FlagCard({ flag, decision, onDecide }: { flag: Flag; decision: Decision
       )}
       {!done && editing && (
         <div className="row">
-          <input type="text" value={value} onChange={e => setValue(e.target.value)} placeholder="What the patient actually said" aria-label="Correction" />
+          <input type="text" value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && value.trim()) onDecide({ state: "corrected", correction: value.trim() }); if (e.key === "Escape") setEditing(false); }} placeholder="What the patient actually said" aria-label="Correction" autoFocus />
           <button className="btn small primary" disabled={!value.trim()} onClick={() => onDecide({ state: "corrected", correction: value.trim() })}>Save correction</button>
           <button className="btn small quiet" onClick={() => setEditing(false)}>Cancel</button>
         </div>

@@ -209,3 +209,13 @@ input[type="password"] { font: inherit; color: var(--text); background: var(--su
 .reviewrow .draft { font-size: 19px; line-height: 1.6; color: var(--text); margin: 0; }
 .reviewrow .draft:lang(am) { font-family: var(--stack-ethiopic); }
 .session input[type="text"], .notein { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
+
+/* walkthrough and keyboard */
+.tour { border: 1px solid var(--accent-line); background: var(--accent-soft); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 8px; }
+.tour h2 { margin: 0; font-size: 22px; color: var(--text); }
+.tour p { margin: 0; color: var(--text-2); max-width: 78ch; }
+.brand .btn { margin-left: 6px; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: var(--accent-ink); padding: 8px 12px; border-radius: 8px; z-index: 10; }
+.skip:focus { left: 16px; }
+h2:focus { outline: none; }
+h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
