@@ -21,8 +21,8 @@ file, in a commit, in a chat log, or in Discord.** Only names and places.
 | What | Variable in Teach-Back | Where it lives | Notes |
 | --- | --- | --- | --- |
 | Meta Model API key | `META_MODEL_API_KEY` | dev.meta.ai → API keys. The existing key `teach-back-hackathon` cannot be re-read; create a new one (e.g. `teach-back-vercel`) and copy it once. | One key serves Spark 1.3, Spark 1.2, SAM 3.1 and Voice Transcribe. Billing page showed the $150 credit applied on Oct 27. Set a spend-limit notification. |
-| Omnilingual ASR Space address | `ASR_SERVICE_URL` | Vercel → project **kintale** → Settings → Environment Variables → `TRANSCRIBE_URL`. Form: `https://<owner>-kintale-asr.hf.space/`, lower case. | The same Space Kintale uses. It sleeps when idle and takes 15 to 25 minutes to wake. |
-| Hugging Face read token | `ASR_SERVICE_TOKEN` | Same place, `TRANSCRIBE_TOKEN`. | A private Space refuses without it. If the Space's own `ASR_TOKEN` secret is set (Space → Settings → Variables and secrets), that value is needed instead; a 401 from the health probe tells you which. |
+| Omnilingual ASR Space address | `ASR_SERVICE_URL` | `https://onekoo-kintale-asr.hf.space/`, lower case. Kintale holds the same value in `TRANSCRIBE_URL`, but that variable is stored sensitive and Vercel will not show it again — not on `env pull`, not through the API, not in the dashboard. The address is not a secret: `GET https://kintale.life/api/health` names the host in `transcriptionDetail`. | The same Space Kintale uses. It sleeps when idle and takes 15 to 25 minutes to wake. |
+| Hugging Face read token | `ASR_SERVICE_TOKEN` | Mint a new one: huggingface.co → Settings → Access Tokens → Create new token, type **Read**, named for this project. Kintale's `TRANSCRIBE_TOKEN` is the same kind of token, but Hugging Face masks a value after creation and Vercel stores it sensitive, so it cannot be copied from either side; refreshing it to read it would rotate it and lock Kintale out of the Space until its own variable was updated and redeployed. | A private Space refuses without it. If the Space's own `ASR_TOKEN` secret is set (Space → Settings → Variables and secrets), that value is needed instead; a 401 from the health probe tells you which. |
 | Access code for the public site | `TEACH_BACK_ACCESS_CODE` | Choose one. Avoid `$`, backticks and `!`, which shells mangle. | Judges receive it with the submission. Paste text never needs it. |
 
 ## 2. Put them in place
@@ -30,10 +30,15 @@ file, in a commit, in a chat log, or in Discord.** Only names and places.
 **Locally:** copy `.env.example` to `.env.local` in the repository root and fill the four variables.
 `.env.local` is git-ignored; confirm with `git status` before any commit.
 
-**Live site (Vercel project `teach-back-phi`):** Settings → Environment Variables → add each for
-Production and Preview, then **Redeploy** from the Deployments tab. Variables reach a deployment only
+**Live site (Vercel project `teach-back`, served at `teach-back-phi.vercel.app`):** Settings →
+Environment Variables → add each for Production and Preview, then **Redeploy** from the Deployments
+tab. Variables reach a deployment only
 through a new deployment. If using the CLI, prefer the dashboard for the values themselves: an
 unquoted `$` in a shell silently eats part of a secret.
+
+All four are set on `teach-back` for Production and Preview as of Oct 27, and the production
+deployment carrying them answers `GET /api/health` with 200 and `ready: true`. `"set"` means the
+variable is non-empty, not that any service accepts it: no live call below has been run yet.
 
 ## 3. Verify, in this order, and record each output
 

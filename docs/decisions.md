@@ -142,3 +142,18 @@ a case. Numbers (counts, ages, money, years) were added because they decide an a
 a benefits application the way a dose decides a prescription. A bare year is kept with a warning
 rather than converted, because a year said without its calendar is exactly the thing an officer
 writes down wrong.
+
+## 17. Teach-Back holds its own Hugging Face token (Oct 27)
+
+The Space is Kintale's private `onekoo/kintale-asr`, reused rather than copied: a second Space is a
+second 30 GB download, a second cold start and a second GPU bill for the same model. The credential
+is not shared. Hugging Face shows a token's value once at creation and masks it afterwards, and
+Vercel stores Kintale's `TRANSCRIBE_TOKEN` as a sensitive variable, which no route reads back —
+`env pull`, the API and the dashboard all refuse. Refreshing it to read it would rotate the value
+and lock Kintale out of its own Space until its variable was updated and redeployed. So Teach-Back
+mints a Read token of its own. Two tokens also keep the account's Last Used column worth reading:
+it says which product reached the Space, and revoking one cannot take the other down. Read is the
+permission level, not fine-grained: fine-grained needs the Space scoped by hand and fails with the
+same 401 as a Space-side `ASR_TOKEN` check, and one symptom with two causes is a bad thing to own
+in the week before a deadline. The Space's address is not a credential and never needed recovering:
+Kintale publishes it in its own `/api/health`.
