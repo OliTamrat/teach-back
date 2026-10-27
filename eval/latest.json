@@ -1,15 +1,15 @@
 {
- "ranAt": "2026-10-27T16:49:31.785Z",
+ "ranAt": "2026-10-27T17:38:01.983Z",
  "files": [
   "audio-v1.json",
   "text-v1.json"
  ],
  "summary": {
-  "cases": 15,
+  "cases": 18,
   "byLanguage": [
    {
     "language": "am",
-    "cases": 12,
+    "cases": 14,
     "factRecall": 1,
     "meanCer": null,
     "expectedCaught": 2,
@@ -17,7 +17,7 @@
    },
    {
     "language": "om",
-    "cases": 3,
+    "cases": 4,
     "factRecall": 1,
     "meanCer": null,
     "expectedCaught": 1,
@@ -26,8 +26,8 @@
   ],
   "factRecall": 1,
   "factPrecision": 1,
-  "plantedCaught": 11,
-  "plantedTotal": 11,
+  "plantedCaught": 13,
+  "plantedTotal": 13,
   "expectedCaught": 3,
   "expectedTotal": 3,
   "falseAlarms": 0,
@@ -995,6 +995,43 @@
     "crit single_listener:negation",
     "crit listener_disagreement:date"
    ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T16-count-planted-b",
+   "language": "am",
+   "audio": false,
+   "factsFound": 2,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:number"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T17-money-planted-b",
+   "language": "om",
+   "audio": false,
+   "factsFound": 2,
+   "factsTotal": 2,
+   "cer": null,
+   "flags": [
+    "crit listener_disagreement:number"
+   ],
+   "missed": [],
+   "skipped": null
+  },
+  {
+   "id": "T18-bare-year-agree",
+   "language": "am",
+   "audio": false,
+   "factsFound": 1,
+   "factsTotal": 1,
+   "cer": null,
+   "flags": [],
    "missed": [],
    "skipped": null
   }

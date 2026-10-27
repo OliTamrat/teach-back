@@ -116,6 +116,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     const before = text.slice(Math.max(0, m.index! - 8), m.index!);
     if (/every\s$/i.test(before) || /(times|per|each|once|twice)\s$/i.test(before)) continue; // "every 8 hours", "times a day", "twice a day" are frequencies
     if (/^(a|an)$/i.test(m[1]) && new RegExp(`${NUM}\\s$`, "i").test(text.slice(Math.max(0, m.index! - 12), m.index!))) continue; // "three a day" is a rate
+    if (/^\s*old\b/i.test(text.slice(m.index! + m[0].length))) continue; // "45 years old" is an age, handled as a number
     push({ type: "duration", value: `${fmt(n)} ${unit}${m[3] ? m[3].trim() === "ago" ? " ago" : " after" : ""}`, source: m[0].trim(), start: m.index!, end: m.index! + m[0].length });
   }
 
@@ -166,6 +167,39 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     });
   }
 
+  // --- numbers that are none of the above: counts, amounts of money, ages, years.
+  // These decide immigration interviews and benefits cases as surely as a dose decides a prescription.
+  const covered = (a: number, b: number) => facts.some(f => f.start <= a && f.end >= b);
+  // Years, with the calendar when it is said. A bare year is ambiguous in a community that uses two.
+  for (const m of text.matchAll(/\b(?:in |since |born in |arrived in |came in |year )?((?:19|20)\d{2})(?:\s*(e\.?c\.?|ዓ\.?ም\.?|ethiopian calendar|ethiopian|g\.?c\.?|gregorian))?\b/gi)) {
+    const year = parseInt(m[1], 10);
+    const cal = (m[2] || "").toLowerCase().replace(/[.\s]/g, "");
+    const a = m.index! + m[0].indexOf(m[1]), b = m.index! + m[0].length;
+    if (covered(a, b)) continue;
+    const ethiopian = cal.startsWith("e") || cal.startsWith("ዓ");
+    const gregorian = cal.startsWith("g");
+    let value: string, note: string | undefined;
+    if (ethiopian) { value = `year ${year + 7}/${year + 8}`; note = `Ethiopian year ${year} runs from September ${year + 7} to September ${year + 8} (Gregorian)`; }
+    else if (gregorian) { value = `year ${year}`; }
+    else if (year <= 2020) { value = `year ${year}`; note = `If this is the Ethiopian calendar, it is ${year + 7}/${year + 8} in the Gregorian one: confirm which calendar`; }
+    else { value = `year ${year}`; }
+    push({ type: "number", value, source: text.slice(a, b).trim(), start: a, end: b, ...(note ? { note } : {}) });
+  }
+  // Money: a currency sign or name next to the number.
+  for (const m of text.matchAll(/(?:(\$|€|£)\s?(\d[\d,]*(?:\.\d+)?)|(\d[\d,]*(?:\.\d+)?)\s?(dollars?|usd|birr|euros?|pounds?|shillings?|riyals?|dirhams?))/gi)) {
+    const n = parseNumber(m[2] || m[3]); if (n === null) continue;
+    const cur = m[1] ? ({ "$": "USD", "€": "EUR", "£": "GBP" } as Record<string, string>)[m[1]] : m[4].toLowerCase().replace(/s$/, "").toUpperCase().replace("DOLLAR", "USD").replace("EURO", "EUR").replace("POUND", "GBP");
+    if (covered(m.index!, m.index! + m[0].length)) continue;
+    push({ type: "number", value: `${fmt(n)} ${cur}`, source: m[0], start: m.index!, end: m.index! + m[0].length });
+  }
+  // Ages and counts: a number followed by "years old" or by a counted noun.
+  for (const m of text.matchAll(new RegExp(`\\b${NUM}(?:[ -](?:years?|months?)[ -]old\\b|\\s+(children|kids|sons?|daughters?|people|persons?|adults?|brothers?|sisters?|family members|dependants|dependents|rooms?|bedrooms?|jobs?|hours a week|years in (?:the )?[A-Za-z]+|times?|visits?|appointments?|months? pregnant|weeks? pregnant))\\b`, "gi"))) {
+    const n = parseNumber(m[1]); if (n === null) continue;
+    if (/^(a|an)$/i.test(m[1])) continue; // "a daughter" is not a count worth a flag
+    if (covered(m.index!, m.index! + m[0].length)) continue;
+    const what = m[2] ? m[2].toLowerCase().replace(/^(kids|children)$/, "children").replace(/^(persons?|people)$/, "people") : "years old";
+    push({ type: "number", value: `${fmt(n)} ${what}`, source: m[0], start: m.index!, end: m.index! + m[0].length });
+  }
   return facts.sort((a, b) => a.start - b.start);
 }
 

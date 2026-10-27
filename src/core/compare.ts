@@ -6,7 +6,7 @@ import type { Fact, FactType, Flag, Language, Listener, TurnAnalysis } from "./t
 
 const LABELS: Record<FactType, string> = {
   dose: "dose", frequency: "frequency", drug: "drug name", negation: "negation",
-  body_part: "body part or side", date: "date", duration: "duration",
+  body_part: "body part or side", date: "date", duration: "duration", number: "number or amount",
 };
 
 export function compareListeners(primary: Listener, secondary?: Listener): Flag[] {

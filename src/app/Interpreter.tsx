@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { extractFacts } from "@/core/facts";
 import { analyzeTurn, compareWithLabel, languageMismatch } from "@/core/compare";
-import { teachBackQuestion } from "@/core/question";
+import { SETTINGS, teachBackQuestion, type Setting } from "@/core/question";
 import { localizedQuestion } from "@/core/question-i18n";
 import LabelPhoto from "./LabelPhoto";
 import { apiPost, getAccessCode, refusal, setAccessCode } from "./api-client";
@@ -41,7 +41,7 @@ const TOUR: TourStep[] = [
 
 const LANG_NAME: Record<Language, string> = { am: "Amharic", om: "Afaan Oromo" };
 const SESSION_KEY = "teach-back-session";
-const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "frequency", drug: "drug", negation: "negation", body_part: "body part", date: "date", duration: "duration" };
+const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "frequency", drug: "drug", negation: "negation", body_part: "body part", date: "date", duration: "duration", number: "number" };
 
 type Mode = "record" | "paste";
 type Health = { ready: boolean; metaModelApi: { key: string }; asr: { service: string } };
@@ -55,12 +55,13 @@ type AudioMeta = Omit<TurnResponse, "primary" | "secondary">;
 
 export default function Interpreter() {
   const [language, setLanguage] = useState<Language>("am");
+  const [setting, setSetting] = useState<Setting>("clinic");
   const [spokenLanguage, setSpokenLanguage] = useState<Language | "">("");
   const [reference, setReference] = useState(() => new Date().toISOString().slice(0, 10));
   const [a, setA] = useState(SAMPLE_A);
   const [b, setB] = useState(SAMPLE_B);
   const [label, setLabel] = useState(SAMPLE_LABEL);
-  const [checked, setChecked] = useState<{ a: string; b: string; label: string; language: Language; spoken: Language | ""; reference: string } | null>(null);
+  const [checked, setChecked] = useState<{ a: string; b: string; label: string; language: Language; spoken: Language | ""; reference: string; setting: Setting } | null>(null);
   const [decisions, setDecisions] = useState<Record<number, Decision>>({});
   const [mode, setMode] = useState<Mode>("record");
   const [health, setHealth] = useState<Health | null>(null);
@@ -86,7 +87,7 @@ export default function Interpreter() {
       setMode("paste");
       if (st.language) setLanguage(st.language);
       setA(st.a); setB(st.b ?? ""); setLabel(st.label ?? ""); setSpokenLanguage("");
-      setChecked({ a: st.a, b: st.b ?? "", label: st.label ?? "", language: st.language ?? language, spoken: "", reference });
+      setChecked({ a: st.a, b: st.b ?? "", label: st.label ?? "", language: st.language ?? language, spoken: "", reference, setting });
       setDecisions({});
     }
   }
@@ -120,7 +121,7 @@ export default function Interpreter() {
     if (mismatch) extra.push(mismatch);
     if (checked.label.trim()) extra.push(...compareWithLabel(primary.facts, extractFacts(checked.label, opts)));
     const turn = analyzeTurn(primary, secondary, extra);
-    return { ...turn, question: teachBackQuestion(primary.facts) };
+    return { ...turn, question: teachBackQuestion(primary.facts, SETTINGS[checked.setting].order) };
   }, [checked]);
 
   const open = analysis ? analysis.flags.filter((_, i) => (decisions[i]?.state ?? "open") === "open").length : 0;
@@ -150,7 +151,7 @@ export default function Interpreter() {
   }
 
   function check(next?: Partial<{ a: string; b: string; spoken: Language | "" }>) {
-    setChecked({ a: next?.a ?? a, b: next?.b ?? b, label, language, spoken: next?.spoken ?? spokenLanguage, reference });
+    setChecked({ a: next?.a ?? a, b: next?.b ?? b, label, language, spoken: next?.spoken ?? spokenLanguage, reference, setting });
     setDecisions({});
     // Move keyboard and screen-reader focus to the result, which is where the work now is.
     setTimeout(() => flagsHeading.current?.focus(), 50);
@@ -175,6 +176,11 @@ export default function Interpreter() {
               <option value="am">Amharic</option><option value="om">Afaan Oromo</option>
             </select>
           </label>
+          <label>Setting
+            <select value={setting} onChange={e => setSetting(e.target.value as Setting)} aria-label="Setting">
+              {(Object.keys(SETTINGS) as Setting[]).map(k => <option key={k} value={k}>{SETTINGS[k].label}</option>)}
+            </select>
+          </label>
           <label>Date spoken
             <input type="date" value={reference} onChange={e => setReference(e.target.value)} aria-label="Date the words were spoken" />
           </label>
@@ -183,7 +189,7 @@ export default function Interpreter() {
 
       <main className="wrap">
         <div className="notice">
-          Nothing here advises a patient: it marks what a qualified interpreter must confirm, and a person decides every flag.
+          {setting === "clinic" ? "Nothing here advises a patient: it marks what a qualified interpreter must confirm, and a person decides every flag." : "Nothing here advises anyone or decides a case: it marks what a qualified interpreter must confirm, and a person decides every flag."}
         </div>
         {needAccess && <AccessPrompt onDone={() => setNeedAccess(false)} />}
         {tour !== null && (
@@ -215,7 +221,7 @@ export default function Interpreter() {
             )}
             {mode === "record" && audio && <TurnMeta meta={audio} language={language} />}
             <div className="field labelcheck">
-              <label htmlFor="in-label">Medication label, optional. Photograph it, or type what it says; a contradiction with what was spoken is a flag.</label>
+              <label htmlFor="in-label">{setting === "clinic" ? "Medication label, optional. Photograph it, or type what it says; a contradiction with what was spoken is a flag." : "Document or label, optional. Photograph a medication label, or type the figures from a letter or form; a contradiction with what was spoken is a flag."}</label>
               <LabelPhoto onText={(t) => setLabel(t)} onAccessNeeded={() => setNeedAccess(true)} />
               <textarea id="in-label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Metformin 500 mg. Take one tablet twice a day with food." style={{ minHeight: 56 }} />
               {mode === "record" && checked && <button className="btn small" onClick={() => check()}>Re-check this turn with the label</button>}

@@ -47,7 +47,8 @@ what the machine gets wrong in them, because I have been correcting it by hand f
 2. **Muse Spark** renders the transcript in English, and a second Spark call hears the same seconds
    of audio on its own and renders it again. Two listeners, one utterance.
 3. **Code, not a model,** pulls the critical facts out of both renderings: dose, frequency, drug,
-   negation, body part and side, date, duration. Ethiopian-calendar dates are converted
+   negation, body part and side, date, duration, and the numbers that decide an interview or a
+   benefits case: counts, ages, amounts of money, years. Ethiopian-calendar dates are converted
    arithmetically, the way I do it in my head. A date that does not exist, like Pagume 6 in a year
    that is not a leap year, is a flag, not a guess.
 4. Where the two listeners disagree on a fact, the line turns **red**. A negation heard by one
@@ -69,7 +70,8 @@ machine listens twice; a person decides.
 **Who it is for.** The interpreter on the phone line, the bilingual nurse, the caseworker at a
 resettlement agency, the daughter who came along to translate. Clinics first, because a wrong dose
 is the fastest harm, but the same facts, dates and negations decide asylum interviews, benefits
-applications and school meetings, and the same tool checks them.
+applications and school meetings, and the same tool checks them. A Setting switch (Clinic,
+Immigration, Human services) changes only which fact the interpreter is asked to confirm first.
 
 ## Architecture
 
@@ -146,12 +148,12 @@ from `eval/latest.json`; no number appears here that was not produced by a run t
 from the files in `eval/`.
 
 <!-- results:start -->
-_No audio cases have run yet (70 skipped). The numbers below are the deterministic core on 15 text cases and say nothing about the models._
+_No audio cases have run yet (70 skipped). The numbers below are the deterministic core on 18 text cases and say nothing about the models._
 
 | Measure | Value |
 | --- | --- |
 | Critical facts found in the English (recall) | 100% |
-| Planted errors flagged | 11 of 11 |
+| Planted errors flagged | 13 of 13 |
 | False alarms | 0 |
 <!-- results:end -->
 

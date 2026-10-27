@@ -1,11 +1,11 @@
 export type Language = "am" | "om";
 
-export type FactType = "dose" | "frequency" | "drug" | "negation" | "body_part" | "date" | "duration";
+export type FactType = "dose" | "frequency" | "drug" | "negation" | "body_part" | "date" | "duration" | "number";
 
 /** A critical fact pulled from an English rendering, with the words it came from. */
 export type Fact = {
   type: FactType;
-  /** Canonical value used for comparison, e.g. "2 tablet", "500 mg", "3/day", "not allergic", "left knee", "2026-10-13". */
+  /** Canonical value used for comparison, e.g. "2 tablet", "500 mg", "3/day", "not allergic", "left knee", "2026-10-13", "4 children", "1200 USD", "year 2019". */
   value: string;
   /** The exact words in the source text. */
   source: string;

@@ -1,11 +1,11 @@
-# Teach-Back evaluation, 2026-10-27T16-49-31 (audio-v1.json, text-v1.json)
+# Teach-Back evaluation, 2026-10-27T17-38-01 (audio-v1.json, text-v1.json)
 
 | Metric | Value |
 | --- | --- |
-| Cases | 15 |
+| Cases | 18 |
 | Critical facts found (recall) | 100% |
 | Extracted facts that were real (precision) | 100% |
-| Planted errors flagged | 11 of 11 |
+| Planted errors flagged | 13 of 13 |
 | Other expected flags raised | 3 of 3 |
 | False alarms (critical flags with no planted error) | 0 |
 | Skipped (audio not run) | 70 |
@@ -97,3 +97,6 @@
 | T13-child-dose-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:dose |  |
 | T14-frequency-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:frequency |  |
 | T15-two-errors-b | 6/6 | 3/3 |  | crit listener_disagreement:dose, crit single_listener:negation, crit listener_disagreement:date |  |
+| T16-count-planted-b | 2/2 | 1/1 |  | crit listener_disagreement:number |  |
+| T17-money-planted-b | 2/2 | 1/1 |  | crit listener_disagreement:number |  |
+| T18-bare-year-agree | 1/1 | 0/0 |  | none |  |

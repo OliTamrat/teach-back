@@ -132,3 +132,13 @@ ignore the red ones. No other unit is converted: a tablet count is never set aga
 Every push runs the tests, the typecheck, the harness and the build, and then regenerates the
 Results block and fails if the README would change. A number can enter the README only through a
 run, and the check makes sure nobody edits it by hand afterwards.
+
+## 16. The setting changes the order, never the rules (Oct 27)
+
+Clinic, Immigration and Human services are three orderings of the same fact types, chosen by the
+interpreter on the screen: which fact the teach-back question confirms first. Extraction, comparison
+and the human gate are identical in all three, and nothing in any setting advises anyone or decides
+a case. Numbers (counts, ages, money, years) were added because they decide an asylum interview or
+a benefits application the way a dose decides a prescription. A bare year is kept with a warning
+rather than converted, because a year said without its calendar is exactly the thing an officer
+writes down wrong.

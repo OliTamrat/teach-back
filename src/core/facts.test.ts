@@ -180,3 +180,25 @@ describe("found by the Day 10 code review", () => {
   });
 });
 
+describe("numbers beyond the clinic (Day 11)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 27 } };
+  const vals = (s: string) => extractFacts(s, opts).map(f => `${f.type}=${f.value}`);
+  it("counts, ages and money are numbers, not durations", () => {
+    expect(vals("I have four children and I am 45 years old.")).toEqual(["number=4 children", "number=45 years old"]);
+    expect(vals("I earn $1,200 a month and pay 800 dollars in rent.")).toEqual(["number=1200 USD", "number=800 USD"]);
+    expect(vals("I have had this cough for three weeks.")).toEqual(["duration=3 week"]);
+  });
+  it("a year with its calendar is converted; a bare year is kept with a warning", () => {
+    const ec = extractFacts("I arrived in 2011 E.C.", opts).find(f => f.type === "number")!;
+    expect(ec.value).toBe("year 2018/2019");
+    expect(ec.note).toContain("September 2018");
+    const bare = extractFacts("I arrived in 2011.", opts).find(f => f.type === "number")!;
+    expect(bare.value).toBe("year 2011");
+    expect(bare.note).toContain("confirm which calendar");
+    expect(extractFacts("I arrived in 2024.", opts).find(f => f.type === "number")!.note).toBeUndefined();
+  });
+  it("numbers already inside a dose, date or duration are not repeated", () => {
+    expect(vals("Take 500 milligrams. I was born on Hidar 12, 1980.").filter(v => v.startsWith("number"))).toEqual([]);
+  });
+});
+

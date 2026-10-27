@@ -1,79 +1,420 @@
 [
-  { "id": "T01-dose-planted-b", "language": "am", "reference": "2026-10-26",
-    "said": "ሐኪሙ በቀን ሶስት ጊዜ ሁለት የ500 ሚሊግራም ኪኒን እንድወስድ ነግሮኛል።",
-    "a": "The doctor told me to take two tablets of 500 milligrams three times a day.",
-    "b": "The doctor told me to take two tablets of 50 milligrams three times a day.",
-    "truth": [{ "type": "dose", "value": "2 tablet" }, { "type": "dose", "value": "500 mg" }, { "type": "frequency", "value": "3/day" }],
-    "planted": [{ "type": "dose", "in": "b" }] },
-  { "id": "T02-negation-dropped-b", "language": "am", "reference": "2026-10-26",
-    "a": "I am not allergic to penicillin.",
-    "b": "I am allergic to penicillin.",
-    "truth": [{ "type": "negation", "value": "not allergic to penicillin" }, { "type": "drug", "value": "penicillin" }],
-    "planted": [{ "type": "negation", "in": "b" }] },
-  { "id": "T03-date-planted-b", "language": "am", "reference": "2026-10-26",
-    "a": "The fever started on Tikimt 3.",
-    "b": "The fever started on Tikimt 13.",
-    "truth": [{ "type": "date", "value": "2026-10-13" }],
-    "planted": [{ "type": "date", "in": "b" }] },
-  { "id": "T04-agree-no-flags", "language": "am", "reference": "2026-10-26",
-    "a": "Take one tablet of metformin 500 milligrams twice a day with food.",
-    "b": "Take one metformin tablet of 500 milligrams two times a day with food.",
-    "truth": [{ "type": "dose", "value": "1 tablet" }, { "type": "drug", "value": "metformin" }, { "type": "dose", "value": "500 mg" }, { "type": "frequency", "value": "2/day" }, { "type": "frequency", "value": "with food" }],
-    "planted": [] },
-  { "id": "T05-side-planted-b", "language": "am", "reference": "2026-10-26",
-    "a": "The pain is in my lower right back.",
-    "b": "The pain is in my lower left back.",
-    "truth": [{ "type": "body_part", "value": "lower right back" }],
-    "planted": [{ "type": "body_part", "in": "b" }] },
-  { "id": "T06-duration-planted-b", "language": "am", "reference": "2026-10-26",
-    "a": "I have had a headache for three weeks.",
-    "b": "I have had a headache for three days.",
-    "truth": [{ "type": "duration", "value": "3 week" }],
-    "planted": [{ "type": "duration", "in": "b" }] },
-  { "id": "T07-invalid-date", "language": "am", "reference": "2026-10-26",
-    "a": "The baby was born on Pagume 6 2018.",
-    "b": "The baby was born on Pagume 6 2018.",
-    "truth": [{ "type": "date", "value": "invalid" }],
-    "planted": [], "expectFlags": ["invalid_date"] },
-  { "id": "T08-future-date-agree", "language": "am", "reference": "2026-10-26",
-    "a": "My next appointment is on Hidar 5.",
-    "b": "My next appointment is on Hidar 5.",
-    "truth": [{ "type": "date", "value": "2026-11-14" }],
-    "planted": [] },
-  { "id": "T09-oromo-month-ambiguous", "language": "om", "reference": "2026-10-26",
-    "said": "Beellamni koo itti aanu Onkoloolessa 5 dha.",
-    "a": "My next appointment is on Onkoloolessa 5.",
-    "b": "My next appointment is on Onkoloolessa 5.",
-    "truth": [{ "type": "date", "value": "2027-10-16" }],
-    "planted": [], "expectFlags": ["ambiguous_calendar"] },
-  { "id": "T10-label-conflict", "language": "am", "reference": "2026-10-26",
-    "a": "I take one tablet of metformin twice a day.",
-    "b": "I take one tablet of metformin twice a day.",
-    "label": "Metformin 500 mg. Take one tablet three times a day with meals.",
-    "truth": [{ "type": "dose", "value": "1 tablet" }, { "type": "drug", "value": "metformin" }, { "type": "frequency", "value": "2/day" }],
-    "planted": [{ "type": "frequency", "in": "label" }] },
-  { "id": "T11-language-mismatch", "language": "am", "reference": "2026-10-26",
-    "a": "I do not have chest pain.",
-    "spoken": "om",
-    "truth": [{ "type": "negation", "value": "do not have chest pain" }],
-    "planted": [], "expectFlags": ["language_mismatch"] },
-  { "id": "T12-single-listener", "language": "am", "reference": "2026-10-26",
-    "a": "Take half a tablet at night, as needed, not more than three times a day.",
-    "truth": [{ "type": "dose", "value": "0.5 tablet" }, { "type": "frequency", "value": "night" }, { "type": "frequency", "value": "as needed" }, { "type": "frequency", "value": "max 3/day" }],
-    "planted": [] },
-  { "id": "T13-child-dose-planted-b", "language": "om", "reference": "2026-10-26",
-    "a": "The child takes 5 millilitres of paracetamol every six hours.",
-    "b": "The child takes 15 millilitres of paracetamol every six hours.",
-    "truth": [{ "type": "dose", "value": "5 ml" }, { "type": "drug", "value": "paracetamol" }, { "type": "frequency", "value": "every 6 hour" }],
-    "planted": [{ "type": "dose", "in": "b" }] },
-  { "id": "T14-frequency-planted-b", "language": "om", "reference": "2026-10-26",
-    "a": "I take amoxicillin every eight hours for ten days.",
-    "b": "I take amoxicillin every twelve hours for ten days.",
-    "truth": [{ "type": "drug", "value": "amoxicillin" }, { "type": "frequency", "value": "every 8 hour" }, { "type": "duration", "value": "10 day" }],
-    "planted": [{ "type": "frequency", "in": "b" }] },
-  { "id": "T15-two-errors-b", "language": "am", "reference": "2026-10-26",
-    "a": "Take two tablets of 500 milligrams three times a day. I am not allergic to penicillin. The fever started on Tikimt 3.",
-    "b": "Take two tablets of 50 milligrams three times a day. I am allergic to penicillin. The fever started on Tikimt 13.",
-    "truth": [{ "type": "dose", "value": "2 tablet" }, { "type": "dose", "value": "500 mg" }, { "type": "frequency", "value": "3/day" }, { "type": "negation", "value": "not allergic to penicillin" }, { "type": "drug", "value": "penicillin" }, { "type": "date", "value": "2026-10-13" }],
-    "planted": [{ "type": "dose", "in": "b" }, { "type": "negation", "in": "b" }, { "type": "date", "in": "b" }] }
+ {
+  "id": "T01-dose-planted-b",
+  "language": "am",
+  "reference": "2026-10-26",
+  "said": "ሐኪሙ በቀን ሶስት ጊዜ ሁለት የ500 ሚሊግራም ኪኒን እንድወስድ ነግሮኛል።",
+  "a": "The doctor told me to take two tablets of 500 milligrams three times a day.",
+  "b": "The doctor told me to take two tablets of 50 milligrams three times a day.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "2 tablet"
+   },
+   {
+    "type": "dose",
+    "value": "500 mg"
+   },
+   {
+    "type": "frequency",
+    "value": "3/day"
+   }
+  ],
+  "planted": [
+   {
+    "type": "dose",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T02-negation-dropped-b",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "I am not allergic to penicillin.",
+  "b": "I am allergic to penicillin.",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "not allergic to penicillin"
+   },
+   {
+    "type": "drug",
+    "value": "penicillin"
+   }
+  ],
+  "planted": [
+   {
+    "type": "negation",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T03-date-planted-b",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "The fever started on Tikimt 3.",
+  "b": "The fever started on Tikimt 13.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-10-13"
+   }
+  ],
+  "planted": [
+   {
+    "type": "date",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T04-agree-no-flags",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "Take one tablet of metformin 500 milligrams twice a day with food.",
+  "b": "Take one metformin tablet of 500 milligrams two times a day with food.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "1 tablet"
+   },
+   {
+    "type": "drug",
+    "value": "metformin"
+   },
+   {
+    "type": "dose",
+    "value": "500 mg"
+   },
+   {
+    "type": "frequency",
+    "value": "2/day"
+   },
+   {
+    "type": "frequency",
+    "value": "with food"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "T05-side-planted-b",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "The pain is in my lower right back.",
+  "b": "The pain is in my lower left back.",
+  "truth": [
+   {
+    "type": "body_part",
+    "value": "lower right back"
+   }
+  ],
+  "planted": [
+   {
+    "type": "body_part",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T06-duration-planted-b",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "I have had a headache for three weeks.",
+  "b": "I have had a headache for three days.",
+  "truth": [
+   {
+    "type": "duration",
+    "value": "3 week"
+   }
+  ],
+  "planted": [
+   {
+    "type": "duration",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T07-invalid-date",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "The baby was born on Pagume 6 2018.",
+  "b": "The baby was born on Pagume 6 2018.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "invalid"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "invalid_date"
+  ]
+ },
+ {
+  "id": "T08-future-date-agree",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "My next appointment is on Hidar 5.",
+  "b": "My next appointment is on Hidar 5.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-11-14"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "T09-oromo-month-ambiguous",
+  "language": "om",
+  "reference": "2026-10-26",
+  "said": "Beellamni koo itti aanu Onkoloolessa 5 dha.",
+  "a": "My next appointment is on Onkoloolessa 5.",
+  "b": "My next appointment is on Onkoloolessa 5.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2027-10-16"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "ambiguous_calendar"
+  ]
+ },
+ {
+  "id": "T10-label-conflict",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "I take one tablet of metformin twice a day.",
+  "b": "I take one tablet of metformin twice a day.",
+  "label": "Metformin 500 mg. Take one tablet three times a day with meals.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "1 tablet"
+   },
+   {
+    "type": "drug",
+    "value": "metformin"
+   },
+   {
+    "type": "frequency",
+    "value": "2/day"
+   }
+  ],
+  "planted": [
+   {
+    "type": "frequency",
+    "in": "label"
+   }
+  ]
+ },
+ {
+  "id": "T11-language-mismatch",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "I do not have chest pain.",
+  "spoken": "om",
+  "truth": [
+   {
+    "type": "negation",
+    "value": "do not have chest pain"
+   }
+  ],
+  "planted": [],
+  "expectFlags": [
+   "language_mismatch"
+  ]
+ },
+ {
+  "id": "T12-single-listener",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "Take half a tablet at night, as needed, not more than three times a day.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "0.5 tablet"
+   },
+   {
+    "type": "frequency",
+    "value": "night"
+   },
+   {
+    "type": "frequency",
+    "value": "as needed"
+   },
+   {
+    "type": "frequency",
+    "value": "max 3/day"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "T13-child-dose-planted-b",
+  "language": "om",
+  "reference": "2026-10-26",
+  "a": "The child takes 5 millilitres of paracetamol every six hours.",
+  "b": "The child takes 15 millilitres of paracetamol every six hours.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "5 ml"
+   },
+   {
+    "type": "drug",
+    "value": "paracetamol"
+   },
+   {
+    "type": "frequency",
+    "value": "every 6 hour"
+   }
+  ],
+  "planted": [
+   {
+    "type": "dose",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T14-frequency-planted-b",
+  "language": "om",
+  "reference": "2026-10-26",
+  "a": "I take amoxicillin every eight hours for ten days.",
+  "b": "I take amoxicillin every twelve hours for ten days.",
+  "truth": [
+   {
+    "type": "drug",
+    "value": "amoxicillin"
+   },
+   {
+    "type": "frequency",
+    "value": "every 8 hour"
+   },
+   {
+    "type": "duration",
+    "value": "10 day"
+   }
+  ],
+  "planted": [
+   {
+    "type": "frequency",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T15-two-errors-b",
+  "language": "am",
+  "reference": "2026-10-26",
+  "a": "Take two tablets of 500 milligrams three times a day. I am not allergic to penicillin. The fever started on Tikimt 3.",
+  "b": "Take two tablets of 50 milligrams three times a day. I am allergic to penicillin. The fever started on Tikimt 13.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "2 tablet"
+   },
+   {
+    "type": "dose",
+    "value": "500 mg"
+   },
+   {
+    "type": "frequency",
+    "value": "3/day"
+   },
+   {
+    "type": "negation",
+    "value": "not allergic to penicillin"
+   },
+   {
+    "type": "drug",
+    "value": "penicillin"
+   },
+   {
+    "type": "date",
+    "value": "2026-10-13"
+   }
+  ],
+  "planted": [
+   {
+    "type": "dose",
+    "in": "b"
+   },
+   {
+    "type": "negation",
+    "in": "b"
+   },
+   {
+    "type": "date",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T16-count-planted-b",
+  "language": "am",
+  "reference": "2026-10-27",
+  "a": "I have four children and I arrived in 2011 E.C.",
+  "b": "I have five children and I arrived in 2011 E.C.",
+  "truth": [
+   {
+    "type": "number",
+    "value": "4 children"
+   },
+   {
+    "type": "number",
+    "value": "year 2018/2019"
+   }
+  ],
+  "planted": [
+   {
+    "type": "number",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T17-money-planted-b",
+  "language": "om",
+  "reference": "2026-10-27",
+  "a": "I earn $1,200 a month and I am 45 years old.",
+  "b": "I earn $2,100 a month and I am 45 years old.",
+  "truth": [
+   {
+    "type": "number",
+    "value": "1200 USD"
+   },
+   {
+    "type": "number",
+    "value": "45 years old"
+   }
+  ],
+  "planted": [
+   {
+    "type": "number",
+    "in": "b"
+   }
+  ]
+ },
+ {
+  "id": "T18-bare-year-agree",
+  "language": "am",
+  "reference": "2026-10-27",
+  "a": "I came to this country in 2015.",
+  "b": "I came to this country in 2015.",
+  "truth": [
+   {
+    "type": "number",
+    "value": "year 2015"
+   }
+  ],
+  "planted": []
+ }
 ]

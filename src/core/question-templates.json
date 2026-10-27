@@ -8,7 +8,8 @@
     "negation": "በትክክል መስማቴን ማረጋገጥ እፈልጋለሁ። \"{source}\" ብለዋል። ትክክል ነው?",
     "date": "\"{source}\" ሲሉ የትኛውን ቀን ማለትዎ ነው? በየትኛው ወርና ዓመት፣ በሚጠቀሙት አቆጣጠር?",
     "body_part": "እባክዎ የት እንደሆነ ያሳዩኝ።",
-    "duration": "ለምን ያህል ጊዜ? \"{source}\" ብለዋል።"
+    "duration": "ለምን ያህል ጊዜ? \"{source}\" ብለዋል።",
+    "number": "እባክዎ ያንን ቁጥር እንደገና ቀስ ብለው ይንገሩኝ፤ {source}?"
   },
   "om": {
     "reviewed": false,
@@ -18,6 +19,7 @@
     "negation": "Sirriitti dhaga'uu koo mirkaneeffachuun barbaada. \"{source}\" jettan. Sirriidhaa?",
     "date": "\"{source}\" jechuun guyyaa kam jechuu keessan? Ji'a fi bara kam, lakkoofsa yeroo isin fayyadamtaniin?",
     "body_part": "Maaloo eessa akka ta'e natti agarsiisaa.",
-    "duration": "Hammam dheeratee? \"{source}\" jettan."
+    "duration": "Hammam dheeratee? \"{source}\" jettan.",
+    "number": "Maaloo lakkoofsa sana suuta jedhaa irra deebi'aa; {source}?"
   }
 }
