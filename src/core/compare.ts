@@ -3,6 +3,7 @@
  * look. Nothing here decides who is right. It only decides what a reviewer must confirm.
  */
 import type { Fact, FactType, Flag, Language, Listener, TurnAnalysis } from "./types";
+import { wrongScriptForSession } from "./language";
 
 const LABELS: Record<FactType, string> = {
   dose: "dose", frequency: "frequency", drug: "drug name", negation: "negation",
@@ -89,6 +90,20 @@ export function compareWithLabel(spoken: Fact[], label: Fact[]): Flag[] {
     }
   }
   return flags;
+}
+
+/**
+ * The mismatch nobody could name. When neither listener nor heuristic identified a language, a
+ * session set to Amharic whose transcript holds no Ethiopic is still wrong, and silence there is
+ * the worst answer: the reviewer goes on believing the session language was right. Says what is
+ * known — that it is not Amharic — and does not guess what it is instead.
+ */
+export function scriptMismatch(expected: Language, text: string): Flag | null {
+  if (!wrongScriptForSession(expected, text)) return null;
+  return {
+    kind: "language_mismatch", severity: "crit",
+    message: "This session is set to Amharic, but nothing in what was heard is written in Ethiopic script. Check which language the patient is speaking before going on.",
+  };
 }
 
 export function languageMismatch(expected: Language, detected: Language | null, confidence = 1): Flag | null {

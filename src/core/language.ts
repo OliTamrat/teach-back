@@ -31,3 +31,24 @@ export function detectLanguage(text: string): { language: Language | null; confi
   if (ethiopicShare > 0.1) return { language: "am", confidence: 0.5 };
   return { language: null, confidence: 0 };
 }
+
+/**
+ * Whether a transcript cannot be the language the session is set to, on script alone.
+ *
+ * detectLanguage answers "which language is this" and says null when it cannot tell. The mismatch
+ * question is narrower: not "which" but "is this not the expected one", and for Amharic the script
+ * settles it — Amharic is written in Ethiopic, so a transcript with none of it is not Amharic
+ * whatever else it turns out to be. Only that direction: Afaan Oromo is written in Latin, so Latin
+ * text is no evidence against it, and Ethiopic text in an Oromo session is already caught by
+ * detectLanguage returning Amharic with confidence.
+ *
+ * Needs enough letters to be sure. A patient who answers "25 mg" has not said anything in any
+ * script, and a flag there would be the crying wolf that teaches a reviewer to ignore the red ones.
+ */
+export function wrongScriptForSession(expected: Language, text: string): boolean {
+  if (expected !== "am") return false;
+  const letters = (text.match(/[\p{L}]/gu) || []).length;
+  if (letters < 12) return false;
+  return (text.match(/[ሀ-፿ᎀ-᎟ⶀ-⷟]/g) || []).length === 0;
+}
+

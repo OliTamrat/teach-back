@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractFacts } from "./facts";
-import { analyzeTurn, compareListeners, compareWithLabel, languageMismatch } from "./compare";
+import { analyzeTurn, compareListeners, compareWithLabel, languageMismatch, scriptMismatch } from "./compare";
 import type { Listener } from "./types";
 
 const ref = { year: 2026, month: 10, day: 31 };
@@ -79,6 +79,17 @@ describe("language mismatch", () => {
     expect(languageMismatch("am", "om")?.severity).toBe("crit");
     expect(languageMismatch("am", "am")).toBeNull();
     expect(languageMismatch("am", "om", 0.3)).toBeNull();
+
+    // A language nobody could name is still not Amharic if nothing in it is Ethiopic.
+    expect(scriptMismatch("am", "take two tablets twice a day for five days")?.severity).toBe("crit");
+    expect(scriptMismatch("am", "ሁለት ኪኒን በቀን ሁለት ጊዜ ለአምስት ቀናት ይውሰዱ")).toBeNull();
+    // Afaan Oromo is written in Latin, so Latin text says nothing against an Oromo session.
+    expect(scriptMismatch("om", "kiniinii lama guyyaatti yeroo lama")).toBeNull();
+    // Too little to be sure: a dose on its own is not written in any script.
+    expect(scriptMismatch("am", "25 mg")).toBeNull();
+    expect(scriptMismatch("am", "")).toBeNull();
+    // One Ethiopic word is enough to stop it: the claim is "none of it", not "most of it".
+    expect(scriptMismatch("am", "take two tablets ኪኒን twice a day for five days")).toBeNull();
   });
 });
 

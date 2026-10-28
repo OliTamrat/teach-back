@@ -181,3 +181,19 @@ listener's words or none, and the label on the screen is read from the turn inst
 Attribution is not decoration here: the whole product rests on two listeners being told apart, and a
 reading credited to the wrong one is worse than a reading marked missing.
 
+## 20. Not knowing the language is not the same as the language being right (Oct 27)
+
+A live turn in an Amharic session came back with a transcript holding no Ethiopic at all and raised
+no flag. The heuristic had done what it was written to do: it answers which language a transcript
+is, and it answered that it could not tell, so the mismatch rule — which refuses to flag an
+unnamed language — stayed quiet. But the question a session asks is narrower than the one the
+heuristic answers. Not "which language is this" but "is this not the one we are set to", and for
+Amharic the script settles it: Amharic is written in Ethiopic, so a transcript with none of it is
+not Amharic whatever it turns out to be. The flag now says that and only that, naming no language
+it cannot identify, and it fires only when neither listener nor heuristic named one.
+
+It is deliberately one-directional. Afaan Oromo is written in Latin, so Latin text is no evidence
+against an Oromo session, and Ethiopic in an Oromo session is already caught by the heuristic
+recognising Amharic. It also needs twelve letters before it will speak: a patient who answers
+"25 mg" has said nothing in any script, and a red flag there is the crying wolf of decision 14.
+

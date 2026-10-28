@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { guardRequest, logCall } from "@/server/guard";
 import { extractFacts } from "@/core/facts";
-import { analyzeTurn, languageMismatch } from "@/core/compare";
+import { analyzeTurn, languageMismatch, scriptMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
 import { detectLanguage } from "@/core/language";
 import type { Flag, Language, Listener } from "@/core/types";
@@ -91,6 +91,12 @@ export async function POST(req: Request) {
   } else {
     const mismatch = languageMismatch(language as Language, detected.language, detected.confidence);
     if (mismatch) extra.push(mismatch);
+    // Nobody named a language: neither listener nor heuristic. The script can still rule the
+    // session language out, and saying nothing here leaves the reviewer believing it was right.
+    else if (!detected.language) {
+      const script = scriptMismatch(language as Language, second?.reply?.transcript || asr?.text || "");
+      if (script) extra.push(script);
+    }
   }
 
   const turn = analyzeTurn(primary, secondary, extra);
