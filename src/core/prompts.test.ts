@@ -13,6 +13,10 @@ describe("prompts never ask a model to decide", () => {
     const p = listenPrompt("om");
     expect(p).toContain("Afaan Oromo");
     expect(p).toContain('"language":"am"|"om"|"other"');
+    // confidence gates a critical flag, so it must mean confidence in the LANGUAGE. A listener
+    // that reports 0 because it could not render is a listener that silences the flag.
+    expect(p).toContain("how sure you are of the language");
+    expect(p).toContain("still fill transcript and english if you can make them out");
   });
 });
 

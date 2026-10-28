@@ -25,9 +25,11 @@ export function listenPrompt(expected: Language): string {
     `This audio is a patient speaking in a clinic. The session expects ${LANGUAGE_NAME[expected]}, but the patient may be speaking Amharic or Afaan Oromo.`,
     "Reply with JSON only, no prose, with exactly these keys:",
     '{"language":"am"|"om"|"other","confidence":0..1,"transcript":"<what was said, in its own script>","english":"<faithful English rendering>"}',
+    "confidence is how sure you are of the language, never of the rendering: a voice you are certain is neither Amharic nor Afaan Oromo is \"other\" with high confidence, not low.",
     "Rules for the English: keep every number, unit, drug name, negation, body part and side exactly as said;",
     "keep any Ethiopian-calendar date exactly as spoken without converting it; do not add, infer, summarise or advise.",
-    "If you cannot understand the audio, set transcript and english to empty strings and confidence to 0.",
+    "If the speech is in some other language, still say \"other\" with your confidence in that, and still fill transcript and english if you can make them out.",
+    "Only if you can make out no speech at all, set transcript and english to empty strings and confidence to 0.",
   ].join("\n");
 }
 
