@@ -1,6 +1,6 @@
 import "server-only";
 import type { Language } from "@/core/types";
-import { labelReadPrompt, listenPrompt, parseLabelReply, parseListenReply, renderPrompt, type LabelReply, type ListenReply } from "@/core/prompts";
+import { LANGUAGE_NAME, labelReadPrompt, listenPrompt, parseLabelReply, parseListenReply, renderPrompt, type LabelReply, type ListenReply } from "@/core/prompts";
 
 /**
  * Meta Model API, OpenAI-compatible chat completions. Text analysis on Muse Spark 1.3; audio on
@@ -66,35 +66,43 @@ export async function readLabel(image: Buffer, mime: string): Promise<{ reply: L
  * first listener when the self-hosted Omnilingual Space is asleep or not configured. Its Amharic
  * and Afaan Oromo coverage is unverified, so a turn that used it says so.
  *
- * Two multipart parts, named `request` and `audio`. This is not the OpenAI-style `model`/`language`/
- * `file` form the adapter was first written to: that shape is refused with 400 "Both a 'request'
- * and an 'audio' part are required", confirmed against the live API on Oct 27.
+ * Two multipart parts, named `request` and `audio`. Not the OpenAI-style `model`/`language`/`file`
+ * form this was first written to: two live 400s walked it to the real one, and dev.meta.ai's
+ * reference confirms it. The `request` part carries mode, model, audioEncoding and languageBias.
  */
 /**
- * The `audioEncoding` the request part must name. The API refuses a request without one
- * ("You must specify the 'audioEncoding' field", live 400, Oct 27); the vocabulary below is the
- * usual one for a field of that name and is confirmed, value by value, by a live call.
+ * The one container Muse Voice Transcribe accepts, or null if this is not it.
+ *
+ * Its documented contract is a RIFF/WAVE container holding mono 16-bit integer PCM at 16 or 24 kHz
+ * — `audioEncoding` is "WAV", "PCM_16KHZ" or "PCM_24KHZ" and nothing else. A browser records Opus
+ * in WebM, so a recorded turn is refused here rather than sent to be refused there.
  */
-export function voiceEncoding(format: string): string {
-  const f = format.toLowerCase();
-  if (f === "wav" || f === "wave" || f === "pcm") return "LINEAR16";
-  if (f === "webm") return "WEBM_OPUS";
-  if (f === "ogg" || f === "oga" || f === "opus") return "OGG_OPUS";
-  if (f === "mp3" || f === "mpeg") return "MP3";
-  if (f === "flac") return "FLAC";
-  if (f === "mp4" || f === "m4a" || f === "aac") return "AAC";
-  return "LINEAR16";
+export function voiceEncoding(format: string): "WAV" | null {
+  const f = format.toLowerCase().replace(/^x-|^vnd\./, "");
+  return f === "wav" || f === "wave" ? "WAV" : null;
 }
 
 export async function voiceTranscribe(audio: Buffer, format: string, language: Language, fetchImpl: typeof fetch = fetch): Promise<{ text: string; ms: number; raw: unknown }> {
   if (!KEY()) throw new Error("meta_not_configured");
+  const encoding = voiceEncoding(format);
+  if (!encoding) throw new Error(`voice_needs_wav: the clip is ${format}, and this endpoint takes only a RIFF/WAVE container, mono 16-bit PCM at 16 or 24 kHz`);
+  if (audio.byteLength > 32 * 1024 * 1024) throw new Error("voice_audio_too_large: the endpoint takes at most 32 MB");
   const t0 = Date.now();
   const form = new FormData();
-  form.append("request", new Blob([JSON.stringify({ model: voiceModel(), language, audioEncoding: voiceEncoding(format) })], { type: "application/json" }));
-  form.append("audio", new Blob([new Uint8Array(audio)], { type: `audio/${format === "m4a" ? "mp4" : format}` }), `turn.${format}`);
+  // PUSH_TO_TALK: one speaker, one utterance, which is what a turn is. The other modes are
+  // ENDPOINTING and DIARIZATION, for a stream and for a meeting. languageBias takes the language
+  // written out, not a code.
+  form.append("request", new Blob([JSON.stringify({
+    mode: "PUSH_TO_TALK",
+    model: voiceModel(),
+    audioEncoding: encoding,
+    languageBias: [LANGUAGE_NAME[language]],
+  })], { type: "application/json" }));
+  form.append("audio", new Blob([new Uint8Array(audio)], { type: "audio/wav" }), "turn.wav");
   const res = await fetchImpl(`${BASE()}/asr/transcribe`, { method: "POST", headers: { Authorization: `Bearer ${KEY()}` }, body: form, signal: AbortSignal.timeout(90_000) });
   if (!res.ok) throw new Error(`voice_http_${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const json = (await res.json()) as { text?: string; transcript?: string; segments?: Array<{ text?: string }> };
-  const text = (json.text || json.transcript || (json.segments || []).map(s => s.text || "").join(" ")).trim();
+  const json = (await res.json()) as { transcript?: string; text?: string; turns?: Array<{ transcript?: string }> };
+  const text = (json.transcript || json.text || (json.turns || []).map(t => t.transcript || "").join(" ")).trim();
   return { text, ms: Date.now() - t0, raw: json };
 }
+

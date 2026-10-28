@@ -224,3 +224,21 @@ no boxes at all, and those are a bug and an answer. The empty result now carries
 came back: the keys and the type of each leaf, never a value, so it is safe to return and safe to
 log while someone is holding a real prescription.
 
+## 23. The fallback listener cannot hear what the app records (Oct 27)
+
+Three live 400s walked the Voice Transcribe adapter from the shape it was guessed into toward the
+shape it needed, and dev.meta.ai's reference settles the rest: two parts, `request` and `audio`;
+the request part carrying `mode`, `model`, `audioEncoding` and `languageBias`; PUSH_TO_TALK for one
+speaker saying one thing; the language written out in full, not as a code. The adapter now sends
+that.
+
+It also surfaced something no amount of fixing the adapter will solve. The endpoint takes a
+RIFF/WAVE container holding mono 16-bit PCM at 16 or 24 kHz, and nothing else. MediaRecorder gives
+Opus in WebM, which is what both recorders in this repository produce. So the fallback that exists
+to save a turn when the Space is asleep cannot accept a single clip the app records — and the Space
+sleeps inside half an hour, which is to say it is asleep nearly every time anyone arrives.
+
+Until that is closed, the adapter refuses a non-WAV clip itself and says why, rather than sending
+it to be refused with a number. A turn that cannot be heard should say which listener could not
+hear it and for what reason; a 400 from somebody else's API is not that.
+
