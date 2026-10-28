@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toWav } from "../audio";
 
 type Item = { id: string; language: "am" | "om"; spoken: "am" | "om"; factType: string; english: string; text: string; reviewed: boolean };
 const LANG: Record<"am" | "om", string> = { am: "Amharic", om: "Afaan Oromo" };
@@ -31,12 +32,16 @@ export default function Recorder({ items }: { items: Item[] }) {
       r.ondataavailable = e => { if (e.data.size) chunks.current.push(e.data); };
       r.onstop = () => {
         stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(chunks.current, { type: r.mimeType || "audio/webm" });
-        const ext = (blob.type.split("/")[1] || "webm").split(";")[0] === "mp4" ? "m4a" : "webm";
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a"); a.href = url; a.download = `${item.id}.${ext}`; a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setDone(d => ({ ...d, [item.id]: elapsed.current }));
+        const recorded = new Blob(chunks.current, { type: r.mimeType || "audio/webm" });
+        // Saved as 16 kHz mono WAV, the one container every listener accepts, so the clips feed the harness as they are.
+        void toWav(recorded).then(({ blob, converted }) => {
+          const ext = converted ? "wav" : (recorded.type.split("/")[1] || "webm").split(";")[0] === "mp4" ? "m4a" : "webm";
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = `${item.id}.${ext}`; a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          if (!converted) setError("This browser could not convert the clip to WAV; it was saved as recorded and will not reach Voice Transcribe.");
+          setDone(d => ({ ...d, [item.id]: elapsed.current }));
+        });
       };
       r.start(); rec.current = r; setSeconds(0); elapsed.current = 0;
       timer.current = setInterval(() => { elapsed.current += 1; setSeconds(elapsed.current); }, 1000);

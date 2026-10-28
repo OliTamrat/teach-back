@@ -242,3 +242,16 @@ Until that is closed, the adapter refuses a non-WAV clip itself and says why, ra
 it to be refused with a number. A turn that cannot be heard should say which listener could not
 hear it and for what reason; a 400 from somebody else's API is not that.
 
+
+## 24. Every clip leaves the browser as 16 kHz mono WAV (Oct 28)
+
+Decision 23 found that the fallback listener cannot hear what the app records, and the first live
+turn from a phone showed the same clip refused by Spark's audio input too ("content[0] did not
+match any supported type" on a WebM), while the terminal session had confirmed Spark on a WAV.
+One container that all three listeners take is better than three code paths, so the conversion
+happens where the recording is made: the browser decodes its own clip with the Web Audio API, mixes
+to mono, resamples to 16 kHz and writes a RIFF/WAVE header (`src/core/wav.ts`, pure and tested;
+`src/app/audio.ts` does the decoding). The interpreter screen uploads WAV and the recording page
+saves WAV, so the Oct 31 clips feed the harness as they are. If a browser cannot decode its own
+recording the clip is sent as recorded and the turn says so, rather than failing silently. Verified
+in headless Chromium: the upload is `turn.wav`, 16000 Hz, one channel, 16 bits.

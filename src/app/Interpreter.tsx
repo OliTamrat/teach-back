@@ -7,6 +7,7 @@ import { SETTINGS, teachBackQuestion, type Setting } from "@/core/question";
 import { localizedQuestion } from "@/core/question-i18n";
 import LabelPhoto from "./LabelPhoto";
 import { apiPost, getAccessCode, refusal, setAccessCode } from "./api-client";
+import { toWav } from "./audio";
 import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
 import type { Fact, Flag, Language } from "@/core/types";
 
@@ -372,9 +373,12 @@ function Recorder({ language, reference, health, onTurn, onAccessNeeded }: { lan
     rec.current?.stop();
     setState("sending");
   }
-  async function send(blob: Blob) {
+  async function send(recorded: Blob) {
+    // Every listener gets 16 kHz mono WAV: Voice Transcribe takes nothing else, and Spark's audio input was confirmed on it.
+    const { blob, converted } = await toWav(recorded);
     const form = new FormData();
-    form.append("audio", blob, `turn.${(blob.type.split("/")[1] || "webm").split(";")[0]}`);
+    form.append("audio", blob, converted ? "turn.wav" : `turn.${(recorded.type.split("/")[1] || "webm").split(";")[0]}`);
+    if (!converted) form.append("note", "The browser could not decode its own recording; the clip was sent as recorded.");
     form.append("language", language);
     form.append("reference", reference);
     try {

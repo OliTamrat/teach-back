@@ -11,7 +11,7 @@ real medical information, nothing improvised about anyone's health.
 | Volunteers | 2 to 4 per language, any age, any accent. Different voices matter more than many sentences from one voice. |
 | Time per volunteer | 20 to 30 minutes: consent, 30 sentences, 5 wrong-language sentences, a short thank-you. |
 | Equipment | A laptop or phone with Chrome or Safari, a quiet room, the `/record` page of the app. A headset microphone is better than a laptop microphone. |
-| Output | `eval/audio/S01.webm` to `S60.webm` and `W01.webm` to `W10.webm`. Each volunteer's set goes in its own folder first (`eval/audio/v1/`, `v2/`), merged after consent is checked. |
+| Output | `eval/audio/S01.wav` to `S60.wav` and `W01.wav` to `W10.wav`, 16 kHz mono WAV as `/record` saves them. Each volunteer's set goes in its own folder first (`eval/audio/v1/`, `v2/`), merged after consent is checked. |
 
 ## Running it
 

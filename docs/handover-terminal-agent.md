@@ -107,7 +107,8 @@ from the environment and takes `--audio`, `--image`, `--language`, `--reference`
 
 ### Open, in the order they will hurt
 
-1. **The fallback listener cannot accept a recorded clip.** Decision 23. Muse Voice Transcribe takes
+1. **Closed Oct 28 (decision 24): every clip now leaves the browser as 16 kHz mono WAV.** Re-run the
+   first live turn from a phone to confirm all three listeners accept it. Previously: Decision 23. Muse Voice Transcribe takes
    a RIFF/WAVE container, mono 16-bit PCM at 16 or 24 kHz; `Interpreter.tsx` and `record/Recorder.tsx`
    both negotiate `audio/webm;codecs=opus`. The adapter refuses the clip itself and says why, which
    is honest but still leaves a cold Space with no first listener. Closing it means converting in

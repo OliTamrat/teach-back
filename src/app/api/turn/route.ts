@@ -33,6 +33,8 @@ export async function POST(req: Request) {
   const format = (audio.type.split("/")[1] || "webm").split(";")[0];
   const buf = Buffer.from(await audio.arrayBuffer());
   const notes: string[] = [];
+  const clientNote = String(form.get("note") || "").trim();
+  if (clientNote) notes.push(clientNote.slice(0, 200));
 
   // Named only once a first listener has actually produced something; null means neither did.
   let firstListener: string | null = null;

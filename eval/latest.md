@@ -1,4 +1,4 @@
-# Teach-Back evaluation, 2026-10-27T17-38-01 (audio-v1.json, text-v1.json)
+# Teach-Back evaluation, 2026-10-28T14-51-51 (audio-v1.json, text-v1.json)
 
 | Metric | Value |
 | --- | --- |
