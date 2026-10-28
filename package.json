@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "eval": "tsx scripts/eval.ts",
     "review:apply": "tsx scripts/review-apply.ts",
-    "results": "tsx scripts/results.ts"
+    "results": "tsx scripts/results.ts",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "dependencies": {
     "next": "16.4.3",

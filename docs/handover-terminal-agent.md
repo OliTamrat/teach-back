@@ -90,3 +90,49 @@ two listeners ever disagree on a clean reading (false alarms), and did the dropp
 - Change the human gate: no automatic confirmation, no model deciding a flag, no sentence from a
   model shown as something to say to a patient.
 - Skip a failing test to get green, or rewrite history on `main`.
+
+## 6. What is confirmed against the live services, and what is not
+
+Run `npm run smoke` to repeat any of this. It reads `TEACH_BACK_SITE` and `TEACH_BACK_ACCESS_CODE`
+from the environment and takes `--audio`, `--image`, `--language`, `--reference`.
+
+| Request shape | Where | State |
+| --- | --- | --- |
+| Spark 1.2 audio, `input_audio` base64 | `src/server/meta.ts`, `listen()` | **confirmed live**, transcribed in ~6 s |
+| Spark 1.3 text rendering | `src/server/meta.ts`, `renderEnglish()` | **confirmed live** |
+| Spark 1.3 image, `image_url` data URL | `src/server/meta.ts`, `readLabel()` | **confirmed live**, read a printed label exactly |
+| Omnilingual Space | `src/server/asr.ts`, `transcribe()` | **confirmed live**, ~2 s once the model is loaded |
+| Muse Voice Transcribe | `src/server/meta.ts`, `voiceTranscribe()` | shape per dev.meta.ai, **never completed a call** — see below |
+| SAM 3.1 Responses | `src/server/sam.ts`, `findLabels()` | **answers in ~1.4 s and yields no boxes** — unresolved |
+
+### Open, in the order they will hurt
+
+1. **The fallback listener cannot accept a recorded clip.** Decision 23. Muse Voice Transcribe takes
+   a RIFF/WAVE container, mono 16-bit PCM at 16 or 24 kHz; `Interpreter.tsx` and `record/Recorder.tsx`
+   both negotiate `audio/webm;codecs=opus`. The adapter refuses the clip itself and says why, which
+   is honest but still leaves a cold Space with no first listener. Closing it means converting in
+   the browser — `decodeAudioData` on the recorded blob, downsample to 16 kHz mono, write a WAV
+   header — and sending WAV to all three listeners, which the other two accept. It changes the
+   primary recording path, so it wants a microphone and a real turn, not a unit test.
+2. **SAM finds nothing.** An empty result now carries `shape`: the keys of the response and the type
+   of each leaf, never a value. Send a photo with a label and read it. If the shape shows prose
+   rather than boxes, the concept text or the endpoint is wrong, not `extractBoxes`.
+3. **The Space sleeps inside half an hour.** `services/asr/README.md` step 3 sets Sleep time to the
+   shortest offered, which is right for the bill and wrong for a session: every wake is a fresh
+   30 GB model download, 15 to 25 minutes, and a GPU hour nobody is using. Raise it on the Space
+   before a recording session or a demo, and lower it afterwards. Repeated cold starts cost more
+   than one longer sleep timer.
+4. **No turn has ever been spoken in Amharic or Afaan Oromo.** Everything above was proved with
+   synthetic English audio and a printed English label. Omnilingual transcribed English accurately
+   while being told `amh_Ethi`, so a wrong language code does not announce itself. The three
+   questions a judge asks are still unanswered: did Omnilingual transcribe Amharic and Afaan Oromo,
+   did the two listeners ever disagree on a clean reading, and did the dropped "not" turn red.
+
+### Two things that are true of the second listener
+
+It answers in about 6 seconds and sometimes returns no English rendering. On audio in neither
+session language that is the prompt working: it is told to report what it heard and how sure it is
+of the language. `confidence` means confidence in the language and never in the rendering — the
+turn gates a critical flag on it, so a listener reporting 0 because it could not render is a
+listener silencing the flag.
+
