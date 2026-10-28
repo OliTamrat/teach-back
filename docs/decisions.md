@@ -197,3 +197,30 @@ against an Oromo session, and Ethiopic in an Oromo session is already caught by 
 recognising Amharic. It also needs twelve letters before it will speak: a patient who answers
 "25 mg" has said nothing in any script, and a red flag there is the crying wolf of decision 14.
 
+## 21. A printed prohibition is a direction, not housekeeping (Oct 27)
+
+The first live label read came back exactly right — drug, strength, directions, and the whole
+printed text — and the text handed on for comparison dropped one line of it: "Do not take with
+milk." The reader had put the warning in `text` and the directions sentence in `instructions`,
+which is a fair reading of a prompt that asked for "the directions sentence", and the composer
+preferred the named fields over everything legible. That preference is right in general: a label
+also carries capsule counts and lot numbers, and comparing those against what a patient said
+raises conflicts nobody needed. A prohibition is the exception, and it is the exception that
+matters most, so it is carried through even when the reader files it elsewhere. It cannot create a
+false conflict: the label comparison weighs dose, frequency and drug, and never a negation.
+
+The prompt was asked to stop inviting the split — every direction, including anything the patient
+must not do. Both halves were changed, because the prompt is the cause and the composer is the
+guard, and a guard that only works when the cause behaves is not a guard.
+
+What counts as a negation now lives in one place. Two lists would drift, and the half that drifted
+would be the half that quietly stopped flagging.
+
+## 22. An empty answer says which keys it saw (Oct 27)
+
+SAM returned no boxes on a photo with one obvious label, in 1.4 seconds, with no error. A tolerant
+parser cannot tell you whether a model returned boxes under a key it does not recognise or returned
+no boxes at all, and those are a bug and an answer. The empty result now carries the shape of what
+came back: the keys and the type of each leaf, never a value, so it is safe to return and safe to
+log while someone is holding a real prescription.
+

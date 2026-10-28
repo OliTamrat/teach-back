@@ -4,6 +4,7 @@
  * a date.
  */
 import type { Language } from "./types";
+import { NEGATION_CUE } from "./facts";
 
 export const LANGUAGE_NAME: Record<Language, string> = { am: "Amharic", om: "Afaan Oromo" };
 
@@ -53,7 +54,7 @@ export function parseListenReply(raw: string): ListenReply | null {
 export function labelReadPrompt(): string {
   return [
     "This is a photo of a medication label. Report only what is printed on it, as JSON, no prose, with exactly these keys:",
-    '{"legible":true|false,"drug":"<name as printed, or empty>","strength":"<e.g. 500 mg, or empty>","instructions":"<the directions sentence as printed, or empty>","text":"<all legible text, in reading order>"}',
+    '{"legible":true|false,"drug":"<name as printed, or empty>","strength":"<e.g. 500 mg, or empty>","instructions":"<every direction to the patient as printed - how much, how often, how long, and anything they must not do - or empty>","text":"<all legible text, in reading order>"}',
     "Rules: copy numbers, units and names exactly as printed; do not correct, infer, expand abbreviations or add anything that is not visible;",
     "if the label is unreadable, set legible to false and the other fields to empty strings.",
   ].join("\n");
@@ -75,5 +76,15 @@ export function parseLabelReply(raw: string): LabelReply | null {
 
 /** The label as one English line for the fact extractor: drug, strength, then the directions. */
 export function labelAsText(l: LabelReply): string {
-  return [l.drug, l.strength, l.instructions].filter(Boolean).join(" ").trim() || l.text;
+  const head = [l.drug, l.strength, l.instructions].filter(Boolean).join(" ").trim();
+  if (!head) return l.text;
+  // Drug, strength and directions are preferred over all the legible text, because a label also
+  // carries counts and lot numbers that would be compared against things the patient never had to
+  // say. A prohibition is the exception: "Do not take with milk" is a direction, the model prints
+  // it outside the directions sentence often enough, and dropping it leaves the reviewer working
+  // from a label that says less than the label does. It cannot raise a false conflict either:
+  // compareWithLabel weighs dose, frequency and drug, never a negation.
+  const printed = (l.text || "").split(/(?<=[.!?])\s+|\n+/).map(t => t.trim());
+  const missing = printed.filter(t => t && NEGATION_CUE.test(t) && !head.includes(t));
+  return [head, ...missing].join(" ").trim();
 }

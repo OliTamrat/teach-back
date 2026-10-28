@@ -51,3 +51,37 @@ describe("label reading", () => {
   });
 });
 
+describe("the label as text for comparison", () => {
+  const label = (o: Partial<Parameters<typeof labelAsText>[0]>) =>
+    labelAsText({ legible: true, drug: "", strength: "", instructions: "", text: "", ...o } as Parameters<typeof labelAsText>[0]);
+
+  it("keeps a prohibition the model printed outside the directions", () => {
+    // The live reading on Oct 27: the warning came back in `text` and nowhere else.
+    const t = label({
+      drug: "AMOXICILLIN", strength: "500 mg",
+      instructions: "Take ONE capsule THREE times a day for SEVEN days.",
+      text: "AMOXICILLIN 500 mg\nCapsules - 21 total\nTake ONE capsule THREE times a day for SEVEN days.\nDo not take with milk.\nKeep out of reach of children.",
+    });
+    expect(t).toContain("Do not take with milk.");
+    expect(t).toContain("Take ONE capsule THREE times a day for SEVEN days.");
+  });
+
+  it("leaves the counts and the housekeeping alone", () => {
+    // A count compared against what the patient said is a conflict nobody needed raising.
+    const t = label({
+      drug: "AMOXICILLIN", strength: "500 mg", instructions: "Take ONE capsule.",
+      text: "AMOXICILLIN 500 mg\nCapsules - 21 total\nTake ONE capsule.\nKeep out of reach of children.",
+    });
+    expect(t).not.toContain("21 total");
+    expect(t).not.toContain("Keep out of reach");
+  });
+
+  it("does not repeat a prohibition already in the directions", () => {
+    const t = label({ instructions: "Take ONE capsule. Do not take with milk.", text: "Take ONE capsule. Do not take with milk." });
+    expect(t.match(/Do not take with milk/g)).toHaveLength(1);
+  });
+
+  it("falls back to everything legible when the model named no fields", () => {
+    expect(label({ text: "AMOXICILLIN 500 mg" })).toBe("AMOXICILLIN 500 mg");
+  });
+});

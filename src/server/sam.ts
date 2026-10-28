@@ -63,3 +63,26 @@ export function extractBoxes(raw: unknown): Box[] {
   walk(raw);
   return out.sort((p, q) => (q.score ?? 0) - (p.score ?? 0));
 }
+
+/**
+ * The keys a response arrived with and the type of each leaf, nested a few deep. Never a value.
+ *
+ * A tolerant parser that finds nothing cannot tell you whether the model returned boxes under a
+ * key it does not know, or returned no boxes at all — and that is the difference between a bug and
+ * an answer. This says which keys were there. It must not carry what was printed on somebody's
+ * medication, so it reports types and never content.
+ */
+export function shapeOf(v: unknown, depth = 3): string {
+  if (v === null) return "null";
+  if (Array.isArray(v)) {
+    if (depth <= 0) return "[...]";
+    return v.length ? `[${shapeOf(v[0], depth - 1)}${v.length > 1 ? `, x${v.length}` : ""}]` : "[]";
+  }
+  if (typeof v === "object") {
+    if (depth <= 0) return "{...}";
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o).map(k => `${k}:${shapeOf(o[k], depth - 1)}`).join(",")}}`;
+  }
+  return typeof v;
+}
+

@@ -6,6 +6,14 @@
 import type { Fact, FactType, Language } from "./types";
 import { MONTH_ALIASES, formatGregorian, formatEthiopian, resolveYearless, toGregorian, type GregorianDate, OROMO_MONTHS } from "./calendar";
 
+/**
+ * The negators this extractor recognises. Exported so nothing else has to invent a second
+ * vocabulary: two lists of what counts as a negation would drift, and the half that drifted would
+ * be the half that quietly stopped flagging.
+ */
+export const NEGATORS = "not|no|never|cannot|can't|don't|do not|doesn't|does not|didn't|did not|isn't|haven't|have not|stopped|without";
+export const NEGATION_CUE = new RegExp(`\\b(?:${NEGATORS})\\b`, "i");
+
 const NUMBER_WORDS: Record<string, number> = {
   zero: 0, one: 1, a: 1, an: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
   eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18,
@@ -127,7 +135,7 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
   }
 
   // --- negation: the negator plus what it governs (up to the next clause break)
-  for (const m of text.matchAll(/\b(not|no|never|cannot|can't|don't|do not|doesn't|does not|didn't|did not|isn't|haven't|have not|stopped|without)\b([^.,;]{0,40})/gi)) {
+  for (const m of text.matchAll(new RegExp(`\\b(${NEGATORS})\\b([^.,;]{0,40})`, "gi"))) {
     const scope = m[2].trim().split(/\s+/).slice(0, 5).join(" ");
     if (/^(more than)/i.test(scope)) continue; // "no more than three" is a frequency cap
     push({ type: "negation", value: `${m[1].toLowerCase()} ${scope}`.trim(), source: (m[1] + m[2]).trim(), start: m.index!, end: m.index! + m[0].length });

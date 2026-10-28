@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { extractBoxes } from "./sam";
+import { extractBoxes, shapeOf } from "./sam";
 
 describe("SAM response parsing is tolerant of the preview's shape", () => {
   it("reads x1,y1,x2,y2 boxes with scores and sorts by score", () => {
@@ -14,5 +14,23 @@ describe("SAM response parsing is tolerant of the preview's shape", () => {
   });
   it("returns nothing for a reply without boxes", () => {
     expect(extractBoxes({ output_text: "no label found" })).toEqual([]);
+  });
+});
+
+describe("saying what came back when no boxes did", () => {
+  it("reports the keys and the types, and never a value", () => {
+    const raw = { id: "resp_1", output: [{ type: "message", content: [{ type: "output_text", text: "I can see a medication label." }] }] };
+    const shape = shapeOf(raw);
+    expect(shape).toContain("output");
+    expect(shape).toContain("content");
+    expect(shape).toContain("string");
+    // The whole point: a shape must be safe to return and to log.
+    expect(shape).not.toContain("medication label");
+    expect(shape).not.toContain("resp_1");
+  });
+
+  it("distinguishes a model that answered in prose from one that found nothing", () => {
+    expect(extractBoxes({ output: [{ content: [{ type: "output_text", text: "no label here" }] }] })).toEqual([]);
+    expect(shapeOf({ boxes: [] })).toBe("{boxes:[]}");
   });
 });
