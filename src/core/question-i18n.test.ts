@@ -10,7 +10,7 @@ describe("localized teach-back questions", () => {
       for (const lang of ["am", "om"] as const) {
         const q = localizedQuestion(f, lang);
         expect(q.text.length).toBeGreaterThan(10);
-        if (f.type === "negation" || f.type === "date") expect(q.text).toContain(f.source);
+        expect(q.text).not.toContain(f.source); // the English words never appear inside the patient's language
       }
     }
   });
@@ -24,4 +24,12 @@ describe("localized teach-back questions", () => {
     expect(REVIEWED.om.reviewed).toBe(false);
     expect(localizedQuestion(facts[0], "am").reviewed).toBe(false);
   });
+  it("the quoting wording exists for reviewers but is never the default", () => {
+    const f = facts.find(x => x.type === "negation")!;
+    expect(localizedQuestion(f, "am").text).not.toContain(f.source);
+    expect(localizedQuestion(f, "am").text).toMatch(/[\u1200-\u137F]/);
+    expect(localizedQuestion(f, "om").text).not.toContain(f.source);
+    expect(localizedQuestion(f, "am", { quoteSource: true }).text).toContain(f.source);
+  });
 });
+

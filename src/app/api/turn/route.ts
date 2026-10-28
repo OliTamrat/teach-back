@@ -68,7 +68,8 @@ export async function POST(req: Request) {
       try {
         const r = await renderEnglish(asr.text, language);
         english = r.text;
-        if (!english) why = ` (finish_reason=${r.finishReason ?? "unknown"}${r.reasoningChars ? `, ${r.reasoningChars} characters of reasoning and no answer` : ""})`;
+        if (!english) why = ` (${r.model}: finish_reason=${r.finishReason ?? "unknown"}${r.reasoningChars ? `, ${r.reasoningChars} characters of reasoning and no answer` : ""})`;
+        else if (r.model !== process.env.META_SPARK_MODEL && r.model === (process.env.META_SPARK_AUDIO_MODEL || "muse-spark-1.2")) notes.push("Spark 1.3 ran out of tokens while reasoning; the rendering came from Spark 1.2");
       }
       catch (e) { notes.push(`Rendering failed: ${msg(e)}`); }
     } else notes.push("No English rendering without the Meta Model API key");
@@ -87,6 +88,12 @@ export async function POST(req: Request) {
 
   // If only the second listener heard anything, it becomes the primary so the screen still has a rendering to mark up.
   if (!primary && secondary) { primary = secondary; secondary = undefined; notes.push("Only the second listener produced a rendering"); }
+  // Voice Transcribe's Amharic and Afaan Oromo are unverified and, on the first live turns, poor. When it
+  // stood in for the Space and Spark heard the audio itself, Spark leads and the fallback is the cross-check.
+  else if (primary && secondary && !isEnglish && firstListener?.includes("fallback")) {
+    const fallback = primary; primary = secondary; secondary = fallback;
+    notes.push("Spark leads this turn: the first listener was the Voice Transcribe fallback, whose Amharic and Afaan Oromo are unverified");
+  }
   if (!primary) return NextResponse.json({ error: "no_listener", notes, transcript: asr?.text ?? "" }, { status: 502 });
 
   // Language check: the second listener's judgement first, the script heuristic on the transcript as fallback.

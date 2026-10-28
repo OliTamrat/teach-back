@@ -81,7 +81,7 @@ export const DRUGS = [
   "artemether", "lumefantrine", "chloroquine", "cotrimoxazole", "iron", "folic acid",
 ];
 
-const BODY_PARTS = "(knee|eye|ear|leg|arm|hand|foot|feet|shoulder|hip|breast|lung|kidney|ankle|wrist|elbow|thigh|calf|cheek|nostril|side of (?:my|the) (?:stomach|abdomen|chest|head|back|neck)|side|stomach|abdomen|belly|chest|back|neck|head|throat|tooth|teeth|jaw|finger|toe|heel|groin|flank)";
+const BODY_PARTS = "(waist|lower back|knee|eye|ear|leg|arm|hand|foot|feet|shoulder|hip|breast|lung|kidney|ankle|wrist|elbow|thigh|calf|cheek|nostril|side of (?:my|the) (?:stomach|abdomen|chest|head|back|neck)|side|stomach|abdomen|belly|chest|back|neck|head|throat|tooth|teeth|jaw|finger|toe|heel|groin|flank)";
 
 export type ExtractOptions = {
   /** The day the words were spoken, for resolving dates with no year. Defaults to today. */

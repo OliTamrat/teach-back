@@ -307,3 +307,31 @@ the Space (eng_Latn), Spark and Voice Transcribe all take it. It is not a sessio
 session is still Amharic or Afaan Oromo, the facts are still extracted for that calendar and that
 month table, and the question templates stay in the patient's language. On a provider turn the
 only language question asked is whether the provider was in fact speaking English.
+
+## 30. A reasoning model that returns nothing is retried on the plain one (Oct 28)
+
+The live turns showed why renderings came back empty: Spark 1.3 reasons before it answers, and on a
+garbled transcript it spent the whole budget thinking and stopped with finish_reason=length and no
+content. The budget is now 6000 tokens, and when 1.3 still returns nothing for that reason the
+rendering is retried once on Spark 1.2, which answers plainly and had not failed on any live turn.
+The turn says which model rendered. Spark 1.3 stays first because it renders better when it does
+answer; 1.2 is the floor, not the ceiling.
+
+## 31. The fallback never leads on Amharic or Afaan Oromo when Spark heard the audio (Oct 28)
+
+On the second live patient turn Voice Transcribe, standing in for the sleeping Space, heard eleven
+garbled words; Spark heard the whole sentence; and the garbled rendering was the primary, with
+Spark's facts reduced to single-listener warnings. The order was an accident of plumbing: whoever
+is called the first listener leads. Now, on a patient turn where the first listener was the
+fallback and Spark produced a rendering, Spark leads and the fallback is the cross-check, and the
+turn says so. The Space, when awake, still leads: its Amharic and Afaan Oromo are the published
+ones. Decision 8 stands: the fallback keeps the screen alive and is never the story.
+
+## 32. The question in the patient's language quotes nothing (Oct 28)
+
+The teach-back question in English quotes the fact's words, which helps. In Amharic or Afaan Oromo
+it must not: the fact's words are always the English rendering, never the patient's own words, so
+the first live turns read "headache" and "penicillin" into the middle of Amharic sentences. Each
+language now has a wording per fact type that quotes nothing, and the screen uses it on every turn.
+The quoting wording is kept for the reviewers and for the day the patient's own words can be
+aligned to a fact.

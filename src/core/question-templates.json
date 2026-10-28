@@ -1,5 +1,5 @@
 {
-  "_note": "Teach-back questions in the patient's language, one per fact type. {source} is replaced by the patient's own words, {value} by the fact's canonical value. Drafts until reviewed by a native speaker through /review; npm run review:apply writes the review back here.",
+  "_note": "Teach-back questions in the patient's language, one per fact type. {source} is replaced by the patient's own words, {value} by the fact's canonical value. Drafts until reviewed by a native speaker through /review; npm run review:apply writes the review back here. _noSource holds the wording used on a provider turn, where the fact's words are the provider's English and must not be quoted inside the patient's language.",
   "am": {
     "reviewed": false,
     "dose": "በእያንዳንዱ ጊዜ ምን ያህል ይወስዳሉ? እባክዎ በራስዎ ቃላት ይንገሩኝ።",
@@ -10,7 +10,15 @@
     "body_part": "እባክዎ የት እንደሆነ ያሳዩኝ።",
     "duration": "ለምን ያህል ጊዜ? \"{source}\" ብለዋል።",
     "number": "እባክዎ ያንን ቁጥር እንደገና ቀስ ብለው ይንገሩኝ፤ {source}?",
-    "symptom": "እባክዎ የሚሰማዎትን እንደገና በራስዎ ቃላት ይንገሩኝ፤ \"{source}\" ብለዋል?"
+    "symptom": "እባክዎ የሚሰማዎትን እንደገና በራስዎ ቃላት ይንገሩኝ፤ \"{source}\" ብለዋል?",
+    "_noSource": {
+      "drug": "ይህ የትኛው መድኃኒት ነው? እባክዎ ስሙን ይንገሩኝ።",
+      "negation": "በትክክል መስማቴን ማረጋገጥ እፈልጋለሁ። ይህን እንደገና ይንገሩኝ።",
+      "date": "የትኛውን ቀን ማለትዎ ነው? በየትኛው ወርና ዓመት፣ በሚጠቀሙት አቆጣጠር?",
+      "duration": "ለምን ያህል ጊዜ? እባክዎ እንደገና ይንገሩኝ።",
+      "number": "እባክዎ ያንን ቁጥር እንደገና ቀስ ብለው ይንገሩኝ።",
+      "symptom": "እባክዎ የሚሰማዎትን እንደገና በራስዎ ቃላት ይንገሩኝ።"
+    }
   },
   "om": {
     "reviewed": false,
@@ -22,6 +30,14 @@
     "body_part": "Maaloo eessa akka ta'e natti agarsiisaa.",
     "duration": "Hammam dheeratee? \"{source}\" jettan.",
     "number": "Maaloo lakkoofsa sana suuta jedhaa irra deebi'aa; {source}?",
-    "symptom": "Maaloo waan isinitti dhaga'amu irra deebi'aa jecha keessaniin natti himaa; \"{source}\" jettan?"
+    "symptom": "Maaloo waan isinitti dhaga'amu irra deebi'aa jecha keessaniin natti himaa; \"{source}\" jettan?",
+    "_noSource": {
+      "drug": "Qorichi kun kami? Maaloo maqaa isaa natti himaa.",
+      "negation": "Sirriitti dhaga'uu koo mirkaneeffachuun barbaada. Kana irra deebi'aa natti himaa.",
+      "date": "Guyyaa kam jechuu keessan? Ji'a fi bara kam, lakkoofsa yeroo isin fayyadamtaniin?",
+      "duration": "Hammam dheeratee? Maaloo irra deebi'aa natti himaa.",
+      "number": "Maaloo lakkoofsa sana suuta jedhaa irra deebi'aa.",
+      "symptom": "Maaloo waan isinitti dhaga'amu irra deebi'aa jecha keessaniin natti himaa."
+    }
   }
 }

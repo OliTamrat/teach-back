@@ -42,8 +42,14 @@ async function chat(model: string, content: Content, maxTokens: number): Promise
 }
 
 /** First listener's rendering: ASR transcript -> English. */
-export async function renderEnglish(transcript: string, language: SpeechLanguage) {
-  return chat(sparkModel(), renderPrompt(transcript, language), 3000);
+export async function renderEnglish(transcript: string, language: SpeechLanguage): Promise<ChatResult & { model: string }> {
+  // Spark 1.3 reasons before it answers and, on a garbled transcript, can spend the whole budget
+  // thinking (finish_reason=length, no content). The budget is generous, and when it still comes
+  // back empty the rendering is retried once on Spark 1.2, which answers plainly.
+  const first = await chat(sparkModel(), renderPrompt(transcript, language), 6000);
+  if (first.text || first.finishReason !== "length") return { ...first, model: sparkModel() };
+  const second = await chat(sparkAudioModel(), renderPrompt(transcript, language), 3000);
+  return { ...second, ms: first.ms + second.ms, model: sparkAudioModel(), reasoningChars: first.reasoningChars };
 }
 
 /** Second listener: Spark hears the audio itself. */
