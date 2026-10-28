@@ -46,7 +46,7 @@ const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "freq
 type Mode = "record" | "paste";
 type Health = { ready: boolean; metaModelApi: { key: string }; asr: { service: string } };
 type TurnResponse = {
-  transcript: string; secondTranscript: string; notes: string[];
+  firstListener: string | null; transcript: string; secondTranscript: string; notes: string[];
   detected: { language: Language | null; confidence: number; by: string };
   timings: { asrMs: number | null; listenMs: number | null };
   primary: { english: string }; secondary: { english: string } | null;
@@ -160,7 +160,7 @@ export default function Interpreter() {
     const bText = t.secondary?.english ?? "";
     const spoken = t.detected.language && t.detected.confidence >= 0.6 ? t.detected.language : "";
     setA(t.primary.english); setB(bText); setSpokenLanguage(spoken);
-    setAudio({ transcript: t.transcript, secondTranscript: t.secondTranscript, notes: t.notes, detected: t.detected, timings: t.timings });
+    setAudio({ firstListener: t.firstListener, transcript: t.transcript, secondTranscript: t.secondTranscript, notes: t.notes, detected: t.detected, timings: t.timings });
     check({ a: t.primary.english, b: bText, spoken });
   }
   function decide(i: number, d: Decision) { setDecisions(prev => ({ ...prev, [i]: d })); }
@@ -435,13 +435,19 @@ function ClearButton({ onClear }: { onClear: () => void }) {
     : <button className="btn small quiet" onClick={() => setArm(true)}>Clear</button>;
 }
 
+/** "Listener A (Omnilingual ASR)" reads as "Omnilingual ASR" once "Heard" has said the rest. */
+function shortListener(name: string | null) {
+  if (!name) return "first listener";
+  return (name.match(/\(([^)]+)\)/)?.[1] ?? name).replace(/,\s*fallback$/, " fallback");
+}
+
 function TurnMeta({ meta, language }: { meta: AudioMeta; language: Language }) {
   const lang = meta.detected.language ?? language;
   return (
     <div className="turnmeta">
       {meta.transcript && (
         <div className="field">
-          <span className="eyebrow">Heard (Omnilingual ASR, {LANG_NAME[language]})</span>
+          <span className="eyebrow">Heard ({shortListener(meta.firstListener)}, {LANG_NAME[language]})</span>
           <p className="transcript" lang={lang}>{meta.transcript}</p>
         </div>
       )}

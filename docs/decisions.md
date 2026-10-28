@@ -157,3 +157,27 @@ permission level, not fine-grained: fine-grained needs the Space scoped by hand 
 same 401 as a Space-side `ASR_TOKEN` check, and one symptom with two causes is a bad thing to own
 in the week before a deadline. The Space's address is not a credential and never needed recovering:
 Kintale publishes it in its own `/api/health`.
+
+## 18. Voice Transcribe takes a `request` part and an `audio` part (Oct 27)
+
+The adapter was written to the OpenAI-style multipart form — `model`, `language`, `file` — because
+that is what a hosted speech-to-text endpoint usually takes. The first live call refused it with
+400, `Both a 'request' and an 'audio' part are required`, so the real shape is two parts: `request`,
+a JSON document carrying the model and the language, and `audio`, the clip. The adapter now sends
+that and a test asserts the part names, because the failure it replaces was invisible until a live
+call: every unit test passed against the wrong form. This is decision 7 happening a second time, and
+the same rule applies — an integration is written from the other side's code or a live call, never
+from what the shape usually is.
+
+## 19. A listener is named only once it has spoken (Oct 27)
+
+The turn named Listener A before either listener had produced anything, and when both first-listener
+paths failed it still reported `firstListener: "Listener A (Omnilingual ASR)"` while quietly filling
+`transcript` from the second listener. The screen compounded it: the transcript block was labelled
+`Heard (Omnilingual ASR, …)` in fixed text, and the second listener's block was hidden whenever the
+two matched, so a cold Space showed one transcript credited to a listener that never ran. The
+response now carries `null` until a listener has really transcribed, `transcript` holds the first
+listener's words or none, and the label on the screen is read from the turn instead of assumed.
+Attribution is not decoration here: the whole product rests on two listeners being told apart, and a
+reading credited to the wrong one is worse than a reading marked missing.
+

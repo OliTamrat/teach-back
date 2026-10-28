@@ -34,7 +34,8 @@ export async function POST(req: Request) {
   const buf = Buffer.from(await audio.arrayBuffer());
   const notes: string[] = [];
 
-  let firstListener = "Listener A (Omnilingual ASR)";
+  // Named only once a first listener has actually produced something; null means neither did.
+  let firstListener: string | null = null;
   const [asrResult, second] = await Promise.all([
     asrConfigured()
       ? transcribe(audio, language as Language).catch(e => { notes.push(e instanceof AsrError ? `Omnilingual ASR: ${e.hint}` : `Omnilingual ASR failed: ${msg(e)}`); return null; })
@@ -42,6 +43,7 @@ export async function POST(req: Request) {
     metaConfigured() ? listen(buf, format, language as Language).catch(e => { notes.push(`Second listener failed: ${msg(e)}`); return null; }) : (notes.push("Meta Model API key not configured"), Promise.resolve(null)),
   ]);
   let asr = asrResult;
+  if (asr) firstListener = "Listener A (Omnilingual ASR)";
   // Fallback first listener: Meta's hosted Voice Transcribe, when the Space is asleep or absent. Said on the turn, never silently.
   if (!asr && metaConfigured() && process.env.META_VOICE_FALLBACK !== "off") {
     try {
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
   }
 
   let primary: Listener | null = null;
-  if (asr && asr.text) {
+  if (asr && asr.text && firstListener) {
     let english = "";
     if (metaConfigured()) {
       try { english = (await renderEnglish(asr.text, language as Language)).text; }
@@ -92,7 +94,7 @@ export async function POST(req: Request) {
   logCall("turn", { language, firstListener, second: Boolean(secondary), asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null, facts: turn.primary.facts.length, flags: turn.flags.length, crit: turn.flags.filter(f => f.severity === "crit").length, notes: notes.length, bytes: audio.size });
   return NextResponse.json({
     language, reference: iso(reference), detected, notes, firstListener,
-    transcript: asr?.text ?? second?.reply?.transcript ?? "",
+    transcript: asr?.text ?? "",
     secondTranscript: second?.reply?.transcript ?? "",
     timings: { asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null },
     primary: turn.primary, secondary: turn.secondary ?? null, flags: turn.flags,

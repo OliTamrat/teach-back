@@ -64,17 +64,19 @@ export async function readLabel(image: Buffer, mime: string): Promise<{ reply: L
 /**
  * Muse Voice Transcribe, Meta's hosted speech-to-text (POST /v1/asr/transcribe). The fallback
  * first listener when the self-hosted Omnilingual Space is asleep or not configured. Its Amharic
- * and Afaan Oromo coverage is unverified, so a turn that used it says so. The request shape is the
- * OpenAI-style multipart form; the first live call confirms it.
+ * and Afaan Oromo coverage is unverified, so a turn that used it says so.
+ *
+ * Two multipart parts, named `request` and `audio`. This is not the OpenAI-style `model`/`language`/
+ * `file` form the adapter was first written to: that shape is refused with 400 "Both a 'request'
+ * and an 'audio' part are required", confirmed against the live API on Oct 27.
  */
-export async function voiceTranscribe(audio: Buffer, format: string, language: Language): Promise<{ text: string; ms: number; raw: unknown }> {
+export async function voiceTranscribe(audio: Buffer, format: string, language: Language, fetchImpl: typeof fetch = fetch): Promise<{ text: string; ms: number; raw: unknown }> {
   if (!KEY()) throw new Error("meta_not_configured");
   const t0 = Date.now();
   const form = new FormData();
-  form.append("model", voiceModel());
-  form.append("language", language);
-  form.append("file", new Blob([new Uint8Array(audio)], { type: `audio/${format === "m4a" ? "mp4" : format}` }), `turn.${format}`);
-  const res = await fetch(`${BASE()}/asr/transcribe`, { method: "POST", headers: { Authorization: `Bearer ${KEY()}` }, body: form, signal: AbortSignal.timeout(90_000) });
+  form.append("request", new Blob([JSON.stringify({ model: voiceModel(), language })], { type: "application/json" }));
+  form.append("audio", new Blob([new Uint8Array(audio)], { type: `audio/${format === "m4a" ? "mp4" : format}` }), `turn.${format}`);
+  const res = await fetchImpl(`${BASE()}/asr/transcribe`, { method: "POST", headers: { Authorization: `Bearer ${KEY()}` }, body: form, signal: AbortSignal.timeout(90_000) });
   if (!res.ok) throw new Error(`voice_http_${res.status}: ${(await res.text()).slice(0, 200)}`);
   const json = (await res.json()) as { text?: string; transcript?: string; segments?: Array<{ text?: string }> };
   const text = (json.text || json.transcript || (json.segments || []).map(s => s.text || "").join(" ")).trim();
