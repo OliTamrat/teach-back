@@ -70,11 +70,27 @@ export async function readLabel(image: Buffer, mime: string): Promise<{ reply: L
  * `file` form the adapter was first written to: that shape is refused with 400 "Both a 'request'
  * and an 'audio' part are required", confirmed against the live API on Oct 27.
  */
+/**
+ * The `audioEncoding` the request part must name. The API refuses a request without one
+ * ("You must specify the 'audioEncoding' field", live 400, Oct 27); the vocabulary below is the
+ * usual one for a field of that name and is confirmed, value by value, by a live call.
+ */
+export function voiceEncoding(format: string): string {
+  const f = format.toLowerCase();
+  if (f === "wav" || f === "wave" || f === "pcm") return "LINEAR16";
+  if (f === "webm") return "WEBM_OPUS";
+  if (f === "ogg" || f === "oga" || f === "opus") return "OGG_OPUS";
+  if (f === "mp3" || f === "mpeg") return "MP3";
+  if (f === "flac") return "FLAC";
+  if (f === "mp4" || f === "m4a" || f === "aac") return "AAC";
+  return "LINEAR16";
+}
+
 export async function voiceTranscribe(audio: Buffer, format: string, language: Language, fetchImpl: typeof fetch = fetch): Promise<{ text: string; ms: number; raw: unknown }> {
   if (!KEY()) throw new Error("meta_not_configured");
   const t0 = Date.now();
   const form = new FormData();
-  form.append("request", new Blob([JSON.stringify({ model: voiceModel(), language })], { type: "application/json" }));
+  form.append("request", new Blob([JSON.stringify({ model: voiceModel(), language, audioEncoding: voiceEncoding(format) })], { type: "application/json" }));
   form.append("audio", new Blob([new Uint8Array(audio)], { type: `audio/${format === "m4a" ? "mp4" : format}` }), `turn.${format}`);
   const res = await fetchImpl(`${BASE()}/asr/transcribe`, { method: "POST", headers: { Authorization: `Bearer ${KEY()}` }, body: form, signal: AbortSignal.timeout(90_000) });
   if (!res.ok) throw new Error(`voice_http_${res.status}: ${(await res.text()).slice(0, 200)}`);

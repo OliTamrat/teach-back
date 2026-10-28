@@ -68,6 +68,9 @@ export async function POST(req: Request) {
   let secondary: Listener | undefined;
   if (second?.reply?.english) {
     secondary = { name: "Listener B (Muse Spark)", english: second.reply.english, facts: extractFacts(second.reply.english, { reference, language: language as Language }) };
+  } else if (second) {
+    // It answered but gave nothing usable. Without this the turn reports no listener and never says why.
+    notes.push(second.reply ? "Second listener returned no English rendering" : "Second listener's reply could not be read");
   }
 
   // If only the second listener heard anything, it becomes the primary so the screen still has a rendering to mark up.

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-import { voiceTranscribe } from "./meta";
+import { voiceEncoding, voiceTranscribe } from "./meta";
 
 const env = process.env;
 afterEach(() => { process.env = env; });
@@ -32,7 +32,7 @@ describe("Muse Voice Transcribe sends the parts the API actually asks for", () =
 
     const request = body!.get("request") as Blob;
     expect(request.type).toBe("application/json");
-    expect(JSON.parse(await request.text())).toEqual({ model: "muse-voice-transcribe-1.0", language: "am" });
+    expect(JSON.parse(await request.text())).toEqual({ model: "muse-voice-transcribe-1.0", language: "am", audioEncoding: "WEBM_OPUS" });
 
     const audio = body!.get("audio") as File;
     expect(audio.type).toBe("audio/webm");
@@ -49,7 +49,18 @@ describe("Muse Voice Transcribe sends the parts the API actually asks for", () =
     await voiceTranscribe(Buffer.from([1]), "m4a", "om", fake);
     const sent = JSON.parse(await (body!.get("request") as Blob).text());
     expect(sent.language).toBe("om");
+    expect(sent.audioEncoding).toBe("AAC");
     expect((body!.get("audio") as File).type).toBe("audio/mp4");
+  });
+
+  it("names an audioEncoding the API recognises for each format it may be handed", () => {
+    // Required: "You must specify the 'audioEncoding' field" (live 400, Oct 27).
+    expect(voiceEncoding("wav")).toBe("LINEAR16");   // the smoke-test clip
+    expect(voiceEncoding("webm")).toBe("WEBM_OPUS"); // what the browser records
+    expect(voiceEncoding("m4a")).toBe("AAC");        // what an iPhone records
+    expect(voiceEncoding("ogg")).toBe("OGG_OPUS");
+    expect(voiceEncoding("WAV")).toBe("LINEAR16");   // case is not the caller's problem
+    expect(voiceEncoding("something-new")).toBeTruthy();
   });
 
   it("surfaces the status and the body when the shape is refused", async () => {
