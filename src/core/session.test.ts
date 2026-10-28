@@ -58,7 +58,7 @@ describe("session notes", () => {
     const rec = makeTurn({ language: "am", reference: "2026-10-26", english: A, facts: t.primary.facts, flags: t.flags, decisions, at: new Date("2026-10-26T14:05:00Z") });
     expect(rec.summary).toContain("250 milligrams");
     const notes = sessionNotes([rec], new Date("2026-10-26T15:00:00Z"));
-    expect(notes).toContain("1. [14:05] Amharic: Take two tablets of 250 milligrams");
+    expect(notes).toContain("1. [14:05] Patient, Amharic: Take two tablets of 250 milligrams");
     expect(notes).toContain('corrected: dose "500 milligrams" -> "250 milligrams"');
     expect(notes).toContain("confirmed: date");
     expect(notes).toContain("not medical advice");

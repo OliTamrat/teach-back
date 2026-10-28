@@ -13,6 +13,8 @@ export type TurnRecord = {
   /** ISO timestamp of when the turn was finalised. */
   at: string;
   language: Language;
+  /** Who spoke: the patient (checked through two listeners) or the provider (the interpreter's rendering checked against them). */
+  role?: "patient" | "provider";
   /** The day the words were spoken, ISO date; Ethiopian dates were resolved against it. */
   reference: string;
   /** What the first listener heard, in its own script, when the turn came from audio. */
@@ -81,7 +83,7 @@ export function sessionNotes(turns: TurnRecord[], now = new Date()): string {
   ];
   turns.forEach((t, n) => {
     const time = t.at.slice(11, 16);
-    lines.push(`${n + 1}. [${time}] ${LANG[t.language]}: ${t.summary}`);
+    lines.push(`${n + 1}. [${time}] ${t.role === "provider" ? "Provider (English, interpreted into " + LANG[t.language] + ")" : "Patient, " + LANG[t.language]}: ${t.summary}`);
     t.flags.forEach((f, i) => {
       const d = t.decisions[i];
       if (!d) return;

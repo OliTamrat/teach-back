@@ -5,7 +5,7 @@ Everything the hackathon form asks for, ready to paste. Bracketed items are fill
 
 **Project name:** Teach-Back
 
-**Tagline (under 100 characters):** A second pair of ears for interpreters in Amharic and Afaan Oromo.
+**Tagline (under 100 characters):** Checks the interpreter both ways, in Amharic and Afaan Oromo, before anyone acts.
 
 **Track:** Indie Developer · **Theme:** Build for Your World
 
@@ -15,10 +15,11 @@ Everything the hackathon form asks for, ready to paste. Bracketed items are fill
 I am Ethiopian, I speak Afaan Oromo and Amharic, and for most of my life I have been the one who
 goes along to the clinic or the immigration office to interpret. Errors there are invisible to
 everyone but me: a dropped "not", a dose off by ten, a date from the Ethiopian calendar written as
-if it were Gregorian. Teach-Back listens alongside the interpreter with two Meta models, Omnilingual
-ASR and Muse Spark; code marks every fact that would hurt someone if it were wrong; SAM 3.1 reads
-the medication label; and a human confirms each flag before anything is written down. It advises no
-one.
+if it were Gregorian. Teach-Back checks the interpreter in both directions. When the patient speaks, two Meta models,
+Omnilingual ASR and Muse Spark, hear the Amharic and code compares what they heard. When the
+provider speaks, Teach-Back records the English, then hears the interpreter's Amharic through the
+same listeners and compares, fact by fact, what the provider said with what the patient was told.
+SAM 3.1 reads the medicine the patient brought. A human confirms each flag. It advises no one.
 
 **Longer description (about 300 words).**
 In the Washington DC area, where I live, Amharic is among the top three most-served languages at
@@ -30,13 +31,16 @@ same thing happens: a family member or a phone interpreter carries a conversatio
 diagnosis, a benefit or an asylum claim depends, and nobody can check it. Federal policy now pushes
 machine translation into those rooms while leaving providers responsible for its mistakes.
 
-Teach-Back is the second pair of ears I wished I had. The patient speaks; Omnilingual ASR, Meta's
-open-weights model with published results for both languages, transcribes on a GPU I run myself.
-Muse Spark renders the transcript in English, and a second Spark call hears the same audio on its
-own. Code, never a model, extracts and compares the critical facts: dose, frequency, drug, negation,
-body part and side, date, duration. Ethiopian dates are converted arithmetically; an impossible
-date is a flag, not a guess. A disagreement between the listeners is a red line, and so is a
-negation only one of them heard, because a dropped "not" is the error I fear most.
+Teach-Back is the second pair of ears I wished I had, and it listens both ways. When the patient
+speaks, Omnilingual ASR, Meta's open-weights model with published results for both languages,
+transcribes on a GPU I run myself; Muse Spark renders the transcript in English, and a second Spark
+call hears the same audio on its own; code, never a model, extracts and compares the critical
+facts: symptom, body part and side, duration, date, negation, drug, dose, frequency, number. When
+the provider speaks, Teach-Back records the English, then hears the interpreter's Amharic through
+the same two listeners and compares what the provider said with what the patient was told: a
+changed dose, a dropped "do not", a moved follow-up date. Ethiopian dates are converted
+arithmetically; an impossible date is a flag, not a guess. A dropped "not" is the error I fear
+most, and it is red in both directions.
 
 A photo of the medication box goes to SAM 3.1, which finds the label; the interpreter taps it, the
 browser crops it, Spark reads it, and a contradiction with what was said is flagged. A teach-back

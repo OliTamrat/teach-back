@@ -6,7 +6,7 @@
  * over real recordings once they exist.
  */
 import { extractFacts } from "./facts";
-import { analyzeTurn, compareWithLabel, languageMismatch } from "./compare";
+import { analyzeTurn, compareListeners, compareWithLabel, compareWithSource, languageMismatch } from "./compare";
 import type { Fact, FactType, Flag, Language } from "./types";
 
 export type EvalCase = {
@@ -20,6 +20,8 @@ export type EvalCase = {
   reference: string;
   /** What the patient said, for the record. Not scored. */
   said?: string;
+  /** Provider turn: what the provider said in English. `a` is then the interpreter's rendering heard back in English. */
+  source?: string;
   /** Listener A's English rendering. Required for text cases; on audio cases the pipeline produces it. */
   a?: string;
   /** Listener B's English rendering, if two listeners heard the turn. */
@@ -60,6 +62,14 @@ export function runCase(c: EvalCase): CaseResult {
   const [y, m, d] = c.reference.split("-").map(Number);
   const opts = { reference: { year: y, month: m, day: d }, language: c.language };
   const a = c.a ?? "";
+  if (c.source) {
+    // A provider turn: the truth is what the provider said; the rendering is checked against it.
+    const source = extractFacts(c.source, opts);
+    const rendered = { name: "A", english: a, facts: extractFacts(a, opts) };
+    const second = c.b ? { name: "B", english: c.b, facts: extractFacts(c.b, opts) } : undefined;
+    const flags = [...compareWithSource(source, rendered.facts), ...compareListeners(rendered, second)];
+    return scoreTurn(c, source, flags);
+  }
   const primary = { name: "A", english: a, facts: extractFacts(a, opts) };
   const secondary = c.b ? { name: "B", english: c.b, facts: extractFacts(c.b, opts) } : undefined;
   const extra: Flag[] = [];
@@ -85,11 +95,14 @@ export function scoreTurn(c: EvalCase, primaryFacts: Fact[], flags: Flag[]): Cas
   let plantedCaught = 0;
   for (const p of c.planted) {
     const kind = p.in === "label" ? "label_conflict" : "listener_disagreement";
-    // A planted error counts as caught by a critical disagreement, or by a critical single-listener flag (a dropped negation).
-    if (crit.some(f => (f.kind === kind || (kind === "listener_disagreement" && f.kind === "single_listener")) && f.type === p.type)) plantedCaught++; else missed.push(`planted ${p.type} in ${p.in}`);
+    // A planted error counts as caught by a critical disagreement, a critical single-listener flag (a dropped
+    // negation), or on a provider turn by the interpreter check (changed or dropped).
+    const interp = c.source && (p.in === "a" || p.in === "b");
+    if (crit.some(f => f.type === p.type && (f.kind === kind || (kind === "listener_disagreement" && f.kind === "single_listener") || (interp && (f.kind === "interpreter_changed" || f.kind === "interpreter_dropped"))))) plantedCaught++; else missed.push(`planted ${p.type} in ${p.in}`);
   }
   const plantedTypes = new Set(c.planted.map(p => `${p.in === "label" ? "label_conflict" : "listener_disagreement"}:${p.type}`));
-  const falseAlarms = crit.filter(f => (f.kind === "listener_disagreement" || f.kind === "label_conflict" || f.kind === "single_listener") && !plantedTypes.has(`${f.kind === "single_listener" ? "listener_disagreement" : f.kind}:${f.type}`)).length;
+  const asPlanted = (k: Flag["kind"]) => k === "single_listener" || k === "interpreter_changed" || k === "interpreter_dropped" ? "listener_disagreement" : k;
+  const falseAlarms = crit.filter(f => ["listener_disagreement", "label_conflict", "single_listener", "interpreter_changed", "interpreter_dropped"].includes(f.kind) && !plantedTypes.has(`${asPlanted(f.kind)}:${f.type}`)).length;
 
   const expected = c.expectFlags ?? [];
   let expectedCaught = 0;

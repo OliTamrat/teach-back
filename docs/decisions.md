@@ -282,3 +282,28 @@ A reasoning model can spend its whole budget thinking and return no content, or 
 the caller never sees. The adapter now returns the finish reason and the length of any reasoning
 text, and the turn carries them in its note, so the next empty rendering is diagnosable from the
 screen instead of from a server log nobody can reach during a demo.
+
+## 28. The interpreter is checked in both directions (Oct 28)
+
+Oli pointed out what the demo sample had hidden: a patient on a first visit describes what is wrong,
+not the prescription; the dose, the frequency and the prohibitions travel from the provider to the
+patient, through the interpreter, and that leg was unchecked. Teach-Back now has a provider turn:
+the provider's English is recorded and its facts extracted; the interpreter's Amharic or Afaan Oromo
+is recorded, heard through the same two listeners, brought back to English, and compared fact by
+fact with what the provider said. Changed and dropped are critical; added is a warning, because an
+interpreter may rightly explain. The rule that no model output reaches the patient is untouched:
+the machine checks the human who speaks to the patient and never speaks itself.
+
+Symptoms became a fact type for the same reason: the patient's own description is what the first
+half of the visit is made of, and "sharp pain, lower right back, three weeks" is as checkable as a
+dose. The walkthrough, the README, the demo script and the submission text now describe a real
+visit, both ways. The Oct 31 recording script is unchanged three days out; its sentences are still
+valid patient and provider utterances.
+
+## 29. English is a speech language, not a session language (Oct 28)
+
+The provider turn needs English transcription, so "en" is a language a turn can be spoken in, and
+the Space (eng_Latn), Spark and Voice Transcribe all take it. It is not a session language: the
+session is still Amharic or Afaan Oromo, the facts are still extracted for that calendar and that
+month table, and the question templates stay in the patient's language. On a provider turn the
+only language question asked is whether the provider was in fact speaking English.

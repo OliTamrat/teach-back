@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { extractFacts } from "@/core/facts";
-import { analyzeTurn, compareWithLabel, languageMismatch } from "@/core/compare";
+import { analyzeTurn, compareListeners, compareWithLabel, compareWithSource, languageMismatch } from "@/core/compare";
 import { SETTINGS, teachBackQuestion, type Setting } from "@/core/question";
 import { localizedQuestion } from "@/core/question-i18n";
 import LabelPhoto from "./LabelPhoto";
 import { apiPost, getAccessCode, refusal, setAccessCode } from "./api-client";
 import { toWav } from "./audio";
 import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
-import type { Fact, Flag, Language } from "@/core/types";
+import type { Fact, Flag, Language, Role, SpeechLanguage } from "@/core/types";
 
 /**
  * The interpreter's screen. One patient turn at a time: the English rendering with every
@@ -21,8 +21,10 @@ import type { Fact, Flag, Language } from "@/core/types";
  * how the screen is demonstrated without keys and how a reviewer re-checks a saved turn.
  */
 
-const SAMPLE_A = "The doctor told me to take two tablets of 500 milligrams three times a day after meals. I am not allergic to penicillin. The fever started on Tikimt 3. The pain is in my left knee.";
-const SAMPLE_B = "The doctor told me to take two tablets of 50 milligrams three times a day after meals. I am allergic to penicillin. The fever started on Tikimt 13. The pain is in my left knee.";
+const SAMPLE_A = "I have a sharp pain in my lower right back for three weeks. I am not allergic to penicillin. It started on Tikimt 3. I take lisinopril for my blood pressure.";
+const SAMPLE_B = "I have pain in my lower left back for three weeks. I am allergic to penicillin. It started on Tikimt 13. I take lisinopril for my blood pressure.";
+const SAMPLE_PROVIDER = "Take one tablet of 500 milligrams amoxicillin three times a day for ten days. Do not take it with milk. Come back on Hidar 5 if the fever does not go down.";
+const SAMPLE_INTERPRETED = "Take one tablet of 50 milligrams amoxicillin three times a day for ten days. Take it with milk. Come back on Hidar 5 if the fever does not go down.";
 const SAMPLE_LABEL = "";
 const TOUR_KEY = "teach-back-toured";
 
@@ -31,24 +33,23 @@ const TOUR_KEY = "teach-back-toured";
  * dropped "not". Each step loads a real failure pattern into Paste text and checks it; the screen
  * does the rest exactly as it would for a recorded turn.
  */
-type TourStep = { title: string; body: string; a?: string; b?: string; label?: string; language?: Language; action?: "record" };
+type TourStep = { title: string; body: string; role?: Role; a?: string; b?: string; provider?: string; label?: string; language?: Language; action?: "record" };
 const TOUR: TourStep[] = [
-  { title: "Two listeners, one sentence", body: "A patient said this in Amharic. Two Meta models rendered it in English independently. Code compared every critical fact. Where they disagree, the line is red. The second listener dropped the \"not\" before \"allergic\": that is the most dangerous error in interpreting, and it is one of the three red flags on the right.", a: SAMPLE_A, b: SAMPLE_B, language: "am" },
-  { title: "A person decides every flag", body: "Nothing is final until an interpreter confirms or corrects each red line with the patient. Try it: press Confirmed with patient on one flag, or Correct it and type what the patient actually said. The final English line appears only when none are open." },
-  { title: "Dates are arithmetic, not guesses", body: "Ethiopian dates are converted by code and shown in both calendars. This one, Pagume 6 in the year 2018, does not exist, because 2018 is not a leap year. A model would round it; Teach-Back flags it.", a: "The baby was born on Pagume 6 2018. She has had a fever for two days.", b: "The baby was born on Pagume 6 2018. She has had a fever for two days.", language: "am" },
-  { title: "The label check", body: "A phone photo of the medication label goes to SAM 3.1, which finds the label; Spark reads what is printed; code compares it with what was said. Here the label is typed in so you can see the comparison without a camera: two tablets spoken, one tablet printed.", a: "I take two tablets of metformin twice a day.", b: "I take two tablets of metformin twice a day.", label: "Metformin 500 mg. Take one tablet twice a day with food.", language: "am" },
-  { title: "Now with a microphone", body: "The Record tab does all of this from a few seconds of speech: Omnilingual ASR and Muse Spark hear the patient, and the same code marks the facts. Teach-Back never advises a patient and never speaks to one; the only sentence meant for them is a human-reviewed question the interpreter reads aloud.", action: "record" },
+  { title: "The patient says what is wrong", body: "A first visit starts with the patient, in their own language: where it hurts, since when, what they take, what they are allergic to. Two Meta models heard this Amharic turn independently and code compared every fact. The second listener dropped the \"not\" before \"allergic\" and moved the pain to the other side. Red is what a person must settle before it is written down.", role: "patient", a: SAMPLE_A, b: SAMPLE_B, language: "am" },
+  { title: "A person decides every flag", body: "Nothing is final until the interpreter confirms or corrects each red line with the patient. Try it: press Confirmed with patient on one flag, or Correct it and type what the patient actually said. The line turns green only when none are open." },
+  { title: "The provider answers, and the interpreter is checked the other way", body: "Now the provider speaks English: a dose, a frequency, a prohibition, a follow-up date. The interpreter renders it into Amharic for the patient. Teach-Back hears the interpreter's Amharic through the same two listeners, brings it back to English, and compares it with what the provider said. Here the interpreter said 50 instead of 500 and dropped \"do not\". Those two lines decide whether the patient goes home safe.", role: "provider", provider: SAMPLE_PROVIDER, a: SAMPLE_INTERPRETED, language: "am" },
+  { title: "The bottle from the bag", body: "Elders bring their medicines to show. A phone photo goes to SAM 3.1, which finds the label; Spark reads what is printed; code compares it with what the patient said they take. Here the label is typed in so you can see the comparison without a camera.", role: "patient", a: "I take two tablets of metformin twice a day for my sugar.", b: "I take two tablets of metformin twice a day for my sugar.", label: "Metformin 500 mg. Take one tablet twice a day with food.", language: "am" },
+  { title: "Now with a microphone", body: "The Record tab does all of this from speech: the patient's turn in Amharic or Afaan Oromo, the provider's turn in English, and the interpreter's rendering of each. Teach-Back never advises anyone and never speaks to a patient; the only sentence meant for them is a human-reviewed question the interpreter reads aloud.", action: "record" },
 ];
-
-const LANG_NAME: Record<Language, string> = { am: "Amharic", om: "Afaan Oromo" };
+const LANG_NAME: Record<SpeechLanguage, string> = { am: "Amharic", om: "Afaan Oromo", en: "English" };
 const SESSION_KEY = "teach-back-session";
-const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "frequency", drug: "drug", negation: "negation", body_part: "body part", date: "date", duration: "duration", number: "number" };
+const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "frequency", drug: "drug", negation: "negation", body_part: "body part", date: "date", duration: "duration", number: "number", symptom: "symptom" };
 
 type Mode = "record" | "paste";
 type Health = { ready: boolean; metaModelApi: { key: string }; asr: { service: string } };
 type TurnResponse = {
   firstListener: string | null; transcript: string; secondTranscript: string; notes: string[];
-  detected: { language: Language | null; confidence: number; by: string };
+  detected: { language: SpeechLanguage | null; confidence: number; by: string };
   timings: { asrMs: number | null; listenMs: number | null };
   primary: { english: string }; secondary: { english: string } | null;
 };
@@ -56,13 +57,17 @@ type AudioMeta = Omit<TurnResponse, "primary" | "secondary">;
 
 export default function Interpreter() {
   const [language, setLanguage] = useState<Language>("am");
+  const [role, setRole] = useState<Role>("patient");
+  const [provider, setProvider] = useState(SAMPLE_PROVIDER);
+  /** The provider's recorded turn, waiting for the interpreter's rendering to be recorded. */
+  const [providerTurn, setProviderTurn] = useState<{ english: string; transcript: string; firstListener: string | null } | null>(null);
   const [setting, setSetting] = useState<Setting>("clinic");
   const [spokenLanguage, setSpokenLanguage] = useState<Language | "">("");
   const [reference, setReference] = useState(() => new Date().toISOString().slice(0, 10));
   const [a, setA] = useState(SAMPLE_A);
   const [b, setB] = useState(SAMPLE_B);
   const [label, setLabel] = useState(SAMPLE_LABEL);
-  const [checked, setChecked] = useState<{ a: string; b: string; label: string; language: Language; spoken: Language | ""; reference: string; setting: Setting } | null>(null);
+  const [checked, setChecked] = useState<{ role: Role; provider: string; a: string; b: string; label: string; language: Language; spoken: Language | ""; reference: string; setting: Setting } | null>(null);
   const [decisions, setDecisions] = useState<Record<number, Decision>>({});
   const [mode, setMode] = useState<Mode>("record");
   const [health, setHealth] = useState<Health | null>(null);
@@ -87,8 +92,10 @@ export default function Interpreter() {
     if (st.a !== undefined) {
       setMode("paste");
       if (st.language) setLanguage(st.language);
+      const r: Role = st.role ?? "patient";
+      setRole(r); if (st.provider) setProvider(st.provider);
       setA(st.a); setB(st.b ?? ""); setLabel(st.label ?? ""); setSpokenLanguage("");
-      setChecked({ a: st.a, b: st.b ?? "", label: st.label ?? "", language: st.language ?? language, spoken: "", reference, setting });
+      setChecked({ role: r, provider: st.provider ?? provider, a: st.a, b: st.b ?? "", label: st.label ?? "", language: st.language ?? language, spoken: "", reference, setting });
       setDecisions({});
     }
   }
@@ -115,6 +122,18 @@ export default function Interpreter() {
     if (!checked) return null;
     const [y, m, d] = checked.reference.split("-").map(Number);
     const opts = { reference: { year: y, month: m, day: d }, language: checked.language };
+    const order = SETTINGS[checked.setting].order;
+    if (checked.role === "provider") {
+      // What the provider said is the source; the interpreter's rendering, heard back through the
+      // listeners, is checked against it. The listeners' own disagreement about the rendering is kept
+      // too, without pointing into the provider's text.
+      const source = { name: "Provider", english: checked.provider, facts: extractFacts(checked.provider, { ...opts, language: "am" as const }) };
+      const rendered = { name: "Interpreter, heard back", english: checked.a, facts: extractFacts(checked.a, opts) };
+      const second = checked.b.trim() ? { name: "Listener B", english: checked.b, facts: extractFacts(checked.b, opts) } : undefined;
+      const listenerFlags = compareListeners(rendered, second).map(f => ({ ...f, factIndex: undefined }));
+      const flags = [...compareWithSource(source.facts, rendered.facts), ...listenerFlags].sort((x, y) => (x.severity === y.severity ? 0 : x.severity === "crit" ? -1 : 1));
+      return { primary: source, secondary: undefined, rendered, flags, question: teachBackQuestion(source.facts, order) };
+    }
     const primary = { name: "Listener A", english: checked.a, facts: extractFacts(checked.a, opts) };
     const secondary = checked.b.trim() ? { name: "Listener B", english: checked.b, facts: extractFacts(checked.b, opts) } : undefined;
     const extra: Flag[] = [];
@@ -122,7 +141,7 @@ export default function Interpreter() {
     if (mismatch) extra.push(mismatch);
     if (checked.label.trim()) extra.push(...compareWithLabel(primary.facts, extractFacts(checked.label, opts)));
     const turn = analyzeTurn(primary, secondary, extra);
-    return { ...turn, question: teachBackQuestion(primary.facts, SETTINGS[checked.setting].order) };
+    return { ...turn, rendered: undefined as { name: string; english: string; facts: Fact[] } | undefined, question: teachBackQuestion(primary.facts, order) };
   }, [checked]);
 
   const open = analysis ? analysis.flags.filter((_, i) => (decisions[i]?.state ?? "open") === "open").length : 0;
@@ -133,14 +152,14 @@ export default function Interpreter() {
   function addToSession() {
     if (!analysis || !checked || !isFinal) return;
     const rec = makeTurn({
-      language: checked.language, reference: checked.reference, transcript: audio?.transcript || undefined,
+      language: checked.language, reference: checked.reference, transcript: audio?.transcript || undefined, role: checked.role,
       english: analysis.primary.english, facts: analysis.primary.facts, flags: analysis.flags,
       decisions: analysis.flags.map((_, i) => decisions[i] ?? { state: "confirmed" as const }),
     });
     saveTurns([...turns, rec]);
     nextTurn();
   }
-  function nextTurn() { setChecked(null); setDecisions({}); setAudio(null); if (mode === "paste") { setA(""); setB(""); setLabel(""); } }
+  function nextTurn() { setChecked(null); setDecisions({}); setAudio(null); setProviderTurn(null); if (mode === "paste") { setA(""); setB(""); setLabel(""); if (role === "provider") setProvider(""); } }
   async function copy(text: string, what: "summary" | "notes") {
     try { await navigator.clipboard.writeText(text); setCopied(what); setTimeout(() => setCopied(null), 1500); } catch { /* clipboard blocked: the text is on screen */ }
   }
@@ -151,18 +170,26 @@ export default function Interpreter() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  function check(next?: Partial<{ a: string; b: string; spoken: Language | "" }>) {
-    setChecked({ a: next?.a ?? a, b: next?.b ?? b, label, language, spoken: next?.spoken ?? spokenLanguage, reference, setting });
+  function check(next?: Partial<{ a: string; b: string; spoken: Language | ""; provider: string; role: Role }>) {
+    setChecked({ role: next?.role ?? role, provider: next?.provider ?? provider, a: next?.a ?? a, b: next?.b ?? b, label, language, spoken: next?.spoken ?? spokenLanguage, reference, setting });
     setDecisions({});
     // Move keyboard and screen-reader focus to the result, which is where the work now is.
     setTimeout(() => flagsHeading.current?.focus(), 50);
   }
   function onTurn(t: TurnResponse) {
     const bText = t.secondary?.english ?? "";
-    const spoken = t.detected.language && t.detected.confidence >= 0.6 ? t.detected.language : "";
+    const spoken = t.detected.language && t.detected.language !== "en" && t.detected.confidence >= 0.6 ? t.detected.language : "";
     setA(t.primary.english); setB(bText); setSpokenLanguage(spoken);
     setAudio({ firstListener: t.firstListener, transcript: t.transcript, secondTranscript: t.secondTranscript, notes: t.notes, detected: t.detected, timings: t.timings });
-    check({ a: t.primary.english, b: bText, spoken });
+    if (role === "provider" && providerTurn) check({ role: "provider", provider: providerTurn.english, a: t.primary.english, b: bText, spoken });
+    else check({ role: "patient", a: t.primary.english, b: bText, spoken });
+  }
+  /** Step one of a provider turn: the provider's English is kept as the source until the interpreter has been recorded. */
+  function onProviderTurn(t: TurnResponse) {
+    setProviderTurn({ english: t.primary.english, transcript: t.transcript, firstListener: t.firstListener });
+    setProvider(t.primary.english);
+    setChecked(null); setDecisions({});
+    setAudio({ firstListener: t.firstListener, transcript: t.transcript, secondTranscript: t.secondTranscript, notes: t.notes, detected: t.detected, timings: t.timings });
   }
   function decide(i: number, d: Decision) { setDecisions(prev => ({ ...prev, [i]: d })); }
 
@@ -217,8 +244,30 @@ export default function Interpreter() {
                 <button role="tab" aria-selected={mode === "paste"} className="tab" onClick={() => setMode("paste")}>Paste text</button>
               </div>
             </div>
-            {mode === "record" && (
+            <div className="tabs who" role="radiogroup" aria-label="Who is speaking">
+              <button role="radio" aria-checked={role === "patient"} className="tab" onClick={() => { setRole("patient"); setProviderTurn(null); setChecked(null); }}>Patient speaks {LANG_NAME[language]}</button>
+              <button role="radio" aria-checked={role === "provider"} className="tab" onClick={() => { setRole("provider"); setChecked(null); }}>Provider speaks English</button>
+            </div>
+            {mode === "record" && role === "patient" && (
               <Recorder language={language} reference={reference} health={health} onTurn={onTurn} onAccessNeeded={() => setNeedAccess(true)} />
+            )}
+            {mode === "record" && role === "provider" && (
+              <div className="steps">
+                <div className="step" data-done={providerTurn ? "" : undefined}>
+                  <span className="eyebrow">1. The provider, in English</span>
+                  {!providerTurn && <Recorder language="en" reference={reference} health={health} onTurn={onProviderTurn} onAccessNeeded={() => setNeedAccess(true)} label="Record the provider" />}
+                  {providerTurn && <>
+                    <p className="render small">{providerTurn.english}</p>
+                    <div className="row"><span className="hint">Heard by {providerTurn.firstListener ?? "the second listener"}.</span><button className="btn small quiet" onClick={() => setProviderTurn(null)}>Record again</button></div>
+                  </>}
+                </div>
+                <div className="step" data-off={providerTurn ? undefined : ""}>
+                  <span className="eyebrow">2. The interpreter, in {LANG_NAME[language]}</span>
+                  {providerTurn
+                    ? <Recorder language={language} reference={reference} health={health} onTurn={onTurn} onAccessNeeded={() => setNeedAccess(true)} label="Record the interpreter" />
+                    : <p className="hint">Record the provider first. Then record the interpreter saying it to the patient, and the two are compared.</p>}
+                </div>
+              </div>
             )}
             {mode === "record" && audio && <TurnMeta meta={audio} language={language} />}
             <div className="field labelcheck">
@@ -228,12 +277,18 @@ export default function Interpreter() {
               {mode === "record" && checked && <button className="btn small" onClick={() => check()}>Re-check this turn with the label</button>}
             </div>
             {mode === "paste" && <>
+            {role === "provider" && (
+              <div className="field">
+                <label htmlFor="in-provider">What the provider said (English)</label>
+                <textarea id="in-provider" value={provider} onChange={e => setProvider(e.target.value)} />
+              </div>
+            )}
             <div className="field">
-              <label htmlFor="in-a">Listener A rendering (Omnilingual ASR path)</label>
+              <label htmlFor="in-a">{role === "provider" ? `The interpreter's ${LANG_NAME[language]}, heard back in English (Listener A)` : "Listener A rendering (Omnilingual ASR path)"}</label>
               <textarea id="in-a" value={a} onChange={e => setA(e.target.value)} />
             </div>
             <div className="field">
-              <label htmlFor="in-b">Listener B rendering (second listener), optional</label>
+              <label htmlFor="in-b">{role === "provider" ? "The same, from the second listener, optional" : "Listener B rendering (second listener), optional"}</label>
               <textarea id="in-b" value={b} onChange={e => setB(e.target.value)} />
             </div>
             <div className="row">
@@ -250,8 +305,10 @@ export default function Interpreter() {
 
           <section className="panel" aria-labelledby="flags-h" aria-live="polite">
             <h2 id="flags-h" ref={flagsHeading} tabIndex={-1}>What a human must confirm</h2>
-            {!analysis && mode === "record" && <p className="hint">Record one patient turn. Both listeners render it in English, the critical facts are marked, and anything they disagree on appears here for a person to settle.</p>}
-            {!analysis && mode === "paste" && <p className="hint">Press Check this turn. The sample is a real failure pattern: the two listeners disagree on a dose, a date, and whether the patient said "not".</p>}
+            {!analysis && mode === "record" && role === "patient" && <p className="hint">Record one patient turn. Both listeners render it in English, the critical facts are marked, and anything they disagree on appears here for a person to settle.</p>}
+            {!analysis && mode === "record" && role === "provider" && <p className="hint">Record the provider, then the interpreter. What the interpreter said is brought back to English and compared, fact by fact, with what the provider said.</p>}
+            {!analysis && mode === "paste" && role === "patient" && <p className="hint">Press Check this turn. The sample is a real failure pattern: the two listeners disagree on a side, a date, and whether the patient said "not".</p>}
+            {!analysis && mode === "paste" && role === "provider" && <p className="hint">Press Check this turn. The sample is the failure that hurts most: the interpreter said 50 instead of 500 and dropped a "do not".</p>}
             {analysis && (
               <>
                 <div className="status">
@@ -259,7 +316,12 @@ export default function Interpreter() {
                   <span><b>{crit}</b> critical flags</span>
                   <span><b>{open}</b> still open</span>
                 </div>
+                {checked?.role === "provider" && <span className="eyebrow">What the provider said</span>}
                 <Rendering facts={analysis.primary.facts} text={analysis.primary.english} flags={analysis.flags} decisions={decisions} />
+                {analysis.rendered && <>
+                  <span className="eyebrow">What the interpreter said, heard back in English</span>
+                  <p className="render small">{analysis.rendered.english}</p>
+                </>}
                 <div className="facts">
                   {analysis.primary.facts.map((f, i) => <span className="chip" key={i}>{TYPE_NAME[f.type]} <b>{f.value}</b></span>)}
                 </div>
@@ -278,7 +340,7 @@ export default function Interpreter() {
                 )}
                 {isFinal && (
                   <div className="final">
-                    <span className="eyebrow">{analysis.flags.length ? "Final line, every flag reviewed by a person" : "Final line, two listeners agreed on every fact"}</span>
+                    <span className="eyebrow">{analysis.flags.length ? "Final line, every flag reviewed by a person" : checked?.role === "provider" ? "Final line, the interpreter carried every fact through" : "Final line, two listeners agreed on every fact"}</span>
                     <p className="summary">{summary}</p>
                     <div className="row">
                       <button className="btn small primary" onClick={addToSession}>Add to session and next turn</button>
@@ -336,7 +398,7 @@ export default function Interpreter() {
  * One turn, one recording. MediaRecorder in the browser, the whole clip to /api/turn when it stops.
  * No streaming: a clinic turn is seconds long and the two listeners need the whole utterance.
  */
-function Recorder({ language, reference, health, onTurn, onAccessNeeded }: { language: Language; reference: string; health: Health | null; onTurn: (t: TurnResponse) => void; onAccessNeeded: () => void }) {
+function Recorder({ language, reference, health, onTurn, onAccessNeeded, label }: { language: SpeechLanguage; reference: string; health: Health | null; onTurn: (t: TurnResponse) => void; onAccessNeeded: () => void; label?: string }) {
   const [state, setState] = useState<"idle" | "recording" | "sending" | "error">("idle");
   const [error, setError] = useState("");
   const [seconds, setSeconds] = useState(0);
@@ -400,9 +462,9 @@ function Recorder({ language, reference, health, onTurn, onAccessNeeded }: { lan
   return (
     <div className="recorder" data-state={state}>
       <div className="row">
-        {state !== "recording" && <button className="btn primary" onClick={start} disabled={!supported || state === "sending"}>{state === "sending" ? "Listening twice…" : "Record a turn"}</button>}
+        {state !== "recording" && <button className="btn primary" onClick={start} disabled={!supported || state === "sending"}>{state === "sending" ? "Listening twice…" : (label ?? "Record a turn")}</button>}
         {state === "recording" && <button className="btn rec" onClick={stop}><span className="dot" aria-hidden="true" />Stop and check <span className="mono">{mm}:{ss}</span></button>}
-        <span className="hint">{LANG_NAME[language]} session. One patient turn, a few seconds to a minute.</span>
+        <span className="hint">{language === "en" ? "English. One instruction or question, a few seconds to a minute." : `${LANG_NAME[language]} session. One turn, a few seconds to a minute.`}</span>
       </div>
       {!supported && <p className="hint">This browser cannot record audio. Use Paste text, or open the page in Chrome, Edge, Safari or Firefox.</p>}
       {health && !ready && (
@@ -518,6 +580,7 @@ function FlagCard({ flag, decision, onDecide }: { flag: Flag; decision: Decision
     listener_disagreement: "listeners disagree", single_listener: "only one listener heard this", language_mismatch: "wrong language",
     label_conflict: "label contradicts speech", invalid_date: "date does not exist", ambiguous_calendar: "which calendar?",
     unverified: "one listener only, nothing cross-checked",
+    interpreter_changed: "interpreter changed this", interpreter_dropped: "interpreter dropped this", interpreter_added: "interpreter added this",
   };
   return (
     <div className="flag" data-sev={flag.severity} data-state={done ? "confirmed" : undefined}>
@@ -528,8 +591,8 @@ function FlagCard({ flag, decision, onDecide }: { flag: Flag; decision: Decision
       <div className="msg">{decision.state === "corrected" ? <>Reviewer wrote: <b>{decision.correction}</b></> : flag.message}</div>
       {flag.a && flag.b && !done && (
         <div className="vs">
-          <div><small>Listener A</small>{flag.a}</div>
-          <div><small>{flag.kind === "label_conflict" ? "Label" : "Listener B"}</small>{flag.b}</div>
+          <div><small>{flag.kind.startsWith("interpreter_") ? "Provider said" : "Listener A"}</small>{flag.a}</div>
+          <div><small>{flag.kind === "label_conflict" ? "Label" : flag.kind.startsWith("interpreter_") ? "Interpreter said" : "Listener B"}</small>{flag.b}</div>
         </div>
       )}
       {!done && !editing && (

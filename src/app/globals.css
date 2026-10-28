@@ -219,3 +219,12 @@ input[type="password"] { font: inherit; color: var(--text); background: var(--su
 .skip:focus { left: 16px; }
 h2:focus { outline: none; }
 h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+
+/* who is speaking, provider steps */
+.tabs.who { width: 100%; }
+.tabs.who .tab { flex: 1; text-align: center; }
+.steps { display: grid; gap: 10px; }
+.step { border: 1px solid var(--line-strong); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; background: var(--raised); }
+.step[data-done] { border-color: var(--good); }
+.step[data-off] { opacity: 0.6; }
+.render.small { font-size: 16px; line-height: 1.55; color: var(--text-2); margin: 0; }

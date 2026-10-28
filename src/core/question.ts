@@ -12,9 +12,9 @@ import type { Fact, FactType } from "./types";
  */
 export type Setting = "clinic" | "immigration" | "services";
 export const SETTINGS: Record<Setting, { label: string; order: FactType[] }> = {
-  clinic: { label: "Clinic", order: ["dose", "frequency", "drug", "negation", "date", "body_part", "duration", "number"] },
-  immigration: { label: "Immigration", order: ["date", "negation", "number", "duration", "drug", "dose", "frequency", "body_part"] },
-  services: { label: "Human services", order: ["number", "date", "negation", "duration", "dose", "frequency", "drug", "body_part"] },
+  clinic: { label: "Clinic", order: ["dose", "frequency", "drug", "negation", "symptom", "date", "body_part", "duration", "number"] },
+  immigration: { label: "Immigration", order: ["date", "negation", "number", "duration", "symptom", "drug", "dose", "frequency", "body_part"] },
+  services: { label: "Human services", order: ["number", "date", "negation", "duration", "symptom", "dose", "frequency", "drug", "body_part"] },
 };
 const ORDER: FactType[] = SETTINGS.clinic.order;
 
@@ -28,6 +28,7 @@ export const QUESTION_TEMPLATES_EN: Record<FactType, string> = {
   body_part: "Please show me where. Is it the {value}?",
   duration: "For how long? You said \"{source}\".",
   number: "Please say that number again, slowly: {source}?",
+  symptom: "Tell me again, in your own words, what you feel: you said \"{source}\"?",
 };
 export function fillQuestion(template: string, f: Pick<Fact, "source" | "value">): string {
   return template.replace(/\{source\}/g, f.source).replace(/\{value\}/g, f.value);

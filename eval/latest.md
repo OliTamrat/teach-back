@@ -1,11 +1,11 @@
-# Teach-Back evaluation, 2026-10-28T15-25-08 (audio-v1.json, text-v1.json)
+# Teach-Back evaluation, 2026-10-28T15-53-10 (audio-v1.json, text-v1.json)
 
 | Metric | Value |
 | --- | --- |
-| Cases | 18 |
+| Cases | 22 |
 | Critical facts found (recall) | 100% |
-| Extracted facts that were real (precision) | 100% |
-| Planted errors flagged | 13 of 13 |
+| Extracted facts that were real (precision) | 92% |
+| Planted errors flagged | 17 of 17 |
 | Other expected flags raised | 3 of 3 |
 | False alarms (critical flags with no planted error) | 0 |
 | Skipped (audio not run) | 70 |
@@ -84,19 +84,23 @@
 | W10 | skipped | | | | set EVAL_SERVER_URL to run audio cases |
 | T01-dose-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:dose |  |
 | T02-negation-dropped-b | 2/2 | 1/1 |  | crit single_listener:negation |  |
-| T03-date-planted-b | 1/1 | 1/1 |  | crit listener_disagreement:date |  |
+| T03-date-planted-b | 1/1 (+1 extra) | 1/1 |  | crit listener_disagreement:date |  |
 | T04-agree-no-flags | 5/5 | 0/0 |  | warn single_listener:dose |  |
-| T05-side-planted-b | 1/1 | 1/1 |  | crit listener_disagreement:body_part |  |
-| T06-duration-planted-b | 1/1 | 1/1 |  | crit listener_disagreement:duration |  |
+| T05-side-planted-b | 1/1 (+1 extra) | 1/1 |  | crit listener_disagreement:body_part |  |
+| T06-duration-planted-b | 1/1 (+1 extra) | 1/1 |  | crit listener_disagreement:duration |  |
 | T07-invalid-date | 1/1 | 0/0 |  | crit invalid_date:date |  |
 | T08-future-date-agree | 1/1 | 0/0 |  | none |  |
 | T09-oromo-month-ambiguous | 1/1 | 0/0 |  | warn ambiguous_calendar:date |  |
 | T10-label-conflict | 3/3 | 1/1 |  | crit label_conflict:frequency |  |
-| T11-language-mismatch | 1/1 | 0/0 |  | crit language_mismatch, warn unverified |  |
+| T11-language-mismatch | 1/1 (+1 extra) | 0/0 |  | crit language_mismatch, warn unverified |  |
 | T12-single-listener | 4/4 | 0/0 |  | warn unverified |  |
 | T13-child-dose-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:dose |  |
 | T14-frequency-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:frequency |  |
-| T15-two-errors-b | 6/6 | 3/3 |  | crit listener_disagreement:dose, crit single_listener:negation, crit listener_disagreement:date |  |
+| T15-two-errors-b | 6/6 (+1 extra) | 3/3 |  | crit listener_disagreement:dose, crit single_listener:negation, crit listener_disagreement:date |  |
 | T16-count-planted-b | 2/2 | 1/1 |  | crit listener_disagreement:number |  |
 | T17-money-planted-b | 2/2 | 1/1 |  | crit listener_disagreement:number |  |
 | T18-bare-year-agree | 1/1 | 0/0 |  | none |  |
+| P01-provider-faithful | 6/6 | 0/0 |  | warn unverified |  |
+| P02-provider-dose-and-prohibition | 6/6 | 2/2 |  | crit interpreter_changed:dose, crit interpreter_dropped:negation, warn unverified |  |
+| P03-provider-followup-date | 3/3 | 1/1 |  | crit interpreter_changed:date, warn unverified |  |
+| T19-patient-symptoms-side-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:body_part |  |

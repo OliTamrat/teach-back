@@ -196,6 +196,14 @@ export function extractFacts(text: string, opts: ExtractOptions = {}): Fact[] {
     });
   }
 
+  // --- symptoms: what the patient came in to say. A qualifier is kept when it changes the picture
+  // (sharp, severe, mild, bloody); the symptom word is the value.
+  for (const m of text.matchAll(/\b((?:sharp|dull|severe|mild|burning|stabbing|constant|bloody|dry|high)\s+)?(pain|ache|fever|cough|bleeding|vomiting|nausea|diarrh(?:o)?ea|dizziness|dizzy|headache|swelling|rash|numbness|numb|itching|shortness of breath|breathless|chest pain|back pain|stomach ache|cramps?|weakness|fatigue|chills|seizures?|fainted|fainting|blurry vision|blurred vision|discharge|constipation|sore throat|runny nose|loss of appetite|weight loss|palpitations)\b/gi)) {
+    const base = m[2].toLowerCase().replace(/^dizzy$/, "dizziness").replace(/^numb$/, "numbness").replace(/^(breathless)$/, "shortness of breath").replace(/^fainted$/, "fainting").replace(/^seizures$/, "seizure").replace(/^cramps$/, "cramp").replace(/^blurred vision$/, "blurry vision").replace("diarrhea", "diarrhoea");
+    const q = (m[1] || "").trim().toLowerCase();
+    push({ type: "symptom", value: q ? `${q} ${base}` : base, source: m[0], start: m.index!, end: m.index! + m[0].length });
+  }
+
   // --- numbers that are none of the above: counts, amounts of money, ages, years.
   // These decide immigration interviews and benefits cases as surely as a dose decides a prescription.
   const covered = (a: number, b: number) => facts.some(f => f.start <= a && f.end >= b);

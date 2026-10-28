@@ -42,28 +42,45 @@ what the machine gets wrong in them, because I have been correcting it by hand f
 
 ## What it does
 
-1. The patient speaks. **Omnilingual ASR**, Meta's open-weights speech model with published results
-   for both of my languages, transcribes it. I run it myself on a GPU.
+A visit through an interpreter runs both ways, and Teach-Back checks the interpreter in both.
+
+**When the patient speaks**, in Amharic or Afaan Oromo, about what is wrong: where it hurts, since
+when, what they take, what they are allergic to, when they arrived, how many children.
+
+1. **Omnilingual ASR**, Meta's open-weights speech model with published results for both of my
+   languages, transcribes it. I run it myself on a GPU.
 2. **Muse Spark** renders the transcript in English, and a second Spark call hears the same seconds
    of audio on its own and renders it again. Two listeners, one utterance.
-3. **Code, not a model,** pulls the critical facts out of both renderings: dose, frequency, drug,
-   negation, body part and side, date, duration, and the numbers that decide an interview or a
-   benefits case: counts, ages, amounts of money, years. Ethiopian-calendar dates are converted
-   arithmetically, the way I do it in my head. A date that does not exist, like Pagume 6 in a year
-   that is not a leap year, is a flag, not a guess.
+3. **Code, not a model,** pulls the critical facts out of both renderings: symptom, body part and
+   side, duration, date, negation, drug and allergy, dose, frequency, and the numbers that decide an
+   interview or a benefits case. Ethiopian-calendar dates are converted arithmetically, the way I do
+   it in my head. A date that does not exist is a flag, not a guess.
 4. Where the two listeners disagree on a fact, the line turns **red**. A negation heard by one
-   listener only is red too, because the other may have dropped the "not", and that is the mistake
-   I fear most.
-5. A phone photo of the medication box: **SAM 3.1** finds the label, the interpreter taps the right
-   one, Spark reads what is printed, and anything that contradicts what was spoken is a flag.
-6. A **teach-back question**, from a template that native speakers from my community review, for the interpreter to ask so
-   the patient says the instruction back in their own words. This is how good interpreters already
-   work; the tool just makes sure it happens on the lines that matter.
-7. The interpreter **confirms or corrects every flag**. Only then is the English line final, and it
+   listener only is red too, because the other may have dropped the "not".
+
+**When the provider speaks**, in English, with the findings, the questions and the instructions: a
+dose, a frequency, a prohibition, a follow-up date. The interpreter says it to the patient in their
+language. This is the leg that hurts most, and nobody in the room can check it.
+
+5. Teach-Back records the provider's English and extracts its facts. Then it records the
+   interpreter's Amharic or Afaan Oromo, hears it through the same two listeners, brings it back to
+   English, and **compares, fact by fact, what the provider said with what the interpreter said**.
+   A changed dose, a dropped "do not", a moved date: red, before the patient goes home.
+
+**In both directions**, a human finishes the job.
+
+6. A phone photo of the medicine the patient brought in: **SAM 3.1** finds the label, the
+   interpreter taps the right one, Spark reads what is printed, and anything that contradicts what
+   was said is a flag.
+7. A **teach-back question**, from a template that native speakers from my community review, for
+   the interpreter to ask so the patient says the instruction back in their own words. This is how
+   good interpreters already work; the tool makes sure it happens on the lines that matter.
+8. The interpreter **confirms or corrects every flag**. Only then is the English line final, and it
    joins a session log the interpreter can take away as notes.
 
 **What it is not.** Teach-Back is not a medical device, gives no medical, legal or benefits advice,
-does not diagnose, and never speaks to a patient. No model output reaches the person being served:
+does not diagnose, does not interpret, and never speaks to a patient. It does not replace the
+interpreter; it checks them, in both directions. No model output reaches the person being served:
 the one sentence meant for them is a human-reviewed template, read aloud by the interpreter. The
 machine listens twice; a person decides.
 
@@ -77,15 +94,17 @@ Immigration, Human services) changes only which fact the interpreter is asked to
 
 ```mermaid
 flowchart LR
-  P([Patient speaks]) --> R[Browser recorder]
-  R -->|audio| T[/api/turn]
+  P([Patient speaks<br/>Amharic / Afaan Oromo]) --> R[Browser recorder]
+  PR([Provider speaks English]) --> R
+  I([Interpreter renders it<br/>to the patient]) --> R
+  R -->|audio, 16 kHz WAV| T[/api/turn]
   T --> A[Omnilingual ASR 7B<br/>self-hosted Space]
   T --> B[Muse Spark 1.2<br/>hears the audio]
   A -->|transcript| S[Muse Spark 1.3<br/>renders English]
   S -->|English A| C
   B -->|English B + language| C
   subgraph C[Deterministic core, no model]
-    F[extract facts] --> K[Ethiopian calendar] --> D[compare listeners<br/>and label] --> Q[teach-back template]
+    F[extract facts] --> K[Ethiopian calendar] --> D[compare listeners,<br/>provider vs interpreter,<br/>and label] --> Q[teach-back template]
   end
   L([Label photo]) --> M[SAM 3.1 finds label] --> X[Interpreter picks box<br/>browser crops] --> V[Spark reads label] --> D
   C --> U[Interpreter screen:<br/>red flags, confirm or correct]
@@ -148,12 +167,12 @@ from `eval/latest.json`; no number appears here that was not produced by a run t
 from the files in `eval/`.
 
 <!-- results:start -->
-_No audio cases have run yet (70 skipped). The numbers below are the deterministic core on 18 text cases and say nothing about the models._
+_No audio cases have run yet (70 skipped). The numbers below are the deterministic core on 22 text cases and say nothing about the models._
 
 | Measure | Value |
 | --- | --- |
 | Critical facts found in the English (recall) | 100% |
-| Planted errors flagged | 13 of 13 |
+| Planted errors flagged | 17 of 17 |
 | False alarms | 0 |
 <!-- results:end -->
 

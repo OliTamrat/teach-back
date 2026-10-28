@@ -1,5 +1,5 @@
 import "server-only";
-import type { Language } from "@/core/types";
+import type { Language, SpeechLanguage } from "@/core/types";
 import { LANGUAGE_NAME, labelReadPrompt, listenPrompt, parseLabelReply, parseListenReply, renderPrompt, type LabelReply, type ListenReply } from "@/core/prompts";
 
 /**
@@ -42,12 +42,12 @@ async function chat(model: string, content: Content, maxTokens: number): Promise
 }
 
 /** First listener's rendering: ASR transcript -> English. */
-export async function renderEnglish(transcript: string, language: Language) {
+export async function renderEnglish(transcript: string, language: SpeechLanguage) {
   return chat(sparkModel(), renderPrompt(transcript, language), 3000);
 }
 
 /** Second listener: Spark hears the audio itself. */
-export async function listen(audio: Buffer, format: string, expected: Language): Promise<{ reply: ListenReply | null; raw: string; ms: number }> {
+export async function listen(audio: Buffer, format: string, expected: SpeechLanguage): Promise<{ reply: ListenReply | null; raw: string; ms: number }> {
   const fmt = format === "m4a" ? "mp4" : format;
   const { text, ms } = await chat(sparkAudioModel(), [
     { type: "input_audio", input_audio: { data: audio.toString("base64"), format: fmt } },
@@ -86,7 +86,7 @@ export function voiceEncoding(format: string): "WAV" | null {
   return f === "wav" || f === "wave" ? "WAV" : null;
 }
 
-export async function voiceTranscribe(audio: Buffer, format: string, language: Language, fetchImpl: typeof fetch = fetch): Promise<{ text: string; ms: number; raw: unknown }> {
+export async function voiceTranscribe(audio: Buffer, format: string, language: SpeechLanguage, fetchImpl: typeof fetch = fetch): Promise<{ text: string; ms: number; raw: unknown }> {
   if (!KEY()) throw new Error("meta_not_configured");
   const encoding = voiceEncoding(format);
   if (!encoding) throw new Error(`voice_needs_wav: the clip is ${format}, and this endpoint takes only a RIFF/WAVE container, mono 16-bit PCM at 16 or 24 kHz`);

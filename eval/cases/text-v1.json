@@ -416,5 +416,136 @@
    }
   ],
   "planted": []
+ },
+ {
+  "id": "P01-provider-faithful",
+  "language": "am",
+  "reference": "2026-10-28",
+  "source": "Take one tablet of 500 milligrams amoxicillin three times a day for ten days. Do not take it with milk.",
+  "a": "Take one tablet of 500 milligrams of amoxicillin three times a day for ten days. Do not take it with milk.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "1 tablet"
+   },
+   {
+    "type": "dose",
+    "value": "500 mg"
+   },
+   {
+    "type": "drug",
+    "value": "amoxicillin"
+   },
+   {
+    "type": "frequency",
+    "value": "3/day"
+   },
+   {
+    "type": "duration",
+    "value": "10 day"
+   },
+   {
+    "type": "negation",
+    "value": "do not take it with milk"
+   }
+  ],
+  "planted": []
+ },
+ {
+  "id": "P02-provider-dose-and-prohibition",
+  "language": "am",
+  "reference": "2026-10-28",
+  "source": "Take one tablet of 500 milligrams amoxicillin three times a day for ten days. Do not take it with milk.",
+  "a": "Take one tablet of 50 milligrams amoxicillin three times a day for ten days. Take it with milk.",
+  "truth": [
+   {
+    "type": "dose",
+    "value": "1 tablet"
+   },
+   {
+    "type": "dose",
+    "value": "500 mg"
+   },
+   {
+    "type": "drug",
+    "value": "amoxicillin"
+   },
+   {
+    "type": "frequency",
+    "value": "3/day"
+   },
+   {
+    "type": "duration",
+    "value": "10 day"
+   },
+   {
+    "type": "negation",
+    "value": "do not take it with milk"
+   }
+  ],
+  "planted": [
+   {
+    "type": "dose",
+    "in": "a"
+   },
+   {
+    "type": "negation",
+    "in": "a"
+   }
+  ]
+ },
+ {
+  "id": "P03-provider-followup-date",
+  "language": "om",
+  "reference": "2026-10-28",
+  "source": "Come back on Hidar 5 if the fever does not go down.",
+  "a": "Come back on Hidar 15 if the fever does not go down.",
+  "truth": [
+   {
+    "type": "date",
+    "value": "2026-11-14"
+   },
+   {
+    "type": "symptom",
+    "value": "fever"
+   },
+   {
+    "type": "negation",
+    "value": "does not go down"
+   }
+  ],
+  "planted": [
+   {
+    "type": "date",
+    "in": "a"
+   }
+  ]
+ },
+ {
+  "id": "T19-patient-symptoms-side-planted-b",
+  "language": "am",
+  "reference": "2026-10-28",
+  "a": "I have a sharp pain in my lower right back for three weeks.",
+  "b": "I have a sharp pain in my lower left back for three weeks.",
+  "truth": [
+   {
+    "type": "symptom",
+    "value": "sharp pain"
+   },
+   {
+    "type": "body_part",
+    "value": "lower right back"
+   },
+   {
+    "type": "duration",
+    "value": "3 week"
+   }
+  ],
+  "planted": [
+   {
+    "type": "body_part",
+    "in": "b"
+   }
+  ]
  }
 ]

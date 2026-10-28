@@ -1,5 +1,5 @@
 import "server-only";
-import type { Language } from "@/core/types";
+import type { SpeechLanguage } from "@/core/types";
 
 /**
  * Omnilingual ASR (Meta, open weights), self-hosted as Kintale's Hugging Face Space
@@ -20,7 +20,7 @@ export function asrConfigured(): boolean {
   return Boolean(process.env.ASR_SERVICE_URL?.trim());
 }
 
-export const LANG_CODE_3: Record<Language, string> = { am: "amh_Ethi", om: "orm_Latn" };
+export const LANG_CODE_3: Record<SpeechLanguage, string> = { am: "amh_Ethi", om: "orm_Latn", en: "eng_Latn" };
 
 export class AsrError extends Error {
   constructor(public status: number, message: string, public hint: string) { super(message); }
@@ -57,7 +57,7 @@ export async function asrReady(fetchImpl: typeof fetch = fetch): Promise<{ reach
   }
 }
 
-export async function transcribe(audio: Blob, language: Language, fetchImpl: typeof fetch = fetch): Promise<AsrResult> {
+export async function transcribe(audio: Blob, language: SpeechLanguage, fetchImpl: typeof fetch = fetch): Promise<AsrResult> {
   const t0 = Date.now();
   const res = await fetchImpl(`${base()}/`, {
     method: "POST",

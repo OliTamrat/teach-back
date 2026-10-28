@@ -7,7 +7,7 @@ import { wrongScriptForSession } from "./language";
 
 const LABELS: Record<FactType, string> = {
   dose: "dose", frequency: "frequency", drug: "drug name", negation: "negation",
-  body_part: "body part or side", date: "date", duration: "duration", number: "number or amount",
+  body_part: "body part or side", date: "date", duration: "duration", number: "number or amount", symptom: "symptom",
 };
 
 export function compareListeners(primary: Listener, secondary?: Listener): Flag[] {
@@ -111,9 +111,9 @@ export function scriptMismatch(expected: Language, text: string): Flag | null {
   };
 }
 
-export function languageMismatch(expected: Language, detected: Language | null, confidence = 1): Flag | null {
+export function languageMismatch(expected: Language | "en", detected: Language | null, confidence = 1): Flag | null {
   if (!detected || detected === expected || confidence < 0.6) return null;
-  const name = (l: Language) => (l === "am" ? "Amharic" : "Afaan Oromo");
+  const name = (l: Language | "en") => (l === "am" ? "Amharic" : l === "om" ? "Afaan Oromo" : "English");
   return { kind: "language_mismatch", severity: "crit", message: `The patient is speaking ${name(detected)}, but this session is set to ${name(expected)}. Stop and get the right interpreter.` };
 }
 
@@ -127,4 +127,40 @@ function norm(v: string): string { return v.toLowerCase().replace(/\s+/g, " ").t
 function dedupe(flags: Flag[]): Flag[] {
   const seen = new Set<string>();
   return flags.filter(f => { const k = f.kind + "|" + f.type + "|" + f.a + "|" + f.b; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+/**
+ * The interpreter check. What the speaker said (source facts, from the provider's English or from
+ * the patient's turn) against what the interpreter rendered (facts from the interpreter's speech
+ * heard back through the listeners). Three outcomes per fact: carried through, changed, dropped;
+ * and anything the interpreter said that the speaker did not is added. Changed and dropped are
+ * critical for everything that can hurt; added is a warning, because an interpreter may rightly
+ * repeat or explain.
+ */
+export function compareWithSource(source: Fact[], rendered: Fact[], who = "the interpreter"): Flag[] {
+  const flags: Flag[] = [];
+  for (const type of Object.keys(LABELS) as FactType[]) {
+    const s = source.filter(f => f.type === type), r = rendered.filter(f => f.type === type);
+    const used = new Set<number>();
+    s.forEach(f => {
+      const i = source.indexOf(f);
+      const same = r.findIndex((g, k) => !used.has(k) && normValue(type, g.value) === normValue(type, f.value));
+      if (same >= 0) { used.add(same); return; }
+      const other = r.findIndex((g, k) => !used.has(k) && !s.some(h => normValue(type, h.value) === normValue(type, g.value)));
+      if (other >= 0) {
+        used.add(other);
+        flags.push({ kind: "interpreter_changed", severity: "crit", type, factIndex: i, a: f.source, b: r[other].source,
+          message: `The speaker said "${f.source}" and ${who} rendered it as "${r[other].source}". Correct it before anyone acts on it.` });
+      } else {
+        flags.push({ kind: "interpreter_dropped", severity: "crit", type, factIndex: i, a: f.source,
+          message: `The speaker said "${f.source}" (${LABELS[type]}) and it is missing from ${who}'s rendering. Say it again.` });
+      }
+    });
+    r.forEach((g, k) => {
+      if (used.has(k) || s.some(h => normValue(type, h.value) === normValue(type, g.value))) return;
+      flags.push({ kind: "interpreter_added", severity: "warn", type, b: g.source,
+        message: `${who[0].toUpperCase()}${who.slice(1)} rendered "${g.source}" (${LABELS[type]}), which the speaker did not say. Check it is an explanation, not an addition.` });
+    });
+  }
+  return dedupe(flags);
 }

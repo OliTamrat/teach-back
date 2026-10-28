@@ -19,7 +19,7 @@ export type ScriptItem = { id: string; spoken: string; text: string; reviewed: b
 export type Script = { items: ScriptItem[]; [k: string]: unknown };
 export type Templates = Record<Language, { reviewed: boolean; reviewer?: string; reviewedOn?: string } & Record<FactType, string>> & { _note?: string };
 
-export const FACT_TYPES: FactType[] = ["dose", "frequency", "drug", "negation", "body_part", "date", "duration", "number"];
+export const FACT_TYPES: FactType[] = ["dose", "frequency", "drug", "negation", "body_part", "date", "duration", "number", "symptom"];
 
 export function applyReview(script: Script, templates: Templates, review: ReviewFile): { script: Script; templates: Templates; applied: { sentences: number; templates: number; languageReviewed: boolean }; problems: string[] } {
   const problems: string[] = [];

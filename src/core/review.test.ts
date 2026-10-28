@@ -7,8 +7,8 @@ const script: Script = { items: [
   { id: "S03", spoken: "am", text: "draft am 3", reviewed: false },
 ] };
 const templates: Templates = {
-  am: { reviewed: false, dose: "d", frequency: "f", drug: "g", negation: "n", body_part: "b", date: "t", duration: "u", number: "m" },
-  om: { reviewed: false, dose: "d", frequency: "f", drug: "g", negation: "n", body_part: "b", date: "t", duration: "u", number: "m" },
+  am: { reviewed: false, dose: "d", frequency: "f", drug: "g", negation: "n", body_part: "b", date: "t", duration: "u", number: "m", symptom: "y" },
+  om: { reviewed: false, dose: "d", frequency: "f", drug: "g", negation: "n", body_part: "b", date: "t", duration: "u", number: "m", symptom: "y" },
 };
 const base: ReviewFile = { reviewer: "Reviewer A", language: "am", on: "2026-10-31", sentences: [], templates: [] };
 
@@ -29,7 +29,7 @@ describe("applying a native review", () => {
     const partial = applyReview(script, templates, { ...base, templates: [{ id: "dose", state: "changed", text: "new dose" }] });
     expect(partial.templates.am.dose).toBe("new dose");
     expect(partial.templates.am.reviewed).toBe(false);
-    const all = applyReview(script, templates, { ...base, templates: ["dose", "frequency", "drug", "negation", "body_part", "date", "duration", "number"].map(id => ({ id, state: "approved" as const })) });
+    const all = applyReview(script, templates, { ...base, templates: ["dose", "frequency", "drug", "negation", "body_part", "date", "duration", "number", "symptom"].map(id => ({ id, state: "approved" as const })) });
     expect(all.templates.am).toMatchObject({ reviewed: true, reviewer: "Reviewer A" });
     expect(all.templates.om.reviewed).toBe(false);
   });

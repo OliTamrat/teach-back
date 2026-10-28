@@ -9,7 +9,8 @@
     "date": "\"{source}\" ሲሉ የትኛውን ቀን ማለትዎ ነው? በየትኛው ወርና ዓመት፣ በሚጠቀሙት አቆጣጠር?",
     "body_part": "እባክዎ የት እንደሆነ ያሳዩኝ።",
     "duration": "ለምን ያህል ጊዜ? \"{source}\" ብለዋል።",
-    "number": "እባክዎ ያንን ቁጥር እንደገና ቀስ ብለው ይንገሩኝ፤ {source}?"
+    "number": "እባክዎ ያንን ቁጥር እንደገና ቀስ ብለው ይንገሩኝ፤ {source}?",
+    "symptom": "እባክዎ የሚሰማዎትን እንደገና በራስዎ ቃላት ይንገሩኝ፤ \"{source}\" ብለዋል?"
   },
   "om": {
     "reviewed": false,
@@ -20,6 +21,7 @@
     "date": "\"{source}\" jechuun guyyaa kam jechuu keessan? Ji'a fi bara kam, lakkoofsa yeroo isin fayyadamtaniin?",
     "body_part": "Maaloo eessa akka ta'e natti agarsiisaa.",
     "duration": "Hammam dheeratee? \"{source}\" jettan.",
-    "number": "Maaloo lakkoofsa sana suuta jedhaa irra deebi'aa; {source}?"
+    "number": "Maaloo lakkoofsa sana suuta jedhaa irra deebi'aa; {source}?",
+    "symptom": "Maaloo waan isinitti dhaga'amu irra deebi'aa jecha keessaniin natti himaa; \"{source}\" jettan?"
   }
 }

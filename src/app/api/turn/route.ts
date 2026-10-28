@@ -4,7 +4,7 @@ import { extractFacts } from "@/core/facts";
 import { analyzeTurn, languageMismatch, scriptMismatch } from "@/core/compare";
 import { teachBackQuestion } from "@/core/question";
 import { detectLanguage } from "@/core/language";
-import type { Flag, Language, Listener } from "@/core/types";
+import type { Flag, Language, Listener, SpeechLanguage } from "@/core/types";
 import { AsrError, asrConfigured, transcribe } from "@/server/asr";
 import { listen, metaConfigured, renderEnglish, voiceTranscribe } from "@/server/meta";
 
@@ -25,7 +25,11 @@ export async function POST(req: Request) {
   if (refused) return refused;
   const form = await req.formData();
   const audio = form.get("audio");
-  const language = form.get("language") === "om" ? "om" : "am";
+  // language is what this turn is spoken in: the patient's language, or "en" when the provider speaks.
+  const raw = String(form.get("language") || "am");
+  const language: SpeechLanguage = raw === "om" ? "om" : raw === "en" ? "en" : "am";
+  const isEnglish = language === "en";
+  const factLanguage: Language = isEnglish ? "am" : language;
   const reference = parseRef(String(form.get("reference") || ""));
   if (!(audio instanceof Blob) || audio.size === 0) return NextResponse.json({ error: "no_audio" }, { status: 400 });
   if (audio.size > 15 * 1024 * 1024) return NextResponse.json({ error: "audio_too_large" }, { status: 413 });
@@ -40,17 +44,17 @@ export async function POST(req: Request) {
   let firstListener: string | null = null;
   const [asrResult, second] = await Promise.all([
     asrConfigured()
-      ? transcribe(audio, language as Language).catch(e => { notes.push(e instanceof AsrError ? `Omnilingual ASR: ${e.hint}` : `Omnilingual ASR failed: ${msg(e)}`); return null; })
+      ? transcribe(audio, language).catch(e => { notes.push(e instanceof AsrError ? `Omnilingual ASR: ${e.hint}` : `Omnilingual ASR failed: ${msg(e)}`); return null; })
       : (notes.push("Omnilingual ASR not configured (ASR_SERVICE_URL)"), Promise.resolve(null)),
-    metaConfigured() ? listen(buf, format, language as Language).catch(e => { notes.push(`Second listener failed: ${msg(e)}`); return null; }) : (notes.push("Meta Model API key not configured"), Promise.resolve(null)),
+    metaConfigured() ? listen(buf, format, language).catch(e => { notes.push(`Second listener failed: ${msg(e)}`); return null; }) : (notes.push("Meta Model API key not configured"), Promise.resolve(null)),
   ]);
   let asr = asrResult;
   if (asr) firstListener = "Listener A (Omnilingual ASR)";
   // Fallback first listener: Meta's hosted Voice Transcribe, when the Space is asleep or absent. Said on the turn, never silently.
   if (!asr && metaConfigured() && process.env.META_VOICE_FALLBACK !== "off") {
     try {
-      const v = await voiceTranscribe(buf, format, language as Language);
-      if (v.text) { asr = { text: v.text, segments: [], ms: v.ms }; firstListener = "Listener A (Muse Voice Transcribe, fallback)"; notes.push("First listener was Muse Voice Transcribe, whose Amharic and Afaan Oromo coverage is unverified"); }
+      const v = await voiceTranscribe(buf, format, language);
+      if (v.text) { asr = { text: v.text, segments: [], ms: v.ms }; firstListener = "Listener A (Muse Voice Transcribe, fallback)"; notes.push(isEnglish ? "First listener was Muse Voice Transcribe" : "First listener was Muse Voice Transcribe, whose Amharic and Afaan Oromo coverage is unverified"); }
       else notes.push("Voice Transcribe returned no text");
     } catch (e) { notes.push(`Voice Transcribe failed: ${msg(e)}`); }
   }
@@ -59,22 +63,23 @@ export async function POST(req: Request) {
   if (asr && asr.text && firstListener) {
     let english = "";
     let why = "";
-    if (metaConfigured()) {
+    if (isEnglish) english = asr.text; // the provider spoke English: the transcript is the rendering
+    else if (metaConfigured()) {
       try {
-        const r = await renderEnglish(asr.text, language as Language);
+        const r = await renderEnglish(asr.text, language);
         english = r.text;
         if (!english) why = ` (finish_reason=${r.finishReason ?? "unknown"}${r.reasoningChars ? `, ${r.reasoningChars} characters of reasoning and no answer` : ""})`;
       }
       catch (e) { notes.push(`Rendering failed: ${msg(e)}`); }
     } else notes.push("No English rendering without the Meta Model API key");
     // No rendering, no listener: an empty primary would turn every fact the second listener heard into a false flag.
-    if (english) primary = { name: firstListener, english, facts: extractFacts(english, { reference, language: language as Language }) };
+    if (english) primary = { name: firstListener, english, facts: extractFacts(english, { reference, language: factLanguage }) };
     else if (metaConfigured()) notes.push(`The first listener transcribed but Spark returned no English rendering${why}`);
   }
 
   let secondary: Listener | undefined;
   if (second?.reply?.english) {
-    secondary = { name: "Listener B (Muse Spark)", english: second.reply.english, facts: extractFacts(second.reply.english, { reference, language: language as Language }) };
+    secondary = { name: "Listener B (Muse Spark)", english: second.reply.english, facts: extractFacts(second.reply.english, { reference, language: factLanguage }) };
   } else if (second) {
     // It answered but gave nothing usable. Without this the turn reports no listener and never says why.
     notes.push(second.reply ? "Second listener returned no English rendering" : "Second listener's reply could not be read");
@@ -86,22 +91,27 @@ export async function POST(req: Request) {
 
   // Language check: the second listener's judgement first, the script heuristic on the transcript as fallback.
   const extra: Flag[] = [];
-  let detected: { language: Language | null; confidence: number; by: string } = { language: null, confidence: 0, by: "none" };
+  let detected: { language: SpeechLanguage | null; confidence: number; by: string } = { language: null, confidence: 0, by: "none" };
   if (second?.reply && second.reply.language !== "other") detected = { language: second.reply.language, confidence: second.reply.confidence, by: "second listener" };
   else {
     const guess = detectLanguage(second?.reply?.transcript || asr?.text || "");
     detected = { ...guess, by: "script heuristic" };
   }
-  if (second?.reply?.language === "other" && second.reply.confidence >= 0.6) {
+  if (isEnglish) {
+    // A provider turn: the only language question is whether the provider was in fact speaking English.
+    if (detected.language && detected.language !== "en" && detected.confidence >= 0.6) extra.push({ kind: "language_mismatch", severity: "warn", message: `This was recorded as the provider speaking English, but it sounds like ${detected.language === "am" ? "Amharic" : "Afaan Oromo"}. Check who was speaking.` });
+  } else if (second?.reply?.language === "other" && second.reply.confidence >= 0.6) {
     // A third language is as much a mismatch as the other of the two, and the script heuristic cannot see it.
     extra.push({ kind: "language_mismatch", severity: "crit", message: `The second listener heard neither Amharic nor Afaan Oromo (confidence ${Math.round(second.reply.confidence * 100)}%). Check which language the patient is speaking before going on.` });
   } else {
-    const mismatch = languageMismatch(language as Language, detected.language, detected.confidence);
+    const mismatch = detected.language === "en"
+      ? { kind: "language_mismatch" as const, severity: "crit" as const, message: `The second listener heard English, but this is a patient turn in ${language === "am" ? "Amharic" : "Afaan Oromo"}. If the provider spoke, record it as a provider turn.` }
+      : languageMismatch(language, detected.language, detected.confidence);
     if (mismatch) extra.push(mismatch);
     // Nobody named a language: neither listener nor heuristic. The script can still rule the
     // session language out, and saying nothing here leaves the reviewer believing it was right.
     else if (!detected.language) {
-      const script = scriptMismatch(language as Language, second?.reply?.transcript || asr?.text || "");
+      const script = scriptMismatch(language, second?.reply?.transcript || asr?.text || "");
       if (script) extra.push(script);
     }
   }

@@ -3,13 +3,13 @@
  * The models render; code decides. No prompt here asks a model to advise, diagnose, or convert
  * a date.
  */
-import type { Language } from "./types";
+import type { Language, SpeechLanguage } from "./types";
 import { NEGATION_CUE } from "./facts";
 
-export const LANGUAGE_NAME: Record<Language, string> = { am: "Amharic", om: "Afaan Oromo" };
+export const LANGUAGE_NAME: Record<SpeechLanguage, string> = { am: "Amharic", om: "Afaan Oromo", en: "English" };
 
 /** First listener: turn the ASR transcript into a faithful English rendering. */
-export function renderPrompt(transcript: string, language: Language): string {
+export function renderPrompt(transcript: string, language: SpeechLanguage): string {
   return [
     `A patient in a clinic said the following in ${LANGUAGE_NAME[language]}. Render it in English for a medical interpreter.`,
     "Rules: translate faithfully; keep every number, unit, drug name, negation, body part and side exactly as said;",
@@ -21,11 +21,13 @@ export function renderPrompt(transcript: string, language: Language): string {
 }
 
 /** Second listener: hear the audio directly and report, as JSON, what was said and in which language. */
-export function listenPrompt(expected: Language): string {
+export function listenPrompt(expected: SpeechLanguage): string {
   return [
-    `This audio is a patient speaking in a clinic. The session expects ${LANGUAGE_NAME[expected]}, but the patient may be speaking Amharic or Afaan Oromo.`,
+    expected === "en"
+      ? "This audio is a clinician or caseworker speaking English to a patient through an interpreter."
+      : `This audio is a patient speaking in a clinic. The session expects ${LANGUAGE_NAME[expected]}, but the patient may be speaking Amharic or Afaan Oromo.`,
     "Reply with JSON only, no prose, with exactly these keys:",
-    '{"language":"am"|"om"|"other","confidence":0..1,"transcript":"<what was said, in its own script>","english":"<faithful English rendering>"}',
+    '{"language":"am"|"om"|"en"|"other","confidence":0..1,"transcript":"<what was said, in its own script>","english":"<faithful English rendering; the transcript itself when the speech is English>"}',
     "confidence is how sure you are of the language, never of the rendering: a voice you are certain is neither Amharic nor Afaan Oromo is \"other\" with high confidence, not low.",
     "Rules for the English: keep every number, unit, drug name, negation, body part and side exactly as said;",
     "keep any Ethiopian-calendar date exactly as spoken without converting it; do not add, infer, summarise or advise.",
@@ -34,7 +36,7 @@ export function listenPrompt(expected: Language): string {
   ].join("\n");
 }
 
-export type ListenReply = { language: "am" | "om" | "other"; confidence: number; transcript: string; english: string };
+export type ListenReply = { language: "am" | "om" | "en" | "other"; confidence: number; transcript: string; english: string };
 
 /** Parse the second listener's reply, tolerating code fences and stray prose around the JSON. */
 export function parseListenReply(raw: string): ListenReply | null {
@@ -42,7 +44,7 @@ export function parseListenReply(raw: string): ListenReply | null {
   if (!m) return null;
   try {
     const j = JSON.parse(m[0]) as Partial<ListenReply>;
-    const language = j.language === "am" || j.language === "om" ? j.language : "other";
+    const language = j.language === "am" || j.language === "om" || j.language === "en" ? j.language : "other";
     const confidence = typeof j.confidence === "number" ? Math.max(0, Math.min(1, j.confidence)) : 0;
     return { language, confidence, transcript: String(j.transcript ?? "").trim(), english: String(j.english ?? "").trim() };
   } catch {

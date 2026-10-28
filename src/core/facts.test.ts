@@ -186,7 +186,7 @@ describe("numbers beyond the clinic (Day 11)", () => {
   it("counts, ages and money are numbers, not durations", () => {
     expect(vals("I have four children and I am 45 years old.")).toEqual(["number=4 children", "number=45 years old"]);
     expect(vals("I earn $1,200 a month and pay 800 dollars in rent.")).toEqual(["number=1200 USD", "number=800 USD"]);
-    expect(vals("I have had this cough for three weeks.")).toEqual(["duration=3 week"]);
+    expect(vals("I have had this cough for three weeks.")).toEqual(["symptom=cough", "duration=3 week"]);
   });
   it("a year with its calendar is converted; a bare year is kept with a warning", () => {
     const ec = extractFacts("I arrived in 2011 E.C.", opts).find(f => f.type === "number")!;
@@ -220,6 +220,17 @@ describe("found by the first live Amharic turn (Oct 28)", () => {
     expect(vals("The doctor told me to take two tablets of 500 milligrams.")).toEqual(["dose=2 tablet", "dose=500 mg"]);
     expect(vals("Only once a week, on Sundays.")).toEqual(["frequency=1/week", "frequency=sunday"]);
     expect(vals("One in the morning and two at night.")).toEqual(["frequency=1 morning", "frequency=2 night"]);
+  });
+});
+
+describe("symptoms: what the patient came in to say (the pivot)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 28 } };
+  const vals = (s: string) => extractFacts(s, opts).map(f => `${f.type}=${f.value}`);
+  it("finds the symptom and keeps a qualifier that changes the picture", () => {
+    expect(vals("I have a sharp pain in my lower right back since two days ago.")).toEqual(["symptom=sharp pain", "body_part=lower right back", "duration=2 day ago"]);
+    expect(vals("She has had a high fever and vomiting since yesterday, and she is not eating.")).toContain("symptom=high fever");
+    expect(vals("I feel dizzy and short of breath.")).toContain("symptom=dizziness");
+    expect(vals("My right eye is blurry and the rash is not itchy.")).toContain("symptom=rash");
   });
 });
 

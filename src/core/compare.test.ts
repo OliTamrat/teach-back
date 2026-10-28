@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractFacts } from "./facts";
-import { analyzeTurn, compareListeners, compareWithLabel, languageMismatch, scriptMismatch } from "./compare";
+import { analyzeTurn, compareListeners, compareWithLabel, compareWithSource, languageMismatch, scriptMismatch } from "./compare";
 import type { Listener } from "./types";
 
 const ref = { year: 2026, month: 10, day: 31 };
@@ -133,6 +133,31 @@ describe("one listener is never a clean turn (Oct 28)", () => {
     expect(flags[0]).toMatchObject({ kind: "unverified", severity: "warn" });
     expect(flags[0].message).toContain("Muse Spark");
     expect(compareListeners({ name: "A", english: "Hello.", facts: [] })).toEqual([]);
+  });
+});
+
+describe("the interpreter check: what the provider said against what the interpreter rendered", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 28 } };
+  const provider = "Take one tablet of 500 milligrams amoxicillin three times a day for ten days. Do not take it with milk.";
+  it("carries a faithful rendering through with no flags", () => {
+    const src = extractFacts(provider, opts);
+    const faithful = extractFacts("Take one tablet of 500 milligrams of amoxicillin three times a day for ten days. Do not take it with milk.", opts);
+    expect(compareWithSource(src, faithful)).toEqual([]);
+  });
+  it("a changed dose and a dropped prohibition are critical, an added phrase is a warning", () => {
+    const src = extractFacts(provider, opts);
+    const rendered = extractFacts("Take one tablet of 50 milligrams amoxicillin three times a day for ten days. Take it with milk and with food.", opts);
+    const flags = compareWithSource(src, rendered);
+    expect(flags.find(f => f.kind === "interpreter_changed" && f.type === "dose")).toMatchObject({ severity: "crit", a: "500 milligrams", b: "50 milligrams" });
+    expect(flags.find(f => f.kind === "interpreter_dropped" && f.type === "negation")).toMatchObject({ severity: "crit", a: "Do not take it with milk" });
+    expect(flags.find(f => f.kind === "interpreter_added" && f.type === "frequency")).toMatchObject({ severity: "warn", b: "with food" });
+    expect(flags.filter(f => f.severity === "crit")).toHaveLength(2);
+  });
+  it("works the other way too: the patient's symptoms against the interpreter's English", () => {
+    const patient = extractFacts("I have a sharp pain in my lower right back for three weeks. I am not allergic to penicillin.", opts);
+    const interpreter = extractFacts("He has pain in his lower left back for three weeks. He is allergic to penicillin.", opts);
+    const flags = compareWithSource(patient, interpreter);
+    expect(flags.map(f => `${f.kind}:${f.type}`).sort()).toEqual(["interpreter_changed:body_part", "interpreter_changed:symptom", "interpreter_dropped:negation"]);
   });
 });
 

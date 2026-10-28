@@ -1,6 +1,10 @@
 export type Language = "am" | "om";
+/** What a turn can be spoken in: the patient's language, or English when the provider speaks. */
+export type SpeechLanguage = Language | "en";
+/** Who spoke the turn. The interpreter renders a patient turn into English and a provider turn into the patient's language; Teach-Back checks both. */
+export type Role = "patient" | "provider";
 
-export type FactType = "dose" | "frequency" | "drug" | "negation" | "body_part" | "date" | "duration" | "number";
+export type FactType = "dose" | "frequency" | "drug" | "negation" | "body_part" | "date" | "duration" | "number" | "symptom";
 
 /** A critical fact pulled from an English rendering, with the words it came from. */
 export type Fact = {
@@ -25,7 +29,10 @@ export type FlagKind =
   | "label_conflict"          // the medication label contradicts what was spoken
   | "invalid_date"            // a spoken date does not exist in the Ethiopian calendar
   | "ambiguous_calendar"      // the month name is used for both calendars (Afaan Oromo)
-  | "unverified";             // only one listener heard the turn, so nothing was cross-checked
+  | "unverified"              // only one listener heard the turn, so nothing was cross-checked
+  | "interpreter_changed"     // the interpreter's rendering carries a different value from what the speaker said
+  | "interpreter_dropped"     // a fact the speaker said is missing from the interpreter's rendering
+  | "interpreter_added";      // the interpreter's rendering carries a fact the speaker never said
 
 export type Flag = {
   kind: FlagKind;
