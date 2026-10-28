@@ -124,3 +124,15 @@ describe("dose kinds use the canonical units (Day 10 review)", () => {
   });
 });
 
+describe("one listener is never a clean turn (Oct 28)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 28 } };
+  it("raises an unverified warning when there is no second listener and there are facts", () => {
+    const a = { name: "Listener B (Muse Spark)", english: "Five hundred milligrams amoxicillin twice a day.", facts: extractFacts("Five hundred milligrams amoxicillin twice a day.", opts) };
+    const flags = compareListeners(a);
+    expect(flags).toHaveLength(1);
+    expect(flags[0]).toMatchObject({ kind: "unverified", severity: "warn" });
+    expect(flags[0].message).toContain("Muse Spark");
+    expect(compareListeners({ name: "A", english: "Hello.", facts: [] })).toEqual([]);
+  });
+});
+

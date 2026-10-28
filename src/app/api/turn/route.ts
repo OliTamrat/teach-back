@@ -58,13 +58,18 @@ export async function POST(req: Request) {
   let primary: Listener | null = null;
   if (asr && asr.text && firstListener) {
     let english = "";
+    let why = "";
     if (metaConfigured()) {
-      try { english = (await renderEnglish(asr.text, language as Language)).text; }
+      try {
+        const r = await renderEnglish(asr.text, language as Language);
+        english = r.text;
+        if (!english) why = ` (finish_reason=${r.finishReason ?? "unknown"}${r.reasoningChars ? `, ${r.reasoningChars} characters of reasoning and no answer` : ""})`;
+      }
       catch (e) { notes.push(`Rendering failed: ${msg(e)}`); }
     } else notes.push("No English rendering without the Meta Model API key");
     // No rendering, no listener: an empty primary would turn every fact the second listener heard into a false flag.
     if (english) primary = { name: firstListener, english, facts: extractFacts(english, { reference, language: language as Language }) };
-    else notes.push("The first listener transcribed but produced no English rendering");
+    else if (metaConfigured()) notes.push(`The first listener transcribed but Spark returned no English rendering${why}`);
   }
 
   let secondary: Listener | undefined;

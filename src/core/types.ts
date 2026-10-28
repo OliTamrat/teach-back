@@ -24,7 +24,8 @@ export type FlagKind =
   | "language_mismatch"       // the patient is speaking a different language from the session
   | "label_conflict"          // the medication label contradicts what was spoken
   | "invalid_date"            // a spoken date does not exist in the Ethiopian calendar
-  | "ambiguous_calendar";     // the month name is used for both calendars (Afaan Oromo)
+  | "ambiguous_calendar"      // the month name is used for both calendars (Afaan Oromo)
+  | "unverified";             // only one listener heard the turn, so nothing was cross-checked
 
 export type Flag = {
   kind: FlagKind;

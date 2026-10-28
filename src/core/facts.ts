@@ -20,7 +20,12 @@ const NUMBER_WORDS: Record<string, number> = {
   nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
   hundred: 100, thousand: 1000, half: 0.5, once: 1, twice: 2,
 };
-const NUM = "(\\d+(?:[.,]\\d+)?|half(?: a| an)?|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|hundred|thousand)";
+// Spoken numbers come back from a rendering as words, and often as several: "five hundred",
+// "twenty-five", "one thousand two hundred". The pattern takes a run of number words joined by a
+// space, a hyphen or "and"; "a", "an", "once" and "twice" stand alone and never join a run, so
+// "five a day" is five, then "a day".
+const NUM_WORD = "(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)";
+const NUM = `(\\d+(?:[.,]\\d+)?|half(?: a| an)?|a hundred|a thousand|a|an|once|twice|${NUM_WORD}(?:(?:[ -]|[ -]and[ -])${NUM_WORD})*(?: and a half)?)`;
 
 export function parseNumber(s: string): number | null {
   const t = s.trim().toLowerCase();
@@ -30,7 +35,23 @@ export function parseNumber(s: string): number | null {
     return parseFloat(t.replace(",", "."));
   }
   if (t.startsWith("half")) return 0.5;
-  return t in NUMBER_WORDS ? NUMBER_WORDS[t] : null;
+  if (t in NUMBER_WORDS) return NUMBER_WORDS[t];
+  // Compound words: "five hundred", "twenty-five", "one thousand two hundred", "two and a half".
+  const words = t.replace(/-/g, " ").split(/\s+/).filter(w => w !== "and");
+  let total = 0, current = 0, any = false, half = false;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (w === "a" && words[i + 1] === "half") { half = true; i++; continue; }
+    if (w === "half") { half = true; continue; }
+    if (!(w in NUMBER_WORDS)) return null;
+    any = true;
+    const n = NUMBER_WORDS[w];
+    if (w === "hundred") current = (current || 1) * 100;
+    else if (w === "thousand") { total += (current || 1) * 1000; current = 0; }
+    else current += n;
+  }
+  if (!any) return half ? 0.5 : null;
+  return total + current + (half ? 0.5 : 0);
 }
 
 const UNITS: Array<[RegExp, string]> = [

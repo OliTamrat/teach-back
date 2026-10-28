@@ -202,3 +202,24 @@ describe("numbers beyond the clinic (Day 11)", () => {
   });
 });
 
+describe("found by the first live Amharic turn (Oct 28)", () => {
+  const opts = { reference: { year: 2026, month: 10, day: 28 } };
+  const vals = (s: string) => extractFacts(s, opts).map(f => `${f.type}=${f.value}`);
+  it("compound number words are one number", () => {
+    expect(vals("He is giving me five hundred milligrams amoxicillin twice a day.")).toEqual(["dose=500 mg", "drug=amoxicillin", "frequency=2/day"]);
+    expect(vals("Take twenty-five milligrams.")).toContain("dose=25 mg");
+    expect(vals("I take one thousand two hundred milligrams.")).toContain("dose=1200 mg");
+    expect(vals("Take two and a half tablets.")).toContain("dose=2.5 tablet");
+    expect(vals("I take a hundred milligrams.")).toContain("dose=100 mg");
+  });
+  it("a and an never join a run of number words", () => {
+    expect(vals("Take five a day.")).toEqual([]); // no "N a day" pattern exists; the point is that "five a" is not read as six of anything
+    expect(vals("Three times a day.")).toEqual(["frequency=3/day"]);
+  });
+  it("the spoken-number sentences from the recording script still read right", () => {
+    expect(vals("The doctor told me to take two tablets of 500 milligrams.")).toEqual(["dose=2 tablet", "dose=500 mg"]);
+    expect(vals("Only once a week, on Sundays.")).toEqual(["frequency=1/week", "frequency=sunday"]);
+    expect(vals("One in the morning and two at night.")).toEqual(["frequency=1 morning", "frequency=2 night"]);
+  });
+});
+

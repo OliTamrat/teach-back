@@ -255,3 +255,30 @@ to mono, resamples to 16 kHz and writes a RIFF/WAVE header (`src/core/wav.ts`, p
 saves WAV, so the Oct 31 clips feed the harness as they are. If a browser cannot decode its own
 recording the clip is sent as recorded and the turn says so, rather than failing silently. Verified
 in headless Chromium: the upload is `turn.wav`, 16000 Hz, one channel, 16 bits.
+
+## 25. Spoken numbers are words, and words come in runs (Oct 28)
+
+The first real Amharic turn came back from Spark as "five hundred milligrams amoxicillin twice a
+day", and the extractor read it as 100 mg: the number pattern knew single words and took "hundred"
+alone. Every sentence in the recording script was written with digits, so nothing had tested this,
+and a rendering model writes numbers the way people say them. The pattern now takes a run of number
+words ("five hundred", "twenty-five", "one thousand two hundred", "two and a half"); "a", "an",
+"once" and "twice" stand alone and never join a run. Found on a real recording, which is the whole
+reason to make one before the demo.
+
+## 26. One listener is a reading, not a check (Oct 28)
+
+The same turn ran on the second listener alone, because the Space was asleep and Voice Transcribe
+produced no usable English, and the screen showed the result in green under "no disagreements".
+There were no disagreements because nobody had disagreed. A turn heard by one listener now carries
+a warning flag that names the listener and says nothing was cross-checked, and a person must confirm
+it before the line is final; the green box says "two listeners agreed on every fact" only when two
+did. The product's claim is the cross-check, and the screen must not look the same without it.
+
+## 27. An empty rendering says why (Oct 28)
+
+The first listener's transcript got no English back from Spark 1.3 and the turn could only say so.
+A reasoning model can spend its whole budget thinking and return no content, or stop for a reason
+the caller never sees. The adapter now returns the finish reason and the length of any reasoning
+text, and the turn carries them in its note, so the next empty rendering is diagnosable from the
+screen instead of from a server log nobody can reach during a demo.

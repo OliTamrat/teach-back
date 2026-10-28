@@ -21,7 +21,8 @@ type Content = string | Array<
   | { type: "image_url"; image_url: { url: string } }
 >;
 
-async function chat(model: string, content: Content, maxTokens: number): Promise<{ text: string; ms: number; usage?: unknown }> {
+export type ChatResult = { text: string; ms: number; usage?: unknown; finishReason?: string; reasoningChars?: number };
+async function chat(model: string, content: Content, maxTokens: number): Promise<ChatResult> {
   if (!KEY()) throw new Error("meta_not_configured");
   const t0 = Date.now();
   const res = await fetch(`${BASE()}/chat/completions`, {
@@ -31,10 +32,13 @@ async function chat(model: string, content: Content, maxTokens: number): Promise
     signal: AbortSignal.timeout(90_000),
   });
   if (!res.ok) throw new Error(`meta_http_${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const json = (await res.json()) as { choices?: Array<{ message?: { content?: unknown } }>; usage?: unknown };
-  const c = json.choices?.[0]?.message?.content;
+  const json = (await res.json()) as { choices?: Array<{ message?: { content?: unknown; reasoning_content?: unknown; reasoning?: unknown }; finish_reason?: string }>; usage?: unknown };
+  const choice = json.choices?.[0];
+  const c = choice?.message?.content;
   const text = typeof c === "string" ? c : Array.isArray(c) ? c.map((p: { text?: string }) => p.text || "").join("") : "";
-  return { text: text.trim(), ms: Date.now() - t0, usage: json.usage };
+  // A reasoning model can spend its whole budget thinking and return no content; the caller says so on the turn.
+  const reasoning = choice?.message?.reasoning_content ?? choice?.message?.reasoning;
+  return { text: text.trim(), ms: Date.now() - t0, usage: json.usage, finishReason: choice?.finish_reason, reasoningChars: typeof reasoning === "string" ? reasoning.length : undefined };
 }
 
 /** First listener's rendering: ASR transcript -> English. */

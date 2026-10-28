@@ -278,7 +278,7 @@ export default function Interpreter() {
                 )}
                 {isFinal && (
                   <div className="final">
-                    <span className="eyebrow">{analysis.flags.length ? "Final line, every flag reviewed by a person" : "Final line, no disagreements"}</span>
+                    <span className="eyebrow">{analysis.flags.length ? "Final line, every flag reviewed by a person" : "Final line, two listeners agreed on every fact"}</span>
                     <p className="summary">{summary}</p>
                     <div className="row">
                       <button className="btn small primary" onClick={addToSession}>Add to session and next turn</button>
@@ -517,6 +517,7 @@ function FlagCard({ flag, decision, onDecide }: { flag: Flag; decision: Decision
   const kindLabel: Record<Flag["kind"], string> = {
     listener_disagreement: "listeners disagree", single_listener: "only one listener heard this", language_mismatch: "wrong language",
     label_conflict: "label contradicts speech", invalid_date: "date does not exist", ambiguous_calendar: "which calendar?",
+    unverified: "one listener only, nothing cross-checked",
   };
   return (
     <div className="flag" data-sev={flag.severity} data-state={done ? "confirmed" : undefined}>

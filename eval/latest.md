@@ -1,4 +1,4 @@
-# Teach-Back evaluation, 2026-10-28T14-51-51 (audio-v1.json, text-v1.json)
+# Teach-Back evaluation, 2026-10-28T15-25-08 (audio-v1.json, text-v1.json)
 
 | Metric | Value |
 | --- | --- |
@@ -92,8 +92,8 @@
 | T08-future-date-agree | 1/1 | 0/0 |  | none |  |
 | T09-oromo-month-ambiguous | 1/1 | 0/0 |  | warn ambiguous_calendar:date |  |
 | T10-label-conflict | 3/3 | 1/1 |  | crit label_conflict:frequency |  |
-| T11-language-mismatch | 1/1 | 0/0 |  | crit language_mismatch |  |
-| T12-single-listener | 4/4 | 0/0 |  | none |  |
+| T11-language-mismatch | 1/1 | 0/0 |  | crit language_mismatch, warn unverified |  |
+| T12-single-listener | 4/4 | 0/0 |  | warn unverified |  |
 | T13-child-dose-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:dose |  |
 | T14-frequency-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:frequency |  |
 | T15-two-errors-b | 6/6 | 3/3 |  | crit listener_disagreement:dose, crit single_listener:negation, crit listener_disagreement:date |  |

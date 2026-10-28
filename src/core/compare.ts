@@ -20,7 +20,12 @@ export function compareListeners(primary: Listener, secondary?: Listener): Flag[
       flags.push({ kind: "ambiguous_calendar", severity: "warn", type: "date", factIndex: i, a: f.source, message: `"${f.source}": this month name is used for both the Ethiopian and Gregorian calendars. Confirm which one.` });
     }
   });
-  if (!secondary) return flags;
+  if (!secondary) {
+    // One listener is a reading, not a check. The turn must say so, and a person must own it,
+    // or a single listener's mistake goes through green.
+    if (primary.facts.length) flags.push({ kind: "unverified", severity: "warn", message: `Only one listener heard this turn (${primary.name}). Nothing was cross-checked. Confirm each fact with the patient before anything is written down.` });
+    return flags;
+  }
 
   for (const type of Object.keys(LABELS) as FactType[]) {
     const a = primary.facts.filter(f => f.type === type);
