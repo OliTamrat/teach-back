@@ -1,0 +1,162 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { conversationText, placeTurn, turnFlags, ROLE_LABEL, type ConversationTurn } from "@/core/conversation";
+import { makeTurn, type Decision, type TurnRecord } from "@/core/session";
+import type { Flag, Language, SpeechLanguage } from "@/core/types";
+import { apiPost, refusal } from "./api-client";
+import { startSegmenter, type Segmenter } from "./vad";
+
+/**
+ * Listening mode. One button. The microphone stays open, the audio is cut into turns at pauses,
+ * each turn is queued and checked while the next is being spoken, and every change of language
+ * is taken as the interpreter rendering the turn before it. The interpreter keeps interpreting;
+ * the red lines arrive a few seconds behind, in order, for a person to settle.
+ */
+type Props = {
+  language: Language; reference: string;
+  onAccessNeeded: () => void;
+  onSessionTurns: (turns: TurnRecord[]) => void;
+  renderFlag: (flag: Flag, decision: Decision, onDecide: (d: Decision) => void) => React.ReactNode;
+};
+type Pending = { id: string; seconds: number; state: "queued" | "listening" | "failed"; error?: string };
+type TurnResponse = { language: SpeechLanguage; notes: string[]; transcript: string; primary: { english: string; facts: ConversationTurn["facts"] }; flags: Flag[]; timings: { asrMs: number | null; listenMs: number | null } };
+
+const LANG: Record<SpeechLanguage, string> = { am: "Amharic", om: "Afaan Oromo", en: "English" };
+
+export default function Listen({ language, reference, onAccessNeeded, onSessionTurns, renderFlag }: Props) {
+  const [state, setState] = useState<"idle" | "listening" | "stopping">("idle");
+  const [turns, setTurns] = useState<ConversationTurn[]>([]);
+  const [pending, setPending] = useState<Pending[]>([]);
+  const [decisions, setDecisions] = useState<Record<string, Decision>>({});
+  const [level, setLevel] = useState(0);
+  const [error, setError] = useState("");
+  const [timings, setTimings] = useState<number[]>([]);
+  const seg = useRef<Segmenter | null>(null);
+  const queue = useRef<Array<{ id: string; wav: Blob; seconds: number }>>([]);
+  const busy = useRef(false);
+  const turnsRef = useRef<ConversationTurn[]>([]);
+  const meter = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => { turnsRef.current = turns; }, [turns]);
+  useEffect(() => () => { seg.current?.stop(); if (meter.current) clearInterval(meter.current); }, []);
+
+  async function start() {
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      seg.current = startSegmenter(stream, (wav, seconds) => {
+        const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        queue.current.push({ id, wav, seconds });
+        setPending(p => [...p, { id, seconds, state: "queued" }]);
+        void drain();
+      });
+      meter.current = setInterval(() => setLevel(seg.current?.level() ?? 0), 120);
+      setState("listening");
+    } catch (e) {
+      setError(e instanceof Error && e.name === "NotAllowedError" ? "Microphone access was refused. Allow it in the browser and try again." : `Could not start: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  function stop() {
+    setState("stopping");
+    seg.current?.stop(); seg.current = null;
+    if (meter.current) { clearInterval(meter.current); meter.current = null; }
+    setLevel(0);
+    setState("idle");
+  }
+
+  /** Turns are checked one at a time, in the order they were spoken, so the alternation rule holds; recording never waits. */
+  async function drain() {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      while (queue.current.length) {
+        const item = queue.current.shift()!;
+        setPending(p => p.map(x => x.id === item.id ? { ...x, state: "listening" } : x));
+        const t0 = Date.now();
+        try {
+          const form = new FormData();
+          form.append("audio", item.wav, "turn.wav"); form.append("language", "auto"); form.append("session", language); form.append("reference", reference);
+          const res = await apiPost("/api/turn", form);
+          const json = await res.json();
+          const why = refusal(res.status, json);
+          if (why === "access_required") { onAccessNeeded(); throw new Error("This deployment asks for an access code first."); }
+          if (why) throw new Error(why);
+          if (!res.ok) throw new Error(json.error === "no_listener" ? `No listener heard this turn. ${(json.notes || []).join(" ")}` : json.error || `HTTP ${res.status}`);
+          const t = json as TurnResponse;
+          const placed = placeTurn(turnsRef.current[turnsRef.current.length - 1], {
+            id: item.id, at: new Date().toISOString(), language: t.language, english: t.primary.english, transcript: t.transcript, facts: t.primary.facts, listenerFlags: t.flags,
+          }, language);
+          turnsRef.current = [...turnsRef.current, placed];
+          setTurns(turnsRef.current);
+          setTimings(x => [...x, Date.now() - t0]);
+          setPending(p => p.filter(x => x.id !== item.id));
+        } catch (e) {
+          setPending(p => p.map(x => x.id === item.id ? { ...x, state: "failed", error: e instanceof Error ? e.message : String(e) } : x));
+        }
+      }
+    } finally { busy.current = false; }
+  }
+
+  function decide(turnId: string, i: number, d: Decision) { setDecisions(prev => ({ ...prev, [`${turnId}:${i}`]: d })); }
+  const openCount = turns.reduce((n, t) => n + turnFlags(t).filter((_, i) => (decisions[`${t.id}:${i}`]?.state ?? "open") === "open").length, 0);
+  const avg = timings.length ? timings.reduce((a, b) => a + b, 0) / timings.length / 1000 : null;
+
+  function endSession() {
+    const records = turns.map(t => {
+      const flags = turnFlags(t);
+      return makeTurn({ language, reference, role: t.language === "en" ? "provider" : "patient", transcript: t.transcript, english: `${ROLE_LABEL[t.role]}: ${t.english}`, facts: t.facts, flags, decisions: flags.map((_, i) => decisions[`${t.id}:${i}`] ?? { state: "confirmed" as const }) });
+    });
+    onSessionTurns(records);
+    setTurns([]); setDecisions({}); setPending([]); setTimings([]); turnsRef.current = [];
+  }
+
+  return (
+    <div className="listen">
+      <div className="row">
+        {state !== "listening" && <button className="btn primary" onClick={start}>Start listening</button>}
+        {state === "listening" && <button className="btn rec" onClick={stop}><span className="dot" aria-hidden="true" />Stop listening</button>}
+        {state === "listening" && <button className="btn small quiet" onClick={() => seg.current?.cut()} title="End the current turn now, if the room is too loud for pauses to be heard">Cut turn</button>}
+        {state === "listening" && <span className="meter" aria-hidden="true"><span style={{ width: `${Math.min(100, level * 900)}%` }} /></span>}
+        <span className="hint">{state === "listening" ? "Everyone just talks. Turns are cut at pauses and checked in order; a change of language is the interpreter." : `${LANG[language]} session. One button; the interpreter keeps interpreting.`}</span>
+      </div>
+      {error && <div className="flag" data-sev="crit"><div className="msg">{error}</div></div>}
+      {(turns.length > 0 || pending.length > 0) && (
+        <div className="status">
+          <span><b>{turns.length}</b> turns</span>
+          <span><b>{openCount}</b> flags open</span>
+          {pending.length > 0 && <span><b>{pending.length}</b> being checked</span>}
+          {avg !== null && <span>about <b className="mono">{avg.toFixed(1)}s</b> per turn</span>}
+        </div>
+      )}
+      <ol className="convo">
+        {turns.map((t, n) => {
+          const flags = turnFlags(t);
+          return (
+            <li key={t.id} className="turn" data-role={t.role} data-crit={flags.some((f, i) => f.severity === "crit" && (decisions[`${t.id}:${i}`]?.state ?? "open") === "open") ? "" : undefined}>
+              <div className="head">
+                <span className="eyebrow">{n + 1}. {ROLE_LABEL[t.role]} · {LANG[t.language]}{t.rendersId ? ` · renders turn ${turns.findIndex(x => x.id === t.rendersId) + 1}` : ""}</span>
+                <span className="eyebrow">{t.facts.length} fact{t.facts.length === 1 ? "" : "s"}</span>
+              </div>
+              <p className="line">{t.english}</p>
+              {t.language !== "en" && t.transcript && <p className="hint" lang={t.language}>{t.transcript}</p>}
+              {flags.length > 0 && <div className="flags">{flags.map((f, i) => <div key={i}>{renderFlag(f, decisions[`${t.id}:${i}`] ?? { state: "open" }, d => decide(t.id, i, d))}</div>)}</div>}
+            </li>
+          );
+        })}
+        {pending.map(p => (
+          <li key={p.id} className="turn pending" data-state={p.state}>
+            <span className="eyebrow">{p.state === "failed" ? "could not be checked" : p.state === "listening" ? "listening twice…" : "waiting"} · {p.seconds.toFixed(0)}s of speech</span>
+            {p.error && <p className="hint">{p.error}</p>}
+          </li>
+        ))}
+      </ol>
+      {turns.length > 0 && state !== "listening" && (
+        <div className="row">
+          <button className="btn primary" onClick={endSession} disabled={openCount > 0} title={openCount > 0 ? "Decide every flag first" : undefined}>Add this conversation to the session</button>
+          <button className="btn small" onClick={() => void navigator.clipboard?.writeText(conversationText(turns))}>Copy the conversation</button>
+          {openCount > 0 && <span className="hint">{openCount} flag{openCount === 1 ? "" : "s"} still open.</span>}
+        </div>
+      )}
+    </div>
+  );
+}

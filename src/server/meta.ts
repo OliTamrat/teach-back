@@ -42,12 +42,14 @@ async function chat(model: string, content: Content, maxTokens: number): Promise
 }
 
 /** First listener's rendering: ASR transcript -> English. */
+export const renderModel = () => process.env.META_RENDER_MODEL || sparkAudioModel();
 export async function renderEnglish(transcript: string, language: SpeechLanguage): Promise<ChatResult & { model: string }> {
-  // Spark 1.3 reasons before it answers and, on a garbled transcript, can spend the whole budget
-  // thinking (finish_reason=length, no content). The budget is generous, and when it still comes
-  // back empty the rendering is retried once on Spark 1.2, which answers plainly.
-  const first = await chat(sparkModel(), renderPrompt(transcript, language), 6000);
-  if (first.text || first.finishReason !== "length") return { ...first, model: sparkModel() };
+  // Rendering is on the critical path of every turn, so it runs on the plain model (Spark 1.2 by
+  // default), which answers in a few seconds. Spark 1.3 reasons before it answers and, on a garbled
+  // transcript, can spend the whole budget thinking (finish_reason=length, no content); it is used
+  // only when META_RENDER_MODEL names it, and an empty answer then falls back to the plain model.
+  const first = await chat(renderModel(), renderPrompt(transcript, language), renderModel() === sparkAudioModel() ? 3000 : 6000);
+  if (first.text || first.finishReason !== "length" || renderModel() === sparkAudioModel()) return { ...first, model: renderModel() };
   const second = await chat(sparkAudioModel(), renderPrompt(transcript, language), 3000);
   return { ...second, ms: first.ms + second.ms, model: sparkAudioModel(), reasoningChars: first.reasoningChars };
 }

@@ -228,3 +228,19 @@ h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border
 .step[data-done] { border-color: var(--good); }
 .step[data-off] { opacity: 0.6; }
 .render.small { font-size: 16px; line-height: 1.55; color: var(--text-2); margin: 0; }
+
+/* listening mode */
+.listen { display: grid; gap: 12px; }
+.meter { display: inline-block; width: 90px; height: 8px; border-radius: 4px; background: var(--sunken); overflow: hidden; border: 1px solid var(--line-strong); }
+.meter span { display: block; height: 100%; background: var(--good); transition: width 0.1s; }
+.convo { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.turn { border: 1px solid var(--line-strong); border-left-width: 4px; border-radius: 10px; padding: 10px 14px; display: grid; gap: 6px; background: var(--raised); }
+.turn[data-role="patient"] { border-left-color: var(--info); }
+.turn[data-role="provider"] { border-left-color: var(--accent); }
+.turn[data-role^="interpreter"] { border-left-color: var(--faint); }
+.turn[data-crit] { border-color: var(--crit); }
+.turn .head { display: flex; justify-content: space-between; gap: 10px; }
+.turn .line { margin: 0; font-size: 17px; line-height: 1.55; color: var(--text); }
+.turn.pending { opacity: 0.75; border-style: dashed; }
+.turn.pending[data-state="failed"] { border-color: var(--crit); opacity: 1; }
+.grid.one { grid-template-columns: 1fr; }

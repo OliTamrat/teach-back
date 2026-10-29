@@ -6,6 +6,7 @@ import { analyzeTurn, compareListeners, compareWithLabel, compareWithSource, lan
 import { SETTINGS, teachBackQuestion, type Setting } from "@/core/question";
 import { localizedQuestion } from "@/core/question-i18n";
 import LabelPhoto from "./LabelPhoto";
+import Listen from "./Listen";
 import { apiPost, getAccessCode, refusal, setAccessCode } from "./api-client";
 import { toWav } from "./audio";
 import { allDecided, finalSummary, makeTurn, sessionNotes, type Decision, type TurnRecord } from "@/core/session";
@@ -39,13 +40,13 @@ const TOUR: TourStep[] = [
   { title: "A person decides every flag", body: "Nothing is final until the interpreter confirms or corrects each red line with the patient. Try it: press Confirmed with patient on one flag, or Correct it and type what the patient actually said. The line turns green only when none are open." },
   { title: "The provider answers, and the interpreter is checked the other way", body: "Now the provider speaks English: a dose, a frequency, a prohibition, a follow-up date. The interpreter renders it into Amharic for the patient. Teach-Back hears the interpreter's Amharic through the same two listeners, brings it back to English, and compares it with what the provider said. Here the interpreter said 50 instead of 500 and dropped \"do not\". Those two lines decide whether the patient goes home safe.", role: "provider", provider: SAMPLE_PROVIDER, a: SAMPLE_INTERPRETED, language: "am" },
   { title: "The bottle from the bag", body: "Elders bring their medicines to show. A phone photo goes to SAM 3.1, which finds the label; Spark reads what is printed; code compares it with what the patient said they take. Here the label is typed in so you can see the comparison without a camera.", role: "patient", a: "I take two tablets of metformin twice a day for my sugar.", b: "I take two tablets of metformin twice a day for my sugar.", label: "Metformin 500 mg. Take one tablet twice a day with food.", language: "am" },
-  { title: "Now with a microphone", body: "The Record tab does all of this from speech: the patient's turn in Amharic or Afaan Oromo, the provider's turn in English, and the interpreter's rendering of each. Teach-Back never advises anyone and never speaks to a patient; the only sentence meant for them is a human-reviewed question the interpreter reads aloud.", action: "record" },
+  { title: "Now with a microphone, and no buttons", body: "Press Start listening once. Everyone just talks. The audio is cut into turns at pauses and each is checked while the next is spoken; every change of language is the interpreter, so patient, interpreter and provider are all checked without anyone touching the phone. The interpreter keeps interpreting; the red lines arrive a few seconds behind. Teach-Back never advises anyone and never speaks to a patient.", action: "record" },
 ];
 const LANG_NAME: Record<SpeechLanguage, string> = { am: "Amharic", om: "Afaan Oromo", en: "English" };
 const SESSION_KEY = "teach-back-session";
 const TYPE_NAME: Record<Fact["type"], string> = { dose: "dose", frequency: "frequency", drug: "drug", negation: "negation", body_part: "body part", date: "date", duration: "duration", number: "number", symptom: "symptom" };
 
-type Mode = "record" | "paste";
+type Mode = "listen" | "record" | "paste";
 type Health = { ready: boolean; metaModelApi: { key: string }; asr: { service: string } };
 type TurnResponse = {
   firstListener: string | null; transcript: string; secondTranscript: string; notes: string[];
@@ -69,7 +70,7 @@ export default function Interpreter() {
   const [label, setLabel] = useState(SAMPLE_LABEL);
   const [checked, setChecked] = useState<{ role: Role; provider: string; a: string; b: string; label: string; language: Language; spoken: Language | ""; reference: string; setting: Setting } | null>(null);
   const [decisions, setDecisions] = useState<Record<number, Decision>>({});
-  const [mode, setMode] = useState<Mode>("record");
+  const [mode, setMode] = useState<Mode>("listen");
   const [health, setHealth] = useState<Health | null>(null);
   const [audio, setAudio] = useState<AudioMeta | null>(null);
   const [turns, setTurns] = useState<TurnRecord[]>([]);
@@ -88,7 +89,7 @@ export default function Interpreter() {
   function startTour(step: number) {
     const st = TOUR[step]; if (!st) return;
     setTour(step);
-    if (st.action === "record") { setMode("record"); setChecked(null); setDecisions({}); return; }
+    if (st.action === "record") { setMode("listen"); setChecked(null); setDecisions({}); return; }
     if (st.a !== undefined) {
       setMode("paste");
       if (st.language) setLanguage(st.language);
@@ -235,19 +236,25 @@ export default function Interpreter() {
           </section>
         )}
 
-        <div className="grid">
+        <div className={mode === "listen" ? "grid one" : "grid"}>
           <section className="panel" aria-labelledby="turn-h">
             <div className="row" style={{ justifyContent: "space-between" }}>
-              <h2 id="turn-h">This turn</h2>
+              <h2 id="turn-h">{mode === "listen" ? "This conversation" : "This turn"}</h2>
               <div className="tabs" role="tablist" aria-label="How the turn comes in">
-                <button role="tab" aria-selected={mode === "record"} className="tab" onClick={() => setMode("record")}>Record</button>
+                <button role="tab" aria-selected={mode === "listen"} className="tab" onClick={() => setMode("listen")}>Listen</button>
+                <button role="tab" aria-selected={mode === "record"} className="tab" onClick={() => setMode("record")}>Record a turn</button>
                 <button role="tab" aria-selected={mode === "paste"} className="tab" onClick={() => setMode("paste")}>Paste text</button>
               </div>
             </div>
-            <div className="tabs who" role="radiogroup" aria-label="Who is speaking">
+            {mode === "listen" && (
+              <Listen language={language} reference={reference} onAccessNeeded={() => setNeedAccess(true)}
+                onSessionTurns={recs => saveTurns([...turns, ...recs])}
+                renderFlag={(flag, decision, onDecide) => <FlagCard flag={flag} decision={decision} onDecide={onDecide} />} />
+            )}
+            {mode !== "listen" && <div className="tabs who" role="radiogroup" aria-label="Who is speaking">
               <button role="radio" aria-checked={role === "patient"} className="tab" onClick={() => { setRole("patient"); setProviderTurn(null); setChecked(null); }}>Patient speaks {LANG_NAME[language]}</button>
               <button role="radio" aria-checked={role === "provider"} className="tab" onClick={() => { setRole("provider"); setChecked(null); }}>Provider speaks English</button>
-            </div>
+            </div>}
             {mode === "record" && role === "patient" && (
               <Recorder language={language} reference={reference} health={health} onTurn={onTurn} onAccessNeeded={() => setNeedAccess(true)} />
             )}
@@ -270,12 +277,12 @@ export default function Interpreter() {
               </div>
             )}
             {mode === "record" && audio && <TurnMeta meta={audio} language={language} />}
-            <div className="field labelcheck">
+            {mode !== "listen" && <div className="field labelcheck">
               <label htmlFor="in-label">{setting === "clinic" ? "Medication label, optional. Photograph it, or type what it says; a contradiction with what was spoken is a flag." : "Document or label, optional. Photograph a medication label, or type the figures from a letter or form; a contradiction with what was spoken is a flag."}</label>
               <LabelPhoto onText={(t) => setLabel(t)} onAccessNeeded={() => setNeedAccess(true)} />
               <textarea id="in-label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Metformin 500 mg. Take one tablet twice a day with food." style={{ minHeight: 56 }} />
               {mode === "record" && checked && <button className="btn small" onClick={() => check()}>Re-check this turn with the label</button>}
-            </div>
+            </div>}
             {mode === "paste" && <>
             {role === "provider" && (
               <div className="field">
@@ -303,7 +310,7 @@ export default function Interpreter() {
             </>}
           </section>
 
-          <section className="panel" aria-labelledby="flags-h" aria-live="polite">
+          {mode !== "listen" && <section className="panel" aria-labelledby="flags-h" aria-live="polite">
             <h2 id="flags-h" ref={flagsHeading} tabIndex={-1}>What a human must confirm</h2>
             {!analysis && mode === "record" && role === "patient" && <p className="hint">Record one patient turn. Both listeners render it in English, the critical facts are marked, and anything they disagree on appears here for a person to settle.</p>}
             {!analysis && mode === "record" && role === "provider" && <p className="hint">Record the provider, then the interpreter. What the interpreter said is brought back to English and compared, fact by fact, with what the provider said.</p>}
@@ -354,7 +361,7 @@ export default function Interpreter() {
                 )}
               </>
             )}
-          </section>
+          </section>}
         </div>
 
         <section className="panel" aria-labelledby="session-h">

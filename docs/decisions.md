@@ -335,3 +335,34 @@ the first live turns read "headache" and "penicillin" into the middle of Amharic
 language now has a wording per fact type that quotes nothing, and the screen uses it on every turn.
 The quoting wording is kept for the reviewers and for the day the patient's own words can be
 aligned to a fact.
+
+## 33. One button, and every change of language is the interpreter (Oct 29)
+
+Oli's objection to the Record tab was the right one: an interpreter in a busy room will not tap
+Record and Stop for the patient, then for themselves, then for the provider, then for themselves
+again, and whoever forgets a tap loses the check on exactly that turn. Listening mode keeps the
+microphone open. The browser cuts the audio into turns at pauses (a floor measured from the room,
+about a second of silence, a ceiling so a long speaker is checked in pieces), hands each turn over
+as 16 kHz WAV, and keeps recording while it is checked. Turns are checked one at a time in the order
+they were spoken, because the order is the meaning: in an interpreted visit every change of
+language is the interpreter rendering the turn before it. Amharic after English is the interpreter
+telling the patient what the provider said; English after Amharic is the interpreter telling the
+provider what the patient said; the same language twice is the same speaker going on. So the
+alternation rule gives both directions of the check with no one touching the phone. The server is
+told "auto" and tries the session language and English on the Space in parallel; the second
+listener's word decides which it was, the script decides when it cannot.
+
+Where the rule is wrong, it is wrong loudly, not silently: a provider who speaks a little Amharic
+would be labelled an interpreter, and the screen shows the role on every turn so a person can see
+it. A "Cut turn" button exists for rooms too loud for pauses to be heard. Record a turn and Paste
+text stay for the walkthrough and for checking one turn deliberately.
+
+## 34. The plain model renders; the reasoning model is opt-in (Oct 29)
+
+Rendering runs on every turn and the interpreter keeps interpreting while it does, so the turn
+time is what decides whether the red line arrives before the next sentence or after the patient
+has left. Spark 1.2 answers a rendering in a few seconds and did not fail on any live turn; Spark
+1.3 reasons first and on a garbled transcript has run out of tokens with nothing to show
+(decision 30). The renderer is Spark 1.2 by default, with META_RENDER_MODEL to prefer 1.3 and the
+fallback to 1.2 kept for that case. The screen shows the measured time per turn, because the claim
+that Teach-Back does not slow the room down is only worth making with the number beside it.

@@ -25,11 +25,15 @@ export async function POST(req: Request) {
   if (refused) return refused;
   const form = await req.formData();
   const audio = form.get("audio");
-  // language is what this turn is spoken in: the patient's language, or "en" when the provider speaks.
+  // language is what this turn is spoken in: the patient's language, "en" when the provider speaks,
+  // or "auto" in listening mode, where nobody pressed a button to say who is talking. Then the
+  // session language and English are both tried and the listeners decide which it was.
   const raw = String(form.get("language") || "am");
-  const language: SpeechLanguage = raw === "om" ? "om" : raw === "en" ? "en" : "am";
-  const isEnglish = language === "en";
-  const factLanguage: Language = isEnglish ? "am" : language;
+  const sessionLang: Language = String(form.get("session") || raw) === "om" ? "om" : "am";
+  const auto = raw === "auto";
+  let language: SpeechLanguage = raw === "om" ? "om" : raw === "en" ? "en" : auto ? sessionLang : "am";
+  let isEnglish = language === "en";
+  const factLanguage: Language = sessionLang;
   const reference = parseRef(String(form.get("reference") || ""));
   if (!(audio instanceof Blob) || audio.size === 0) return NextResponse.json({ error: "no_audio" }, { status: 400 });
   if (audio.size > 15 * 1024 * 1024) return NextResponse.json({ error: "audio_too_large" }, { status: 413 });
@@ -42,13 +46,23 @@ export async function POST(req: Request) {
 
   // Named only once a first listener has actually produced something; null means neither did.
   let firstListener: string | null = null;
-  const [asrResult, second] = await Promise.all([
-    asrConfigured()
-      ? transcribe(audio, language).catch(e => { notes.push(e instanceof AsrError ? `Omnilingual ASR: ${e.hint}` : `Omnilingual ASR failed: ${msg(e)}`); return null; })
-      : (notes.push("Omnilingual ASR not configured (ASR_SERVICE_URL)"), Promise.resolve(null)),
-    metaConfigured() ? listen(buf, format, language).catch(e => { notes.push(`Second listener failed: ${msg(e)}`); return null; }) : (notes.push("Meta Model API key not configured"), Promise.resolve(null)),
+  const asrCall = (lang: SpeechLanguage) => transcribe(audio, lang).catch(e => { notes.push(e instanceof AsrError ? `Omnilingual ASR: ${e.hint}` : `Omnilingual ASR failed: ${msg(e)}`); return null; });
+  const [asrResult, asrEnglish, second] = await Promise.all([
+    asrConfigured() ? asrCall(language) : (notes.push("Omnilingual ASR not configured (ASR_SERVICE_URL)"), Promise.resolve(null)),
+    // Listening mode: the Space is cheap and fast, so it also hears the turn as English, and the one that fits is kept below.
+    asrConfigured() && auto ? asrCall("en") : Promise.resolve(null),
+    metaConfigured() ? listen(buf, format, auto ? sessionLang : language).catch(e => { notes.push(`Second listener failed: ${msg(e)}`); return null; }) : (notes.push("Meta Model API key not configured"), Promise.resolve(null)),
   ]);
   let asr = asrResult;
+  if (auto) {
+    // Which language was this? The second listener's word first; else the script of what the Space heard.
+    const heard = second?.reply && second.reply.language !== "other" && second.reply.confidence >= 0.5 ? second.reply.language : null;
+    const guess = heard ?? (asrResult && detectLanguage(asrResult.text).language === sessionLang ? sessionLang : asrEnglish && /^[\x00-\x7F\s]+$/.test(asrEnglish.text) && asrEnglish.text.split(/\s+/).length >= 2 ? "en" : sessionLang);
+    language = guess === "en" ? "en" : sessionLang;
+    isEnglish = language === "en";
+    if (isEnglish && asrEnglish) asr = asrEnglish;
+    notes.push(`Listening mode: heard as ${language === "en" ? "English" : language === "am" ? "Amharic" : "Afaan Oromo"} (${heard ? "second listener" : "script"})`);
+  }
   if (asr) firstListener = "Listener A (Omnilingual ASR)";
   // Fallback first listener: Meta's hosted Voice Transcribe, when the Space is asleep or absent. Said on the turn, never silently.
   if (!asr && metaConfigured() && process.env.META_VOICE_FALLBACK !== "off") {
@@ -69,7 +83,7 @@ export async function POST(req: Request) {
         const r = await renderEnglish(asr.text, language);
         english = r.text;
         if (!english) why = ` (${r.model}: finish_reason=${r.finishReason ?? "unknown"}${r.reasoningChars ? `, ${r.reasoningChars} characters of reasoning and no answer` : ""})`;
-        else if (r.model !== process.env.META_SPARK_MODEL && r.model === (process.env.META_SPARK_AUDIO_MODEL || "muse-spark-1.2")) notes.push("Spark 1.3 ran out of tokens while reasoning; the rendering came from Spark 1.2");
+        else if (r.reasoningChars) notes.push("The reasoning model ran out of tokens; the rendering came from the plain model");
       }
       catch (e) { notes.push(`Rendering failed: ${msg(e)}`); }
     } else notes.push("No English rendering without the Meta Model API key");
@@ -118,7 +132,7 @@ export async function POST(req: Request) {
     // Nobody named a language: neither listener nor heuristic. The script can still rule the
     // session language out, and saying nothing here leaves the reviewer believing it was right.
     else if (!detected.language) {
-      const script = scriptMismatch(language, second?.reply?.transcript || asr?.text || "");
+      const script = scriptMismatch(sessionLang, second?.reply?.transcript || asr?.text || "");
       if (script) extra.push(script);
     }
   }
@@ -126,7 +140,7 @@ export async function POST(req: Request) {
   const turn = analyzeTurn(primary, secondary, extra);
   logCall("turn", { language, firstListener, second: Boolean(secondary), asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null, facts: turn.primary.facts.length, flags: turn.flags.length, crit: turn.flags.filter(f => f.severity === "crit").length, notes: notes.length, bytes: audio.size });
   return NextResponse.json({
-    language, reference: iso(reference), detected, notes, firstListener,
+    language, session: sessionLang, reference: iso(reference), detected, notes, firstListener,
     transcript: asr?.text ?? "",
     secondTranscript: second?.reply?.transcript ?? "",
     timings: { asrMs: asr?.ms ?? null, listenMs: second?.ms ?? null },

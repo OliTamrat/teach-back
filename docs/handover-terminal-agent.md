@@ -48,7 +48,10 @@ variable is non-empty, not that any service accepts it: no live call below has b
    Space is waking; the GET itself wakes it. Wait and repeat. A 401 means the token is wrong or the
    Space's own `ASR_TOKEN` is set (table above). A 404 means the URL is the huggingface.co page, not
    the `hf.space` address.
-3. **First live turn.** Open the live site, enter the access code when asked, choose Amharic, Record a
+3. **First live conversation.** Open the live site, enter the access code, press Start listening, and hold a
+   short visit with a second person: patient sentence in Amharic, interpretation in English, provider
+   sentence in English, interpretation in Amharic. Send the screen. Then the single-turn check below.
+   **Single turn.** Choose Record a turn, choose Amharic, Record a
    turn, read S01 from `eval/recording-script.json` aloud, Stop. Capture the whole response from the
    network tab (or `curl -F audio=@clip.webm -F language=am -F reference=<today> -H "x-access: <code>" <site>/api/turn`).
    Record verbatim: `firstListener`, `notes`, both transcripts, both English renderings, `detected`,

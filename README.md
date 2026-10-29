@@ -67,6 +67,12 @@ language. This is the leg that hurts most, and nobody in the room can check it.
    English, and **compares, fact by fact, what the provider said with what the interpreter said**.
    A changed dose, a dropped "do not", a moved date: red, before the patient goes home.
 
+**Nobody taps anything.** Press Start listening once. The microphone stays open, the audio is cut
+into turns at pauses, each turn is checked while the next is being spoken, and every change of
+language is the interpreter: Amharic after English is the interpreter telling the patient, English
+after Amharic is the interpreter telling the provider. The interpreter keeps interpreting. The red
+lines arrive a few seconds behind, in order, and the screen shows the measured time per turn.
+
 **In both directions**, a human finishes the job.
 
 6. A phone photo of the medicine the patient brought in: **SAM 3.1** finds the label, the
