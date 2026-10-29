@@ -460,3 +460,19 @@ mistaken for English in a session with the second listener down; a failed turn w
 mis-paired every later one, so a failure now pauses the queue with Retry and Skip; the harness
 could crash instead of skipping; the results page had typed-in numbers. Two reviews, twenty
 findings, all real: the rule stands that the author's walkthroughs test what the author imagined.
+
+## 43. A volunteer's session is one file (Oct 29)
+
+The recording page saved each clip as it was recorded, which on a laptop is ninety download
+prompts and on a phone is unusable. Clips now stay in memory and download as one archive named for
+the volunteer, with a README inside saying where they go; saving each clip is a checkbox for anyone
+who wants it, and the page warns before it is closed with clips undownloaded. The archive is a
+stored ZIP written by hand (WAV does not compress), tested against a real unzip, so the page gains
+no dependency. The run sheet says to download before the next volunteer, because the tab is the
+only copy until then.
+
+## 44. Readiness in plain words (Oct 29)
+
+`/api/health` says what is configured as JSON; a person running a session or a demo needs to know
+whether the Space is awake, in a sentence, and needs the page itself to wake it. `/status` does
+that, re-checks every minute, and says what to do when a row is red. It prints no secret.
