@@ -35,6 +35,17 @@ real medical information, nothing improvised about anyone's health.
    The report in `eval/latest.md` gives transcript character error rate per clip, which critical
    facts survived the pipeline, and whether the wrong-language items were caught.
 
+## The visits: the interpreter checked both ways
+
+Four short scripted visits (`eval/visits.json`, two Amharic, two Afaan Oromo) measure the claim that
+matters most. Each has four lines: the patient, the interpreter to the provider in English, the
+provider in English, the interpreter to the patient. The last line also has a **planted take**: the
+interpreter gets a dose, a date or a "do not" wrong on purpose. It needs three voices, or one person
+reading all parts with a pause between lines; on `/record` choose "Visits only" and read each line
+as its own clip, in order, including the planted take. On Nov 1 the harness runs each visit through
+the pipeline in listening mode and reports: were the roles right, were the planted errors flagged,
+and were the faithful lines left alone.
+
 ## What is measured
 
 - **Transcription accuracy** per language: character error rate of the first listener's transcript
@@ -44,6 +55,8 @@ real medical information, nothing improvised about anyone's health.
 - **Wrong-language detection**: of the ten `W` items, how many raised the language flag.
 - **Two-listener disagreement**: how often the two listeners disagreed on a clean reading, which is
   the false-alarm rate interpreters would live with.
+- **The interpreter check, both ways**: on the scripted visits, planted interpreter errors flagged,
+  false alarms on faithful lines, and how often the alternation rule assigned the right role.
 
 No number goes in the README that was not produced by a run of `npm run eval` that can be repeated
 from the files in `eval/`.

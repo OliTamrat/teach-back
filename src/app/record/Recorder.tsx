@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { toWav } from "../audio";
 
-type Item = { id: string; language: "am" | "om"; spoken: "am" | "om"; factType: string; english: string; text: string; reviewed: boolean };
-const LANG: Record<"am" | "om", string> = { am: "Amharic", om: "Afaan Oromo" };
+type Item = { id: string; language: "am" | "om"; spoken: "am" | "om" | "en"; factType: string; english: string; text: string; reviewed: boolean; visit?: string; speaker?: string; planted?: boolean; answerKey?: string };
+const LANG: Record<"am" | "om" | "en", string> = { am: "Amharic", om: "Afaan Oromo", en: "English" };
 
 export default function Recorder({ items }: { items: Item[] }) {
-  const [filter, setFilter] = useState<"am" | "om" | "all">("all");
+  const [filter, setFilter] = useState<"am" | "om" | "en" | "visits" | "all">("all");
   const [i, setI] = useState(0);
   const [state, setState] = useState<"idle" | "recording">("idle");
   const [done, setDone] = useState<Record<string, number>>({});
@@ -17,7 +17,7 @@ export default function Recorder({ items }: { items: Item[] }) {
   const chunks = useRef<Blob[]>([]);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsed = useRef(0);
-  const list = items.filter(it => filter === "all" || it.spoken === filter);
+  const list = items.filter(it => filter === "all" ? true : filter === "visits" ? Boolean(it.visit) : it.spoken === filter);
   const item = list[Math.min(i, list.length - 1)];
 
   useEffect(() => () => { if (timer.current) clearInterval(timer.current); rec.current?.stream.getTracks().forEach(t => t.stop()); }, []);
@@ -61,8 +61,8 @@ export default function Recorder({ items }: { items: Item[] }) {
         <div className="brand"><h1>Teach-Back</h1><span>recording session</span></div>
         <div className="session">
           <label>Read in
-            <select value={filter} onChange={e => { setFilter(e.target.value as "am" | "om" | "all"); setI(0); }} aria-label="Language to record">
-              <option value="all">both, in script order</option><option value="am">Amharic only</option><option value="om">Afaan Oromo only</option>
+            <select value={filter} onChange={e => { setFilter(e.target.value as "am" | "om" | "en" | "visits" | "all"); setI(0); }} aria-label="Language to record">
+              <option value="all">everything, in script order</option><option value="am">Amharic lines</option><option value="om">Afaan Oromo lines</option><option value="en">English lines (provider, interpreter)</option><option value="visits">Visits only (two-way)</option>
             </select>
           </label>
           <span className="hint">{Object.keys(done).length} of {items.length} recorded</span>
@@ -74,11 +74,11 @@ export default function Recorder({ items }: { items: Item[] }) {
         </div>
         <section className="panel script">
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <span className="eyebrow">{item.id} · {n + 1} of {list.length} · {LANG[item.spoken]} · {item.factType.replace("_", " ")}{item.spoken !== item.language ? ` · wrong-language item (session will expect ${LANG[item.language]})` : ""}</span>
+            <span className="eyebrow">{item.id} · {n + 1} of {list.length} · {LANG[item.spoken]} · {item.visit ? `visit ${item.visit}, you are the ${item.speaker}${item.planted ? ", reading it deliberately wrong" : ""}` : item.factType.replace("_", " ")}{!item.visit && item.spoken !== item.language ? ` · wrong-language item (session will expect ${LANG[item.language]})` : ""}</span>
             {done[item.id] !== undefined && <span className="eyebrow" style={{ color: "var(--good)" }}>recorded, {done[item.id]}s</span>}
           </div>
           <p className="read" lang={item.spoken}>{item.text}</p>
-          <p className="hint">English source: {item.english}{item.reviewed ? "" : " Draft translation: if the wording is not what you would say, say it your way and tell us."}</p>
+          <p className="hint">{item.spoken === "en" ? (item.answerKey || "") : `English source: ${item.english}`}{item.planted ? " This take is the interpreter getting it wrong on purpose: read exactly what is written." : item.reviewed ? "" : " Draft translation: if the wording is not what you would say, say it your way and tell us."}</p>
           <div className="row">
             <button className="btn quiet" onClick={() => setI(Math.max(0, n - 1))} disabled={n === 0 || state === "recording"}>Previous</button>
             {state === "idle" && <button className="btn primary" onClick={start}>{done[item.id] !== undefined ? "Record again" : "Record"}</button>}

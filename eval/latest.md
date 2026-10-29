@@ -1,4 +1,4 @@
-# Teach-Back evaluation, 2026-10-29T20-28-50 (audio-v1.json, text-v1.json)
+# Teach-Back evaluation, 2026-10-29T20-39-25 (audio-v1.json, text-v1.json)
 
 | Metric | Value |
 | --- | --- |
@@ -104,3 +104,31 @@
 | P02-provider-dose-and-prohibition | 6/6 | 2/2 |  | crit interpreter_changed:dose, crit interpreter_dropped:negation, warn unverified |  |
 | P03-provider-followup-date | 3/3 | 1/1 |  | crit interpreter_changed:date, warn unverified |  |
 | T19-patient-symptoms-side-planted-b | 3/3 | 1/1 |  | crit listener_disagreement:body_part |  |
+
+## Visits: the interpreter checked both ways
+
+| Measure | Value |
+| --- | --- |
+| Visits scored (takes) | 8 |
+| Roles assigned by the alternation rule that matched the script | 32 of 32 |
+| Planted interpreter errors flagged | 7 of 7 |
+| False alarms (critical interpreter flags on faithful lines) | 0 |
+
+| Visit | Take | Roles | Planted | False alarms | Flags | Missed |
+| --- | --- | --- | --- | --- | --- | --- |
+| V01 | faithful | 4/4 | 0/0 | 0 | none |  |
+| V01 | faithful | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V01 | planted | 4/4 | 2/2 | 0 | crit interpreter_changed:dose, crit interpreter_dropped:negation |  |
+| V01 | planted | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V02 | faithful | 4/4 | 0/0 | 0 | none |  |
+| V02 | faithful | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V02 | planted | 4/4 | 2/2 | 0 | crit interpreter_changed:dose, crit interpreter_changed:date |  |
+| V02 | planted | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V03 | faithful | 4/4 | 0/0 | 0 | none |  |
+| V03 | faithful | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V03 | planted | 4/4 | 2/2 | 0 | crit interpreter_changed:dose, crit interpreter_dropped:negation, crit interpreter_dropped:negation |  |
+| V03 | planted | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V04 | faithful | 4/4 | 0/0 | 0 | none |  |
+| V04 | faithful | skipped | | | | set EVAL_SERVER_URL to run audio visits |
+| V04 | planted | 4/4 | 1/1 | 0 | crit interpreter_changed:duration |  |
+| V04 | planted | skipped | | | | set EVAL_SERVER_URL to run audio visits |

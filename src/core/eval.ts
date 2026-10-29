@@ -116,6 +116,8 @@ export type EvalSummary = {
   cases: number;
   byLanguage: LanguageSummary[];
   speakers?: number;
+  /** Scripted two-way visits: the interpreter check scored. audioTakes counts takes that ran through the pipeline. */
+  visits?: { takes: number; rolesRight: number; rolesTotal: number; plantedCaught: number; plantedTotal: number; falseAlarms: number; audioTakes: number };
   factRecall: number; factPrecision: number;
   plantedCaught: number; plantedTotal: number;
   expectedCaught: number; expectedTotal: number;
@@ -217,6 +219,10 @@ export function resultsMarkdown(s: EvalSummary, ranAt: string): string {
     `| Wrong-language items caught | ${am ? `${am.expectedCaught} of ${am.expectedTotal}` : "n/a"} | ${om ? `${om.expectedCaught} of ${om.expectedTotal}` : "n/a"} |`, "",
     `Across all cases: ${s.plantedCaught} of ${s.plantedTotal} planted errors flagged, ${s.falseAlarms} false alarm${s.falseAlarms === 1 ? "" : "s"}.`,
   ];
+  if (s.visits && s.visits.audioTakes > 0) {
+    const v = s.visits;
+    lines.push("", `Scripted visits through the live pipeline, the interpreter checked both ways: ${v.plantedCaught} of ${v.plantedTotal} planted interpreter errors flagged, ${v.falseAlarms} false alarm${v.falseAlarms === 1 ? "" : "s"} on faithful lines, roles from the alternation rule right ${v.rolesRight} of ${v.rolesTotal} times.`);
+  }
   return lines.join("\n");
 }
 
@@ -226,5 +232,6 @@ export function resultsSentence(s: EvalSummary): string | null {
   if (!am && !om) return null;
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   const clips = (am?.cases ?? 0) + (om?.cases ?? 0);
-  return `${s.speakers ? `${s.speakers} speakers, ` : ""}${clips} clips, character error rate of ${am ? pct(am.meanCer as number) : "n/a"} in Amharic and ${om ? pct(om.meanCer as number) : "n/a"} in Afaan Oromo; ${s.plantedCaught} of ${s.plantedTotal} planted errors caught, ${s.falseAlarms} false alarm${s.falseAlarms === 1 ? "" : "s"}.`;
+  const visits = s.visits && s.visits.audioTakes > 0 ? ` In scripted two-way visits, ${s.visits.plantedCaught} of ${s.visits.plantedTotal} planted interpreter errors were flagged.` : "";
+  return `${s.speakers ? `${s.speakers} speakers, ` : ""}${clips} clips, character error rate of ${am ? pct(am.meanCer as number) : "n/a"} in Amharic and ${om ? pct(om.meanCer as number) : "n/a"} in Afaan Oromo; ${s.plantedCaught} of ${s.plantedTotal} planted errors caught, ${s.falseAlarms} false alarm${s.falseAlarms === 1 ? "" : "s"}.${visits}`;
 }

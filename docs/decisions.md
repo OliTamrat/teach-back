@@ -407,3 +407,15 @@ emojis throughout, against the standing rule; and it described the product befor
 no provider turn and no listening mode. The hotkeys confirm or correct with the patient; there is
 no key that accepts a listener's answer, because the gate exists so that nobody picks a machine's
 answer without asking the person.
+
+## 38. The measurement follows the claim (Oct 29)
+
+Everything the harness measured was single turns in one direction, while the product's claim had
+become the interpreter checked both ways. Four scripted visits now carry that measurement: four
+lines each, with a planted take of the interpreter's last line in which a dose, a date or a "do
+not" is wrong on purpose. The scorer places each line with the alternation rule and reports three
+things a judge will ask: were the roles right, were the planted errors flagged as critical
+interpreter flags, and did the faithful lines raise none. In text the core passes all four visits;
+the number that matters comes from the clips on Oct 31 through the live pipeline, and until then
+the audio takes are reported as skipped. The English lines are on the recording page too, so
+whoever plays the provider records them and the English listener is measured as well.

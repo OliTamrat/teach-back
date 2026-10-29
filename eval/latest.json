@@ -1,5 +1,5 @@
 {
- "ranAt": "2026-10-29T20:28:50.731Z",
+ "ranAt": "2026-10-29T20:39:25.696Z",
  "files": [
   "audio-v1.json",
   "text-v1.json"
@@ -32,8 +32,179 @@
   "expectedTotal": 3,
   "falseAlarms": 0,
   "skipped": 70,
-  "meanCer": null
+  "meanCer": null,
+  "visits": {
+   "takes": 8,
+   "rolesRight": 32,
+   "rolesTotal": 32,
+   "plantedCaught": 7,
+   "plantedTotal": 7,
+   "falseAlarms": 0,
+   "audioTakes": 0
+  }
  },
+ "visits": [
+  {
+   "id": "V01",
+   "take": "faithful",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V01",
+   "take": "faithful",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V01",
+   "take": "planted",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 2,
+   "plantedTotal": 2,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V01",
+   "take": "planted",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V02",
+   "take": "faithful",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V02",
+   "take": "faithful",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V02",
+   "take": "planted",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 2,
+   "plantedTotal": 2,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V02",
+   "take": "planted",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V03",
+   "take": "faithful",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V03",
+   "take": "faithful",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V03",
+   "take": "planted",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 2,
+   "plantedTotal": 2,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V03",
+   "take": "planted",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V04",
+   "take": "faithful",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V04",
+   "take": "faithful",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  },
+  {
+   "id": "V04",
+   "take": "planted",
+   "rolesRight": 4,
+   "rolesTotal": 4,
+   "plantedCaught": 1,
+   "plantedTotal": 1,
+   "falseAlarms": 0,
+   "skipped": null
+  },
+  {
+   "id": "V04",
+   "take": "planted",
+   "rolesRight": 0,
+   "rolesTotal": 4,
+   "plantedCaught": 0,
+   "plantedTotal": 0,
+   "falseAlarms": 0,
+   "skipped": "set EVAL_SERVER_URL to run audio visits"
+  }
+ ],
  "cases": [
   {
    "id": "S01",

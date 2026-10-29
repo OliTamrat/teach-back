@@ -1,0 +1,188 @@
+{
+ "version": "visits-v1",
+ "reference": "2026-10-31",
+ "note": "Scripted two-way visits for the Oct 31 session: patient, interpreter to provider, provider, interpreter to patient. Each visit's last line also has a planted-error variant (the interpreter gets a fact wrong) read as a separate clip. 'text' is a draft translation awaiting native review; 'english' is the source every truth comes from. No real patient data.",
+ "visits": [
+  {
+   "id": "V01",
+   "session": "am",
+   "title": "Back pain, first visit",
+   "turns": [
+    {
+     "id": "V01-1",
+     "speaker": "patient",
+     "language": "am",
+     "english": "I have a sharp pain in my lower right back for three weeks. I am not allergic to penicillin.",
+     "text": "ላለፉት ሦስት ሳምንታት በቀኝ ወገቤ ታችኛው ክፍል ላይ ስለታም ሕመም አለብኝ። ለፔኒሲሊን አለርጂ የለብኝም።"
+    },
+    {
+     "id": "V01-2",
+     "speaker": "interpreter",
+     "language": "en",
+     "english": "She has a sharp pain in her lower right back for three weeks. She is not allergic to penicillin."
+    },
+    {
+     "id": "V01-3",
+     "speaker": "provider",
+     "language": "en",
+     "english": "Take one tablet of 500 milligrams amoxicillin three times a day for ten days. Do not take it with milk."
+    },
+    {
+     "id": "V01-4",
+     "speaker": "interpreter",
+     "language": "am",
+     "english": "Take one tablet of 500 milligrams amoxicillin three times a day for ten days. Do not take it with milk.",
+     "text": "ለአሥር ቀናት በቀን ሦስት ጊዜ አንድ የ500 ሚሊግራም አሞክሲሲሊን ኪኒን ይውሰዱ። ከወተት ጋር አይውሰዱት።",
+     "planted": {
+      "id": "V01-4b",
+      "english": "Take one tablet of 50 milligrams amoxicillin three times a day for ten days. Take it with milk.",
+      "text": "ለአሥር ቀናት በቀን ሦስት ጊዜ አንድ የ50 ሚሊግራም አሞክሲሲሊን ኪኒን ይውሰዱ። ከወተት ጋር ይውሰዱት።",
+      "errors": [
+       {
+        "type": "dose"
+       },
+       {
+        "type": "negation"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V02",
+   "session": "am",
+   "title": "Child with fever, follow-up date",
+   "turns": [
+    {
+     "id": "V02-1",
+     "speaker": "patient",
+     "language": "am",
+     "english": "My daughter has had a high fever and vomiting since yesterday. She is four years old.",
+     "text": "ልጄ ከትናንት ጀምሮ ከፍተኛ ትኩሳትና ማስታወክ አለባት። አራት ዓመቷ ነው።"
+    },
+    {
+     "id": "V02-2",
+     "speaker": "interpreter",
+     "language": "en",
+     "english": "Her daughter has had a high fever and vomiting since yesterday. She is four years old."
+    },
+    {
+     "id": "V02-3",
+     "speaker": "provider",
+     "language": "en",
+     "english": "Give her 5 millilitres of paracetamol every six hours. Come back on Hidar 5 if the fever does not go down."
+    },
+    {
+     "id": "V02-4",
+     "speaker": "interpreter",
+     "language": "am",
+     "english": "Give her 5 millilitres of paracetamol every six hours. Come back on Hidar 5 if the fever does not go down.",
+     "text": "በየስድስት ሰዓቱ 5 ሚሊ ሊትር ፓራሲታሞል ይስጧት። ትኩሳቱ ካልቀነሰ ኅዳር 5 ተመልሰው ይምጡ።",
+     "planted": {
+      "id": "V02-4b",
+      "english": "Give her 15 millilitres of paracetamol every six hours. Come back on Hidar 15 if the fever does not go down.",
+      "text": "በየስድስት ሰዓቱ 15 ሚሊ ሊትር ፓራሲታሞል ይስጧት። ትኩሳቱ ካልቀነሰ ኅዳር 15 ተመልሰው ይምጡ።",
+      "errors": [
+       {
+        "type": "dose"
+       },
+       {
+        "type": "date"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V03",
+   "session": "om",
+   "title": "Blood pressure, current medicine",
+   "turns": [
+    {
+     "id": "V03-1",
+     "speaker": "patient",
+     "language": "om",
+     "english": "I take lisinopril for my blood pressure. I feel dizzy in the morning.",
+     "text": "Dhiibbaa dhiigaa kootiif lisinopriil nan fudhadha. Ganama mataan na naanna'a."
+    },
+    {
+     "id": "V03-2",
+     "speaker": "interpreter",
+     "language": "en",
+     "english": "He takes lisinopril for his blood pressure. He feels dizzy in the morning."
+    },
+    {
+     "id": "V03-3",
+     "speaker": "provider",
+     "language": "en",
+     "english": "Take half a tablet in the morning, not a whole one. Do not stop the medicine."
+    },
+    {
+     "id": "V03-4",
+     "speaker": "interpreter",
+     "language": "om",
+     "english": "Take half a tablet in the morning, not a whole one. Do not stop the medicine.",
+     "text": "Ganama walakkaa kiniinii fudhadhaa, guutuu miti. Qoricha hin dhaabinaa.",
+     "planted": {
+      "id": "V03-4b",
+      "english": "Take one tablet in the morning. Stop the medicine.",
+      "text": "Ganama kiniinii tokko fudhadhaa. Qoricha dhaabaa.",
+      "errors": [
+       {
+        "type": "dose"
+       },
+       {
+        "type": "negation"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V04",
+   "session": "om",
+   "title": "Cough, how long and what to take",
+   "turns": [
+    {
+     "id": "V04-1",
+     "speaker": "patient",
+     "language": "om",
+     "english": "I have had this cough for three weeks and chest pain when I breathe.",
+     "text": "Qufaa kana torban sadiif qaba, yeroon hafuura baafadhus dhukkubbii qomaa qaba."
+    },
+    {
+     "id": "V04-2",
+     "speaker": "interpreter",
+     "language": "en",
+     "english": "She has had this cough for three weeks and chest pain when she breathes."
+    },
+    {
+     "id": "V04-3",
+     "speaker": "provider",
+     "language": "en",
+     "english": "Take two puffs of the inhaler every eight hours for seven days. If the chest pain gets worse, come back today."
+    },
+    {
+     "id": "V04-4",
+     "speaker": "interpreter",
+     "language": "om",
+     "english": "Take two puffs of the inhaler every eight hours for seven days. If the chest pain gets worse, come back today.",
+     "text": "Guyyaa torbaaf sa'aatii saddeet saddeetiin inheelara si'a lama fudhadhaa. Dhukkubbiin qomaa yoo hammaate har'a deebi'aa.",
+     "planted": {
+      "id": "V04-4b",
+      "english": "Take two puffs of the inhaler every eight hours for seventeen days. If the chest pain gets worse, come back next week.",
+      "text": "Guyyaa kudha torbaaf sa'aatii saddeet saddeetiin inheelara si'a lama fudhadhaa. Dhukkubbiin qomaa yoo hammaate torban dhufu deebi'aa.",
+      "errors": [
+       {
+        "type": "duration"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}
