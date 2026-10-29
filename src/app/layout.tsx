@@ -17,7 +17,11 @@ export const viewport: Viewport = { themeColor: "#0B0A09", width: "device-width"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={[display.variable, body.variable, mono.variable, ethiopicDisplay.variable, ethiopicBody.variable].join(" ")}>
+    <html lang="en" className={[display.variable, body.variable, mono.variable, ethiopicDisplay.variable, ethiopicBody.variable].join(" ")} suppressHydrationWarning>
+      <head>
+        {/* The chosen appearance is applied before first paint so the page never flashes the other one. "system" leaves the attribute off. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("teach-back-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}` }} />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -75,6 +75,33 @@ export default function Interpreter() {
   const [audio, setAudio] = useState<AudioMeta | null>(null);
   const [turns, setTurns] = useState<TurnRecord[]>([]);
   const [copied, setCopied] = useState<"summary" | "notes" | null>(null);
+  const [theme, setThemeState] = useState<"system" | "light" | "dark">("system");
+  useEffect(() => { void Promise.resolve().then(() => { try { const t = localStorage.getItem("teach-back-theme"); if (t === "light" || t === "dark") setThemeState(t); } catch { /* ignore */ } }); }, []);
+  function setTheme(t: "system" | "light" | "dark") {
+    setThemeState(t);
+    try { if (t === "system") { localStorage.removeItem("teach-back-theme"); document.documentElement.removeAttribute("data-theme"); } else { localStorage.setItem("teach-back-theme", t); document.documentElement.setAttribute("data-theme", t); } } catch { /* ignore */ }
+  }
+  // Keyboard for the reviewer: C confirms the first open flag, E opens its correction. Never when typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = document.activeElement as HTMLElement | null;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
+      const key = e.key.toLowerCase();
+      if (key !== "c" && key !== "e") return;
+      const active = document.querySelector<HTMLElement>(".flag[data-sev]:not([data-state])");
+      if (!active) return;
+      const btn = [...active.querySelectorAll<HTMLButtonElement>("button")].find(b => key === "c" ? b.textContent?.startsWith("Confirmed") : b.textContent?.startsWith("Correct"));
+      if (btn) { e.preventDefault(); btn.click(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  // The first open flag carries the keyboard focus ring.
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>(".flag[data-active]").forEach(f => f.removeAttribute("data-active"));
+    document.querySelector<HTMLElement>(".flag[data-sev]:not([data-state])")?.setAttribute("data-active", "");
+  });
   const [needAccess, setNeedAccess] = useState(false);
   const [tour, setTour] = useState<number | null>(null);
   const flagsHeading = useRef<HTMLHeadingElement | null>(null);
@@ -210,13 +237,16 @@ export default function Interpreter() {
               {(Object.keys(SETTINGS) as Setting[]).map(k => <option key={k} value={k}>{SETTINGS[k].label}</option>)}
             </select>
           </label>
+          <span className="theme" role="group" aria-label="Appearance">
+            {(["system", "light", "dark"] as const).map(t => <button key={t} aria-pressed={theme === t} onClick={() => setTheme(t)}>{t === "system" ? "System" : t === "light" ? "Light" : "Dark"}</button>)}
+          </span>
           <label>Date spoken
             <input type="date" value={reference} onChange={e => setReference(e.target.value)} aria-label="Date the words were spoken" />
           </label>
         </div>
       </header>
 
-      <main className="wrap">
+      <main className={mode === "listen" ? "wrap wide" : "wrap"}>
         <div className="notice">
           {setting === "clinic" ? "Nothing here advises a patient: it marks what a qualified interpreter must confirm, and a person decides every flag." : "Nothing here advises anyone or decides a case: it marks what a qualified interpreter must confirm, and a person decides every flag."}
         </div>
@@ -311,7 +341,11 @@ export default function Interpreter() {
           </section>
 
           {mode !== "listen" && <section className="panel" aria-labelledby="flags-h" aria-live="polite">
-            <h2 id="flags-h" ref={flagsHeading} tabIndex={-1}>What a human must confirm</h2>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <h2 id="flags-h" ref={flagsHeading} tabIndex={-1}>What a human must confirm</h2>
+              {analysis && <span className="lock" data-open={open === 0 ? "true" : "false"} aria-live="polite">{open === 0 ? "Record unlocked" : <><span className="n">{open}</span> unconfirmed, record locked</>}</span>}
+            </div>
+            {analysis && open > 0 && <p className="hint">Keys: <kbd>C</kbd> confirms the first open flag, <kbd>E</kbd> corrects it.</p>}
             {!analysis && mode === "record" && role === "patient" && <p className="hint">Record one patient turn. Both listeners render it in English, the critical facts are marked, and anything they disagree on appears here for a person to settle.</p>}
             {!analysis && mode === "record" && role === "provider" && <p className="hint">Record the provider, then the interpreter. What the interpreter said is brought back to English and compared, fact by fact, with what the provider said.</p>}
             {!analysis && mode === "paste" && role === "patient" && <p className="hint">Press Check this turn. The sample is a real failure pattern: the two listeners disagree on a side, a date, and whether the patient said "not".</p>}
@@ -349,6 +383,12 @@ export default function Interpreter() {
                   <div className="final">
                     <span className="eyebrow">{analysis.flags.length ? "Final line, every flag reviewed by a person" : checked?.role === "provider" ? "Final line, the interpreter carried every fact through" : "Final line, two listeners agreed on every fact"}</span>
                     <p className="summary">{summary}</p>
+                    {summary !== analysis.primary.english && (
+                      <div className="record-box">
+                        <span className="eyebrow">As it arrived, before review. This is what would have gone through unchecked.</span>
+                        <p className="text arrived"><s>{analysis.primary.english}</s></p>
+                      </div>
+                    )}
                     <div className="row">
                       <button className="btn small primary" onClick={addToSession}>Add to session and next turn</button>
                       <button className="btn small" onClick={() => void copy(summary, "summary")}>{copied === "summary" ? "Copied" : "Copy line"}</button>

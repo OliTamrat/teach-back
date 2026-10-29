@@ -381,3 +381,29 @@ The alternation rule can also be wrong about who spoke (decision 33), so every t
 "who" control: a person sets Patient, Provider or Interpreter, and every later pairing is
 recomputed from the start. The real answer is diarization by voice, which the handover describes
 as an experiment for the live endpoint; until then the rule plus the tap is honest and visible.
+
+## 36. Three appearances, one palette (Oct 29)
+
+Decision 1 kept Hearth dark so Teach-Back reads as Kintale's sibling. The live turns on a phone in
+daylight made the other side of that argument real, and Oli asked for a choice. The screen now has
+System, Light and Dark. Light is the same family on warm paper: apricot deepened to terracotta so
+it still reads as a button on white, and the status colours taken down to ink values that pass
+contrast on a light surface. Every colour is a token, so the change is one block of CSS and no
+component knows which appearance it is in. The choice is applied before first paint by a script in
+the document head, so the page never flashes the other appearance; System leaves the attribute off
+and follows the device. Reviewed in both appearances before shipping.
+
+## 37. What was taken from an outside design brief, and what was not (Oct 29)
+
+A design brief produced by another tool proposed a three-zone cockpit. Four ideas were taken: a
+visible lock on the record with a count of unconfirmed flags, a three-zone layout on wide screens
+with only the conversation scrolling, keyboard keys for the reviewer, and an "as it arrived" view
+beside the reviewed record so the baseline is the real listener output and never an invented one.
+The rest was not: its calendar code was thirty days wrong on every date including its own example;
+it had the model write the question shown to the patient and extract the facts, which decisions 5
+and 28 forbid; it specified the ASR contract we had already found to be wrong; it printed legal
+citations as badges on the screen; it showed benchmark figures before any measurement; it used
+emojis throughout, against the standing rule; and it described the product before the pivot, with
+no provider turn and no listening mode. The hotkeys confirm or correct with the patient; there is
+no key that accepts a listener's answer, because the gate exists so that nobody picks a machine's
+answer without asking the person.

@@ -1,10 +1,15 @@
 /*
- * Hearth, the visual language of Kintale and Kinfolio, applied to a working screen: one dark
- * surface, an ambient wash, apricot as the single accent. Teach-Back adds nothing to the palette
- * except how it uses the status colours: crit is a flag the interpreter must act on, warn is a
- * flag worth a look, good is a confirmed line. Nothing else on the screen is coloured.
+ * Hearth, the visual language of Kintale and Kinfolio, in three appearances. Dark is the original:
+ * one dark surface, an ambient wash, apricot as the single accent. Light is the same family on
+ * warm paper, with the apricot deepened to terracotta so it still reads as a button on white, and
+ * the status colours taken down to ink values that pass contrast on a light surface. System follows
+ * the device. Teach-Back adds nothing to the palette except how it uses the status colours: crit is
+ * a flag the interpreter must act on, warn is a flag worth a look, good is a confirmed line.
+ *
+ * The theme is set on <html data-theme="light|dark"> before first paint by a script in the layout;
+ * without the attribute the device's preference applies.
  */
-:root {
+:root, :root[data-theme="dark"] {
   --bg: #0B0A09;
   --surface: #141210;
   --raised: #1C1815;
@@ -28,15 +33,72 @@
   --info: #7FB4C9;
   --wash-cool: rgba(64, 118, 126, 0.20);
   --wash-warm: rgba(226, 146, 92, 0.22);
-
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #FAF6F0;
+  --surface: #FFFFFF;
+  --raised: #F6F1EA;
+  --sunken: #F1EBE2;
+  --line: #ECE5DB;
+  --line-strong: #DCD2C5;
+  --text: #1C1714;
+  --text-2: #2E2822;
+  --muted: #5E554B;
+  --faint: #7D7368;
+  --accent: #C8683A;
+  --accent-ink: #FFFFFF;
+  --accent-soft: rgba(200, 104, 58, 0.10);
+  --accent-line: rgba(200, 104, 58, 0.45);
+  --good: #1E7F55;
+  --good-soft: rgba(30, 127, 85, 0.10);
+  --warn: #8A5F00;
+  --warn-soft: rgba(138, 95, 0, 0.10);
+  --crit: #B4261E;
+  --crit-soft: rgba(180, 38, 30, 0.08);
+  --info: #2C6B84;
+  --wash-cool: rgba(64, 118, 126, 0.10);
+  --wash-warm: rgba(226, 146, 92, 0.16);
+  --shadow: 0 1px 2px rgba(40, 30, 20, 0.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #FAF6F0;
+    --surface: #FFFFFF;
+    --raised: #F6F1EA;
+    --sunken: #F1EBE2;
+    --line: #ECE5DB;
+    --line-strong: #DCD2C5;
+    --text: #1C1714;
+    --text-2: #2E2822;
+    --muted: #5E554B;
+    --faint: #7D7368;
+    --accent: #C8683A;
+    --accent-ink: #FFFFFF;
+    --accent-soft: rgba(200, 104, 58, 0.10);
+    --accent-line: rgba(200, 104, 58, 0.45);
+    --good: #1E7F55;
+    --good-soft: rgba(30, 127, 85, 0.10);
+    --warn: #8A5F00;
+    --warn-soft: rgba(138, 95, 0, 0.10);
+    --crit: #B4261E;
+    --crit-soft: rgba(180, 38, 30, 0.08);
+    --info: #2C6B84;
+    --wash-cool: rgba(64, 118, 126, 0.10);
+    --wash-warm: rgba(226, 146, 92, 0.16);
+    --shadow: 0 1px 2px rgba(40, 30, 20, 0.06);
+    color-scheme: light;
+  }
+}
+:root {
   --stack-display: var(--font-display), var(--font-ethiopic-display), Georgia, serif;
   --stack-body: var(--font-body), var(--font-ethiopic-body), system-ui, sans-serif;
   --stack-mono: var(--font-mono), ui-monospace, monospace;
   --stack-ethiopic: var(--font-ethiopic-body), var(--font-body), sans-serif;
-
   --radius: 12px;
   --gutter: max(16px, env(safe-area-inset-left, 0px));
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -78,7 +140,7 @@ textarea { width: 100%; min-height: 86px; resize: vertical; line-height: 1.5; }
 main { padding-block: 22px 60px; display: grid; gap: 22px; }
 .grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
 @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
-.panel { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 18px 20px; display: grid; gap: 14px; min-width: 0; box-shadow: var(--shadow); }
 .panel h2 { font-family: var(--stack-display); font-weight: 400; font-size: 22px; margin: 0; color: var(--text); }
 .panel p { margin: 0; }
 .hint { color: var(--faint); font-size: 13px; }
@@ -245,3 +307,37 @@ h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border
 .turn.pending[data-state="failed"] { border-color: var(--crit); opacity: 1; }
 .grid.one { grid-template-columns: 1fr; }
 select.who { font: inherit; font-size: 11px; letter-spacing: 0.06em; text-transform: none; color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 6px; padding: 2px 6px; margin-left: 6px; }
+
+/* appearance control */
+.theme { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; background: var(--sunken); }
+.theme button { font: inherit; font-size: 12px; border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.theme button[aria-pressed="true"] { background: var(--raised); color: var(--text); }
+
+/* lock on the record */
+.lock { display: inline-flex; align-items: center; gap: 8px; font-family: var(--stack-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--crit); color: var(--crit); background: var(--crit-soft); }
+.lock[data-open="true"] { border-color: var(--good); color: var(--good); background: var(--good-soft); }
+.lock .n { font-weight: 600; }
+
+/* the active flag for the keyboard */
+.flag[data-active] { outline: 2px solid var(--accent); outline-offset: 2px; }
+kbd { font-family: var(--stack-mono); font-size: 11px; padding: 1px 6px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; background: var(--sunken); color: var(--text); }
+
+/* three zones for a wide screen in listening mode: nothing scrolls but the conversation */
+.zones { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (min-width: 1100px) {
+  .zones { grid-template-columns: 280px minmax(0, 1fr) 320px; }
+  .zones .convo-wrap { max-height: calc(100vh - 200px); overflow: auto; padding-right: 4px; }
+  .zones .rail { position: sticky; top: 16px; }
+}
+.record-box { display: grid; gap: 10px; }
+.record-box .text { font-size: 14px; line-height: 1.55; white-space: pre-wrap; color: var(--text); margin: 0; }
+.record-box .text.arrived { color: var(--muted); }
+/* grid children never grow past their column; long words wrap; the head wraps rather than pushing the card wide */
+.zones > * { min-width: 0; }
+.turn { min-width: 0; }
+.turn .head { flex-wrap: wrap; }
+.turn .line, .turn .hint, .record-box .text { overflow-wrap: anywhere; }
+.convo-wrap { overflow-x: hidden; }
+/* listening mode uses the whole width of a laptop screen: three zones need it */
+.wrap.wide { max-width: 1480px; }
+@media (min-width: 1100px) { .zones { grid-template-columns: 260px minmax(0, 1fr) 320px; } }

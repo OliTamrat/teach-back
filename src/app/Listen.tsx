@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { conversationText, placeTurn, relabel, turnFlags, ROLE_LABEL, type ConversationTurn } from "@/core/conversation";
-import { makeTurn, type Decision, type TurnRecord } from "@/core/session";
+import { finalSummary, makeTurn, type Decision, type TurnRecord } from "@/core/session";
 import type { Flag, Language, SpeechLanguage } from "@/core/types";
 import { apiPost, refusal } from "./api-client";
 import { startSegmenter, type Segmenter } from "./vad";
@@ -37,6 +37,7 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
   const [error, setError] = useState("");
   const [timings, setTimings] = useState<number[]>([]);
   const [pause, setPause] = useState("normal");
+  const [copied, setCopied] = useState(false);
   const seg = useRef<Segmenter | null>(null);
   const queue = useRef<Array<{ id: string; wav: Blob; seconds: number }>>([]);
   const busy = useRef(false);
@@ -118,6 +119,13 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
   const openCount = turns.reduce((n, t) => n + turnFlags(t).filter((_, i) => (decisions[`${t.id}:${i}`]?.state ?? "open") === "open").length, 0);
   const avg = timings.length ? timings.reduce((a, b) => a + b, 0) / timings.length / 1000 : null;
 
+  /** The record after review: each turn with the reviewer's corrections written in. */
+  const reviewedText = () => turns.map((t, i) => {
+    const flags = turnFlags(t);
+    const d = flags.map((_, k) => decisions[`${t.id}:${k}`] ?? { state: "open" as const });
+    return `${i + 1}. ${ROLE_LABEL[t.role]}: ${finalSummary(t.english, t.facts, flags, d)}`;
+  }).join("\n");
+  async function copyRecord() { try { await navigator.clipboard.writeText(reviewedText()); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* shown on screen anyway */ } }
   function endSession() {
     const records = turns.map(t => {
       const flags = turnFlags(t);
@@ -128,7 +136,8 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
   }
 
   return (
-    <div className="listen">
+    <div className="listen zones">
+      <div className="rail">
       <div className="row">
         {state !== "listening" && <button className="btn primary" onClick={start}>Start listening</button>}
         {state === "listening" && <button className="btn rec" onClick={stop}><span className="dot" aria-hidden="true" />Stop listening</button>}
@@ -152,6 +161,10 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
           {avg !== null && <span>about <b className="mono">{avg.toFixed(1)}s</b> per turn</span>}
         </div>
       )}
+      {turns.length > 0 && openCount > 0 && <p className="hint">Keys: <kbd>C</kbd> confirms the first open flag, <kbd>E</kbd> corrects it.</p>}
+      </div>
+      <div className="convo-wrap">
+      {turns.length === 0 && pending.length === 0 && <p className="hint">{state === "listening" ? "Listening. The first turn appears here after the first pause." : "The conversation appears here, turn by turn, with the flags on the turn they belong to."}</p>}
       <ol className="convo">
         {turns.map((t, n) => {
           const flags = turnFlags(t);
@@ -179,13 +192,30 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
           </li>
         ))}
       </ol>
-      {turns.length > 0 && state !== "listening" && (
-        <div className="row">
-          <button className="btn primary" onClick={endSession} disabled={openCount > 0} title={openCount > 0 ? "Decide every flag first" : undefined}>Add this conversation to the session</button>
-          <button className="btn small" onClick={() => void navigator.clipboard?.writeText(conversationText(turns))}>Copy the conversation</button>
-          {openCount > 0 && <span className="hint">{openCount} flag{openCount === 1 ? "" : "s"} still open.</span>}
+      </div>
+      <aside className="rail record-box" aria-label="The record">
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <span className="eyebrow">The record</span>
+          {turns.length > 0 && <span className="lock" data-open={openCount === 0 ? "true" : "false"} aria-live="polite">{openCount === 0 ? "Unlocked" : <><span className="n">{openCount}</span> unconfirmed, locked</>}</span>}
         </div>
-      )}
+        {turns.length === 0 && <p className="hint">Locked until every flag on every turn is confirmed or corrected by a person. Then it can be copied into the notes.</p>}
+        {turns.length > 0 && openCount === 0 && <>
+          <span className="eyebrow">After review</span>
+          <p className="text">{reviewedText()}</p>
+        </>}
+        {turns.length > 0 && (
+          <>
+            <span className="eyebrow">As it arrived, before review{openCount === 0 ? "" : ". What would go through unchecked"}</span>
+            <p className="text arrived">{conversationText(turns)}</p>
+          </>
+        )}
+        {turns.length > 0 && (
+          <div className="row">
+            <button className="btn small primary" onClick={() => void copyRecord()} disabled={openCount > 0} title={openCount > 0 ? "Decide every flag first" : undefined}>{copied ? "Copied" : "Copy the verified record"}</button>
+            {state !== "listening" && <button className="btn small" onClick={endSession} disabled={openCount > 0}>Add to the session</button>}
+          </div>
+        )}
+      </aside>
     </div>
   );
 }
