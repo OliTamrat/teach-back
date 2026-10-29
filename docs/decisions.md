@@ -419,3 +419,19 @@ interpreter flags, and did the faithful lines raise none. In text the core passe
 the number that matters comes from the clips on Oct 31 through the live pipeline, and until then
 the audio takes are reported as skipped. The English lines are on the recording page too, so
 whoever plays the provider records them and the English listener is measured as well.
+
+## 39. The results live inside the product, from the run and nothing else (Oct 29)
+
+A judge opening the live site should find the measured numbers without opening the repository, and
+should find no number there that a run did not produce. `/results` is built from `eval/latest.json`
+at build time: the same file `npm run results` reads for the README, so the three places (page,
+README, submission text) cannot disagree. Until audio has run, the page's first line says so and
+the visit rows read "skipped". The page also says what the numbers are not: they measure the
+checker, not the safety of machine interpreting.
+
+## 40. The bottle is checked against the patient's latest turn (Oct 29)
+
+In listening mode the label photo could not be used, because there was no single turn to compare it
+with. Now the label is read in the left rail and checked against the most recent patient turn, and
+its flags sit on that turn with the others. That is where the bottle comes out in a real visit:
+after the patient has said what they take.

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { conversationText, placeTurn, relabel, turnFlags, ROLE_LABEL, type ConversationTurn } from "@/core/conversation";
+import { compareWithLabel } from "@/core/compare";
+import { extractFacts } from "@/core/facts";
 import { finalSummary, makeTurn, type Decision, type TurnRecord } from "@/core/session";
 import type { Flag, Language, SpeechLanguage } from "@/core/types";
 import { apiPost, refusal } from "./api-client";
@@ -15,6 +17,10 @@ import { startSegmenter, type Segmenter } from "./vad";
  */
 type Props = {
   language: Language; reference: string;
+  /** Text read from a medication label, or typed. Checked against the latest patient turn. */
+  label?: string;
+  /** The label card, rendered by the parent, shown in the left rail. */
+  labelSlot?: React.ReactNode;
   onAccessNeeded: () => void;
   onSessionTurns: (turns: TurnRecord[]) => void;
   renderFlag: (flag: Flag, decision: Decision, onDecide: (d: Decision) => void) => React.ReactNode;
@@ -28,7 +34,7 @@ const PAUSES: Array<{ key: string; label: string; ms: number }> = [
   { key: "quick", label: "Quick (0.9 s)", ms: 900 }, { key: "normal", label: "Normal (1.5 s)", ms: 1500 }, { key: "patient", label: "Patient speaker (2.5 s)", ms: 2500 },
 ];
 
-export default function Listen({ language, reference, onAccessNeeded, onSessionTurns, renderFlag }: Props) {
+export default function Listen({ language, reference, label, labelSlot, onAccessNeeded, onSessionTurns, renderFlag }: Props) {
   const [state, setState] = useState<"idle" | "listening" | "stopping">("idle");
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
   const [pending, setPending] = useState<Pending[]>([]);
@@ -103,6 +109,12 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
     } finally { busy.current = false; }
   }
 
+  /** The label is checked against what the patient most recently said they take; the flags sit on that turn. */
+  const labelTarget = [...turns].reverse().find(t => t.role === "patient");
+  const labelFlags: Flag[] = label?.trim() && labelTarget
+    ? compareWithLabel(labelTarget.facts, extractFacts(label, { reference: refOf(reference), language }))
+    : [];
+  const flagsFor = (t: ConversationTurn): Flag[] => t.id === labelTarget?.id ? [...turnFlags(t), ...labelFlags] : turnFlags(t);
   function decide(turnId: string, i: number, d: Decision) { setDecisions(prev => ({ ...prev, [`${turnId}:${i}`]: d })); }
   /** The rule got a role wrong: a person sets it, and every later pairing is recomputed. Decisions on that turn and after are cleared, because the flags changed. */
   function setRole(turnId: string, role: ConversationTurn["role"]) {
@@ -116,19 +128,19 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
     const nums = t.rendersId.split("+").map(id => turns.findIndex(x => x.id === id) + 1).filter(n => n > 0);
     return nums.length > 1 ? ` · renders turns ${nums[0]}–${nums[nums.length - 1]}` : nums.length === 1 ? ` · renders turn ${nums[0]}` : "";
   };
-  const openCount = turns.reduce((n, t) => n + turnFlags(t).filter((_, i) => (decisions[`${t.id}:${i}`]?.state ?? "open") === "open").length, 0);
+  const openCount = turns.reduce((n, t) => n + flagsFor(t).filter((_, i) => (decisions[`${t.id}:${i}`]?.state ?? "open") === "open").length, 0);
   const avg = timings.length ? timings.reduce((a, b) => a + b, 0) / timings.length / 1000 : null;
 
   /** The record after review: each turn with the reviewer's corrections written in. */
   const reviewedText = () => turns.map((t, i) => {
-    const flags = turnFlags(t);
+    const flags = flagsFor(t);
     const d = flags.map((_, k) => decisions[`${t.id}:${k}`] ?? { state: "open" as const });
     return `${i + 1}. ${ROLE_LABEL[t.role]}: ${finalSummary(t.english, t.facts, flags, d)}`;
   }).join("\n");
   async function copyRecord() { try { await navigator.clipboard.writeText(reviewedText()); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* shown on screen anyway */ } }
   function endSession() {
     const records = turns.map(t => {
-      const flags = turnFlags(t);
+      const flags = flagsFor(t);
       return makeTurn({ language, reference, role: t.language === "en" ? "provider" : "patient", transcript: t.transcript, english: `${ROLE_LABEL[t.role]}: ${t.english}`, facts: t.facts, flags, decisions: flags.map((_, i) => decisions[`${t.id}:${i}`] ?? { state: "confirmed" as const }) });
     });
     onSessionTurns(records);
@@ -162,12 +174,13 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
         </div>
       )}
       {turns.length > 0 && openCount > 0 && <p className="hint">Keys: <kbd>C</kbd> confirms the first open flag, <kbd>E</kbd> corrects it.</p>}
+      {labelSlot && <div className="field labelcheck"><span className="eyebrow">The bottle from the bag</span>{labelSlot}{label?.trim() && !labelTarget && <p className="hint">The label is checked against the patient&apos;s latest turn once there is one.</p>}</div>}
       </div>
       <div className="convo-wrap">
       {turns.length === 0 && pending.length === 0 && <p className="hint">{state === "listening" ? "Listening. The first turn appears here after the first pause." : "The conversation appears here, turn by turn, with the flags on the turn they belong to."}</p>}
       <ol className="convo">
         {turns.map((t, n) => {
-          const flags = turnFlags(t);
+          const flags = flagsFor(t);
           return (
             <li key={t.id} className="turn" data-role={t.role} data-crit={flags.some((f, i) => f.severity === "crit" && (decisions[`${t.id}:${i}`]?.state ?? "open") === "open") ? "" : undefined}>
               <div className="head">
@@ -219,3 +232,5 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
     </div>
   );
 }
+
+function refOf(iso: string) { const [y, m, d] = iso.split("-").map(Number); return { year: y, month: m, day: d }; }

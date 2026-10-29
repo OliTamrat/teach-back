@@ -341,3 +341,10 @@ kbd { font-family: var(--stack-mono); font-size: 11px; padding: 1px 6px; border:
 /* listening mode uses the whole width of a laptop screen: three zones need it */
 .wrap.wide { max-width: 1480px; }
 @media (min-width: 1100px) { .zones { grid-template-columns: 260px minmax(0, 1fr) 320px; } }
+
+/* results */
+table.results { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.results th, table.results td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.results th { font-family: var(--stack-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+table.results tr[data-skipped] td { color: var(--faint); }
+@media (max-width: 640px) { table.results { display: block; overflow-x: auto; max-width: 100%; } table.results td, table.results th { white-space: normal; } }

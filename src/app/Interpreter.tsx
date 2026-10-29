@@ -225,7 +225,7 @@ export default function Interpreter() {
     <>
       <a className="skip" href="#flags-h">Skip to the flags</a>
       <header className="wrap top">
-        <div className="brand"><h1>Teach-Back</h1><span>interpreting safety check</span><button className="btn small quiet" onClick={() => startTour(0)}>How it works</button></div>
+        <div className="brand"><h1>Teach-Back</h1><span>interpreting safety check</span><button className="btn small quiet" onClick={() => startTour(0)}>How it works</button><a className="btn small quiet" href="/results">Results</a></div>
         <div className="session">
           <label>Session language
             <select value={language} onChange={e => setLanguage(e.target.value as Language)} aria-label="Session language">
@@ -278,6 +278,11 @@ export default function Interpreter() {
             </div>
             {mode === "listen" && (
               <Listen language={language} reference={reference} onAccessNeeded={() => setNeedAccess(true)}
+                label={label}
+                labelSlot={<>
+                  <LabelPhoto onText={(t) => setLabel(t)} onAccessNeeded={() => setNeedAccess(true)} />
+                  <textarea value={label} onChange={e => setLabel(e.target.value)} placeholder="Or type what the label says" style={{ minHeight: 48 }} aria-label="Label text" />
+                </>}
                 onSessionTurns={recs => saveTurns([...turns, ...recs])}
                 renderFlag={(flag, decision, onDecide) => <FlagCard flag={flag} decision={decision} onDecide={onDecide} />} />
             )}
