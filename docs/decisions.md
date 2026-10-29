@@ -366,3 +366,18 @@ has left. Spark 1.2 answers a rendering in a few seconds and did not fail on any
 (decision 30). The renderer is Spark 1.2 by default, with META_RENDER_MODEL to prefer 1.3 and the
 fallback to 1.2 kept for that case. The screen shows the measured time per turn, because the claim
 that Teach-Back does not slow the room down is only worth making with the number beside it.
+
+## 35. A rendering is checked against the whole run before it, and a person can relabel (Oct 29)
+
+People pause mid-sentence. With a turn ending after about a second of silence, "take two tablets"
+and "of 500 milligrams" can arrive as two turns, and a rendering checked only against the second
+would let a wrong tablet count through. A rendering is now checked against the run of turns by
+the same speaker back to the last change: consecutive same-side turns, stopping at a rendering or
+at a change of speaker. The default pause is 1.5 seconds, with quick, normal and patient-speaker
+settings on the screen, because an elder speaks differently from a nurse and no single number is
+right for both.
+
+The alternation rule can also be wrong about who spoke (decision 33), so every turn carries a
+"who" control: a person sets Patient, Provider or Interpreter, and every later pairing is
+recomputed from the start. The real answer is diarization by voice, which the handover describes
+as an experiment for the live endpoint; until then the rule plus the tap is honest and visible.

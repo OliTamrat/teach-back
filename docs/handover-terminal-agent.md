@@ -140,3 +140,18 @@ of the language. `confidence` means confidence in the language and never in the 
 turn gates a critical flag on it, so a listener reporting 0 because it could not render is a
 listener silencing the flag.
 
+## 7. Experiment: who is speaking, from the voice (needs the live API)
+
+Listening mode labels turns by a rule, language plus order (decision 33), and lets a person
+relabel a turn. The real answer is diarization. Muse Voice Transcribe has a DIARIZATION mode
+(the `request` part's `mode`; see `voiceTranscribe()` in `src/server/meta.ts` for the two-part
+shape). It does not need to understand Amharic for this, only to tell voices apart.
+
+The rule to test: send the whole conversation, or each turn, with diarization on, and read the
+speaker ids back. **The voice that appears in both languages is the interpreter.** The voice that
+appears only in English is the provider; only in the patient's language, the patient. If the
+endpoint labels speakers consistently across calls within a session, the roles can be set from
+voice instead of order, and the relabel tap becomes the exception. Report: the exact request that
+worked, whether speaker ids are stable across turns, and how it behaved with two Amharic voices
+(patient and interpreter) in one clip. Do not change the alternation rule until that is known.
+

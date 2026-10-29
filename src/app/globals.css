@@ -244,3 +244,4 @@ h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border
 .turn.pending { opacity: 0.75; border-style: dashed; }
 .turn.pending[data-state="failed"] { border-color: var(--crit); opacity: 1; }
 .grid.one { grid-template-columns: 1fr; }
+select.who { font: inherit; font-size: 11px; letter-spacing: 0.06em; text-transform: none; color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 6px; padding: 2px 6px; margin-left: 6px; }

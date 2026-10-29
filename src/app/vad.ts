@@ -9,7 +9,7 @@ import { WAV_RATE, encodeWav, resample } from "@/core/wav";
 export type Segmenter = { stop: () => void; cut: () => void; level: () => number };
 
 export function startSegmenter(stream: MediaStream, onTurn: (wav: Blob, seconds: number) => void, opts: { silenceMs?: number; minMs?: number; maxMs?: number } = {}): Segmenter {
-  const silenceMs = opts.silenceMs ?? 1100, minMs = opts.minMs ?? 1200, maxMs = opts.maxMs ?? 45_000;
+  const silenceMs = opts.silenceMs ?? 1500, minMs = opts.minMs ?? 1200, maxMs = opts.maxMs ?? 45_000;
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ctx = new Ctx();
   const source = ctx.createMediaStreamSource(stream);

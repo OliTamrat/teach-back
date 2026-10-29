@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { conversationText, placeTurn, turnFlags, ROLE_LABEL, type ConversationTurn } from "@/core/conversation";
+import { conversationText, placeTurn, relabel, turnFlags, ROLE_LABEL, type ConversationTurn } from "@/core/conversation";
 import { makeTurn, type Decision, type TurnRecord } from "@/core/session";
 import type { Flag, Language, SpeechLanguage } from "@/core/types";
 import { apiPost, refusal } from "./api-client";
@@ -23,6 +23,10 @@ type Pending = { id: string; seconds: number; state: "queued" | "listening" | "f
 type TurnResponse = { language: SpeechLanguage; notes: string[]; transcript: string; primary: { english: string; facts: ConversationTurn["facts"] }; flags: Flag[]; timings: { asrMs: number | null; listenMs: number | null } };
 
 const LANG: Record<SpeechLanguage, string> = { am: "Amharic", om: "Afaan Oromo", en: "English" };
+/** How long a silence ends a turn. People pause mid-sentence; an elder more than a nurse. */
+const PAUSES: Array<{ key: string; label: string; ms: number }> = [
+  { key: "quick", label: "Quick (0.9 s)", ms: 900 }, { key: "normal", label: "Normal (1.5 s)", ms: 1500 }, { key: "patient", label: "Patient speaker (2.5 s)", ms: 2500 },
+];
 
 export default function Listen({ language, reference, onAccessNeeded, onSessionTurns, renderFlag }: Props) {
   const [state, setState] = useState<"idle" | "listening" | "stopping">("idle");
@@ -32,6 +36,7 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
   const [level, setLevel] = useState(0);
   const [error, setError] = useState("");
   const [timings, setTimings] = useState<number[]>([]);
+  const [pause, setPause] = useState("normal");
   const seg = useRef<Segmenter | null>(null);
   const queue = useRef<Array<{ id: string; wav: Blob; seconds: number }>>([]);
   const busy = useRef(false);
@@ -49,7 +54,7 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
         queue.current.push({ id, wav, seconds });
         setPending(p => [...p, { id, seconds, state: "queued" }]);
         void drain();
-      });
+      }, { silenceMs: PAUSES.find(p => p.key === pause)?.ms ?? 1500 });
       meter.current = setInterval(() => setLevel(seg.current?.level() ?? 0), 120);
       setState("listening");
     } catch (e) {
@@ -83,7 +88,7 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
           if (why) throw new Error(why);
           if (!res.ok) throw new Error(json.error === "no_listener" ? `No listener heard this turn. ${(json.notes || []).join(" ")}` : json.error || `HTTP ${res.status}`);
           const t = json as TurnResponse;
-          const placed = placeTurn(turnsRef.current[turnsRef.current.length - 1], {
+          const placed = placeTurn(turnsRef.current, {
             id: item.id, at: new Date().toISOString(), language: t.language, english: t.primary.english, transcript: t.transcript, facts: t.primary.facts, listenerFlags: t.flags,
           }, language);
           turnsRef.current = [...turnsRef.current, placed];
@@ -98,6 +103,18 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
   }
 
   function decide(turnId: string, i: number, d: Decision) { setDecisions(prev => ({ ...prev, [`${turnId}:${i}`]: d })); }
+  /** The rule got a role wrong: a person sets it, and every later pairing is recomputed. Decisions on that turn and after are cleared, because the flags changed. */
+  function setRole(turnId: string, role: ConversationTurn["role"]) {
+    const next = relabel(turnsRef.current, turnId, { role }, language);
+    turnsRef.current = next; setTurns(next);
+    const idx = next.findIndex(t => t.id === turnId);
+    setDecisions(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => next.findIndex(t => k.startsWith(t.id + ":")) < idx)));
+  }
+  const rendersLabel = (t: ConversationTurn) => {
+    if (!t.rendersId) return "";
+    const nums = t.rendersId.split("+").map(id => turns.findIndex(x => x.id === id) + 1).filter(n => n > 0);
+    return nums.length > 1 ? ` · renders turns ${nums[0]}–${nums[nums.length - 1]}` : nums.length === 1 ? ` · renders turn ${nums[0]}` : "";
+  };
   const openCount = turns.reduce((n, t) => n + turnFlags(t).filter((_, i) => (decisions[`${t.id}:${i}`]?.state ?? "open") === "open").length, 0);
   const avg = timings.length ? timings.reduce((a, b) => a + b, 0) / timings.length / 1000 : null;
 
@@ -117,7 +134,14 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
         {state === "listening" && <button className="btn rec" onClick={stop}><span className="dot" aria-hidden="true" />Stop listening</button>}
         {state === "listening" && <button className="btn small quiet" onClick={() => seg.current?.cut()} title="End the current turn now, if the room is too loud for pauses to be heard">Cut turn</button>}
         {state === "listening" && <span className="meter" aria-hidden="true"><span style={{ width: `${Math.min(100, level * 900)}%` }} /></span>}
-        <span className="hint">{state === "listening" ? "Everyone just talks. Turns are cut at pauses and checked in order; a change of language is the interpreter." : `${LANG[language]} session. One button; the interpreter keeps interpreting.`}</span>
+        {state !== "listening" && (
+          <label className="hint">Pause that ends a turn
+            <select value={pause} onChange={e => setPause(e.target.value)} aria-label="Pause that ends a turn" style={{ marginLeft: 8 }}>
+              {PAUSES.map(p => <option key={p.key} value={p.key}>{p.label}</option>)}
+            </select>
+          </label>
+        )}
+        <span className="hint">{state === "listening" ? "Everyone just talks. Turns are cut at pauses and checked in order; a change of language is the interpreter. If a role is wrong, set it on the turn." : `${LANG[language]} session. One button; the interpreter keeps interpreting.`}</span>
       </div>
       {error && <div className="flag" data-sev="crit"><div className="msg">{error}</div></div>}
       {(turns.length > 0 || pending.length > 0) && (
@@ -134,8 +158,13 @@ export default function Listen({ language, reference, onAccessNeeded, onSessionT
           return (
             <li key={t.id} className="turn" data-role={t.role} data-crit={flags.some((f, i) => f.severity === "crit" && (decisions[`${t.id}:${i}`]?.state ?? "open") === "open") ? "" : undefined}>
               <div className="head">
-                <span className="eyebrow">{n + 1}. {ROLE_LABEL[t.role]} · {LANG[t.language]}{t.rendersId ? ` · renders turn ${turns.findIndex(x => x.id === t.rendersId) + 1}` : ""}</span>
-                <span className="eyebrow">{t.facts.length} fact{t.facts.length === 1 ? "" : "s"}</span>
+                <span className="eyebrow">{n + 1}. {ROLE_LABEL[t.role]} · {LANG[t.language]}{rendersLabel(t)}{t.forcedRole ? " · set by hand" : ""}</span>
+                <label className="eyebrow">who
+                  <select className="who" value={t.role} onChange={e => setRole(t.id, e.target.value as ConversationTurn["role"])} aria-label={`Who spoke turn ${n + 1}`}>
+                    <option value="patient">Patient</option><option value="provider">Provider</option>
+                    <option value="interpreter_to_provider">Interpreter, to the provider</option><option value="interpreter_to_patient">Interpreter, to the patient</option>
+                  </select>
+                </label>
               </div>
               <p className="line">{t.english}</p>
               {t.language !== "en" && t.transcript && <p className="hint" lang={t.language}>{t.transcript}</p>}
