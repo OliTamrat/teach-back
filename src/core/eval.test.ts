@@ -46,10 +46,12 @@ describe("evaluation harness", () => {
     const textCase = { ...runCase(cases[0]), id: "text-am", language: "am" as const, audio: false };
     const s = summarize([am, om, textCase, { ...am, id: "skip", skipped: "no recording" }]);
     s.speakers = 4;
+    s.visits = { text: { takes: 8, rolesRight: 32, rolesTotal: 32, plantedCaught: 7, plantedTotal: 7, falseAlarms: 0 }, audio: { takes: 8, rolesRight: 30, rolesTotal: 32, plantedCaught: 6, plantedTotal: 7, falseAlarms: 1 } };
     expect(s.byLanguage.map(l => [l.language, l.cases, l.meanCer])).toEqual([["am", 1, 0.06], ["om", 1, 0.1]]);
     const md = resultsMarkdown(s, "2026-11-01T10:00:00Z");
     expect(md).toContain("| Transcript character error rate (Omnilingual ASR) | 6% | 10% |");
     expect(md).toContain("from 4 speakers");
-    expect(resultsSentence(s)).toBe("4 speakers, 2 clips, character error rate of 6% in Amharic and 10% in Afaan Oromo; 3 of 3 planted errors caught, 0 false alarms.");
+    expect(resultsSentence(s)).toBe("4 speakers, 2 clips, character error rate of 6% in Amharic and 10% in Afaan Oromo; 3 of 3 planted errors caught, 0 false alarms. In scripted two-way visits, 6 of 7 planted interpreter errors were flagged.");
+    expect(resultsMarkdown(s, "2026-11-01T10:00:00Z")).toContain("6 of 7 planted interpreter errors flagged, 1 false alarm on faithful lines, roles from the alternation rule right 30 of 32");
   });
 });

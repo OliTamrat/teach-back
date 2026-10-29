@@ -57,7 +57,11 @@ export async function POST(req: Request) {
   if (auto) {
     // Which language was this? The second listener's word first; else the script of what the Space heard.
     const heard = second?.reply && second.reply.language !== "other" && second.reply.confidence >= 0.5 ? second.reply.language : null;
-    const guess = heard ?? (asrResult && detectLanguage(asrResult.text).language === sessionLang ? sessionLang : asrEnglish && /^[\x00-\x7F\s]+$/.test(asrEnglish.text) && asrEnglish.text.split(/\s+/).length >= 2 ? "en" : sessionLang);
+    // Without the second listener's word: Ethiopic means Amharic; for an Afaan Oromo session the
+    // English-mode transcript is Latin either way, so the script cannot tell them apart and the
+    // session language stands. The alternation rule then needs the second listener for an om session.
+    const guess = heard ?? (asrResult && detectLanguage(asrResult.text).language === sessionLang ? sessionLang
+      : sessionLang === "am" && asrEnglish && /^[\x00-\x7F\s]+$/.test(asrEnglish.text) && asrEnglish.text.split(/\s+/).length >= 2 ? "en" : sessionLang);
     language = guess === "en" ? "en" : sessionLang;
     isEnglish = language === "en";
     if (isEnglish && asrEnglish) asr = asrEnglish;
@@ -125,9 +129,9 @@ export async function POST(req: Request) {
     // A third language is as much a mismatch as the other of the two, and the script heuristic cannot see it.
     extra.push({ kind: "language_mismatch", severity: "crit", message: `The second listener heard neither Amharic nor Afaan Oromo (confidence ${Math.round(second.reply.confidence * 100)}%). Check which language the patient is speaking before going on.` });
   } else {
-    const mismatch = detected.language === "en"
+    const mismatch = detected.language === "en" && detected.confidence >= 0.6
       ? { kind: "language_mismatch" as const, severity: "crit" as const, message: `The second listener heard English, but this is a patient turn in ${language === "am" ? "Amharic" : "Afaan Oromo"}. If the provider spoke, record it as a provider turn.` }
-      : languageMismatch(language, detected.language, detected.confidence);
+      : languageMismatch(language, detected.language === "en" ? null : detected.language, detected.confidence);
     if (mismatch) extra.push(mismatch);
     // Nobody named a language: neither listener nor heuristic. The script can still rule the
     // session language out, and saying nothing here leaves the reviewer believing it was right.

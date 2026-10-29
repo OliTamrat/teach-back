@@ -47,6 +47,9 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
   const seg = useRef<Segmenter | null>(null);
   const queue = useRef<Array<{ id: string; wav: Blob; seconds: number }>>([]);
   const busy = useRef(false);
+  const failed = useRef<Set<string>>(new Set());
+  function retry(id: string) { failed.current.delete(id); setPending(p => p.map(x => x.id === id ? { ...x, state: "queued", error: undefined } : x)); void drain(); }
+  function skip(id: string) { failed.current.delete(id); queue.current = queue.current.filter(x => x.id !== id); setPending(p => p.filter(x => x.id !== id)); void drain(); }
   const turnsRef = useRef<ConversationTurn[]>([]);
   const meter = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => { turnsRef.current = turns; }, [turns]);
@@ -82,7 +85,8 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
     busy.current = true;
     try {
       while (queue.current.length) {
-        const item = queue.current.shift()!;
+        const item = queue.current[0];
+        if (failed.current.has(item.id)) break; // a failed turn waits for Retry or Skip; later turns wait behind it, because order is the meaning
         setPending(p => p.map(x => x.id === item.id ? { ...x, state: "listening" } : x));
         const t0 = Date.now();
         try {
@@ -101,9 +105,12 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
           turnsRef.current = [...turnsRef.current, placed];
           setTurns(turnsRef.current);
           setTimings(x => [...x, Date.now() - t0]);
+          queue.current.shift();
           setPending(p => p.filter(x => x.id !== item.id));
         } catch (e) {
+          failed.current.add(item.id);
           setPending(p => p.map(x => x.id === item.id ? { ...x, state: "failed", error: e instanceof Error ? e.message : String(e) } : x));
+          break;
         }
       }
     } finally { busy.current = false; }
@@ -115,7 +122,9 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
     ? compareWithLabel(labelTarget.facts, extractFacts(label, { reference: refOf(reference), language }))
     : [];
   const flagsFor = (t: ConversationTurn): Flag[] => t.id === labelTarget?.id ? [...turnFlags(t), ...labelFlags] : turnFlags(t);
-  function decide(turnId: string, i: number, d: Decision) { setDecisions(prev => ({ ...prev, [`${turnId}:${i}`]: d })); }
+  /** A decision's key. Label flags come and go as the label text changes, so theirs is by content, never by position. */
+  const keyFor = (t: ConversationTurn, f: Flag, i: number) => f.kind === "label_conflict" ? `${t.id}:label:${f.type}:${f.a}:${f.b}` : `${t.id}:${i}`;
+  function decide(key: string, d: Decision) { setDecisions(prev => ({ ...prev, [key]: d })); }
   /** The rule got a role wrong: a person sets it, and every later pairing is recomputed. Decisions on that turn and after are cleared, because the flags changed. */
   function setRole(turnId: string, role: ConversationTurn["role"]) {
     const next = relabel(turnsRef.current, turnId, { role }, language);
@@ -128,20 +137,20 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
     const nums = t.rendersId.split("+").map(id => turns.findIndex(x => x.id === id) + 1).filter(n => n > 0);
     return nums.length > 1 ? ` · renders turns ${nums[0]}–${nums[nums.length - 1]}` : nums.length === 1 ? ` · renders turn ${nums[0]}` : "";
   };
-  const openCount = turns.reduce((n, t) => n + flagsFor(t).filter((_, i) => (decisions[`${t.id}:${i}`]?.state ?? "open") === "open").length, 0);
+  const openCount = turns.reduce((n, t) => n + flagsFor(t).filter((f, i) => (decisions[keyFor(t, f, i)]?.state ?? "open") === "open").length, 0);
   const avg = timings.length ? timings.reduce((a, b) => a + b, 0) / timings.length / 1000 : null;
 
   /** The record after review: each turn with the reviewer's corrections written in. */
   const reviewedText = () => turns.map((t, i) => {
     const flags = flagsFor(t);
-    const d = flags.map((_, k) => decisions[`${t.id}:${k}`] ?? { state: "open" as const });
+    const d = flags.map((f, k) => decisions[keyFor(t, f, k)] ?? { state: "open" as const });
     return `${i + 1}. ${ROLE_LABEL[t.role]}: ${finalSummary(t.english, t.facts, flags, d)}`;
   }).join("\n");
   async function copyRecord() { try { await navigator.clipboard.writeText(reviewedText()); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* shown on screen anyway */ } }
   function endSession() {
     const records = turns.map(t => {
       const flags = flagsFor(t);
-      return makeTurn({ language, reference, role: t.language === "en" ? "provider" : "patient", transcript: t.transcript, english: `${ROLE_LABEL[t.role]}: ${t.english}`, facts: t.facts, flags, decisions: flags.map((_, i) => decisions[`${t.id}:${i}`] ?? { state: "confirmed" as const }) });
+      return makeTurn({ language, reference, role: t.language === "en" ? "provider" : "patient", speaker: ROLE_LABEL[t.role], transcript: t.transcript, english: t.english, facts: t.facts, flags, decisions: flags.map((f, i) => decisions[keyFor(t, f, i)] ?? { state: "confirmed" as const }) });
     });
     onSessionTurns(records);
     setTurns([]); setDecisions({}); setPending([]); setTimings([]); turnsRef.current = [];
@@ -182,7 +191,7 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
         {turns.map((t, n) => {
           const flags = flagsFor(t);
           return (
-            <li key={t.id} className="turn" data-role={t.role} data-crit={flags.some((f, i) => f.severity === "crit" && (decisions[`${t.id}:${i}`]?.state ?? "open") === "open") ? "" : undefined}>
+            <li key={t.id} className="turn" data-role={t.role} data-crit={flags.some((f, i) => f.severity === "crit" && (decisions[keyFor(t, f, i)]?.state ?? "open") === "open") ? "" : undefined}>
               <div className="head">
                 <span className="eyebrow">{n + 1}. {ROLE_LABEL[t.role]} · {LANG[t.language]}{rendersLabel(t)}{t.forcedRole ? " · set by hand" : ""}</span>
                 <label className="eyebrow">who
@@ -194,14 +203,15 @@ export default function Listen({ language, reference, label, labelSlot, onAccess
               </div>
               <p className="line">{t.english}</p>
               {t.language !== "en" && t.transcript && <p className="hint" lang={t.language}>{t.transcript}</p>}
-              {flags.length > 0 && <div className="flags">{flags.map((f, i) => <div key={i}>{renderFlag(f, decisions[`${t.id}:${i}`] ?? { state: "open" }, d => decide(t.id, i, d))}</div>)}</div>}
+              {flags.length > 0 && <div className="flags">{flags.map((f, i) => <div key={keyFor(t, f, i)}>{renderFlag(f, decisions[keyFor(t, f, i)] ?? { state: "open" }, d => decide(keyFor(t, f, i), d))}</div>)}</div>}
             </li>
           );
         })}
         {pending.map(p => (
           <li key={p.id} className="turn pending" data-state={p.state}>
-            <span className="eyebrow">{p.state === "failed" ? "could not be checked" : p.state === "listening" ? "listening twice…" : "waiting"} · {p.seconds.toFixed(0)}s of speech</span>
+            <span className="eyebrow">{p.state === "failed" ? "could not be checked; later turns wait behind it" : p.state === "listening" ? "listening twice…" : "waiting"} · {p.seconds.toFixed(0)}s of speech</span>
             {p.error && <p className="hint">{p.error}</p>}
+            {p.state === "failed" && <div className="row"><button className="btn small primary" onClick={() => retry(p.id)}>Retry</button><button className="btn small quiet" onClick={() => skip(p.id)}>Skip this turn</button></div>}
           </li>
         ))}
       </ol>

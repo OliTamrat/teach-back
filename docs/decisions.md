@@ -435,3 +435,28 @@ In listening mode the label photo could not be used, because there was no single
 with. Now the label is read in the left rail and checked against the most recent patient turn, and
 its flags sit on that turn with the others. That is where the bottle comes out in a real visit:
 after the patient has said what they take.
+
+## 41. Nov 1 was rehearsed on Oct 29 (Oct 29)
+
+The whole measurement day was run against the mocks with a clip for every case: ninety single
+clips and eight visit takes. It found the bug that would have cost the real day: the guard's
+per-minute cap, built for a browser, stopped the harness after twelve clips and skipped the other
+seventy-eight. The harness now waits out a 429 once and tries again, a server started for a run
+takes `TEACH_BACK_PER_MINUTE=1000`, a refused connection or a non-JSON body becomes a skip with its
+reason instead of a crash that leaves the previous report in place, and the handover and the
+checklist say so. The rehearsal numbers were discarded; the mocks are not a measurement.
+
+## 42. A second outside review, before the recording session (Oct 29)
+
+The code written since the first review (listening mode, the segmenter, the conversation rules,
+the visits scorer, the results page) was read by a reader who had not written it. Ten findings, all
+addressed: the session record spliced corrections at the wrong offsets because a role label had
+been prefixed to the text; a forced interpreter role next to a rendering was checked against
+nothing and raised a flag per fact; a low-confidence "English" guess raised a critical flag; the
+audio context could start suspended after a slow microphone prompt and listen to nothing; text and
+audio visit takes were summed together under a "live pipeline" heading; a decision on a label flag
+could move onto a different conflict when the label text changed; an Afaan Oromo turn could be
+mistaken for English in a session with the second listener down; a failed turn was dropped and
+mis-paired every later one, so a failure now pauses the queue with Retry and Skip; the harness
+could crash instead of skipping; the results page had typed-in numbers. Two reviews, twenty
+findings, all real: the rule stands that the author's walkthroughs test what the author imagined.

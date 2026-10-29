@@ -1,5 +1,6 @@
 import Link from "next/link";
 import latest from "../../../eval/latest.json";
+import visitsFile from "../../../eval/visits.json";
 import type { EvalSummary } from "@/core/eval";
 
 export const metadata = { title: "Teach-Back results" };
@@ -10,7 +11,9 @@ export const metadata = { title: "Teach-Back results" };
  * sees a number here that a run did not produce. `npm run eval` writes the file; this page is
  * rebuilt with it.
  */
-type Latest = { ranAt: string; files: string[]; summary: EvalSummary; visits: Array<{ id: string; take: string; rolesRight: number; rolesTotal: number; plantedCaught: number; plantedTotal: number; falseAlarms: number; skipped: string | null }> };
+type Latest = { ranAt: string; files: string[]; summary: EvalSummary; visits: Array<{ id: string; take: string; mode: "text" | "audio"; rolesRight: number; rolesTotal: number; plantedCaught: number; plantedTotal: number; falseAlarms: number; skipped: string | null }> };
+const visitCount = new Set((visitsFile as { visits: Array<{ id: string }> }).visits.map(v => v.id)).size;
+const plantedKinds = [...new Set((visitsFile as { visits: Array<{ turns: Array<{ planted?: { errors: Array<{ type: string }> } }> }> }).visits.flatMap(v => v.turns.flatMap(t => (t.planted?.errors ?? []).map(e => e.type.replace("_", " ")))))];
 const data = latest as unknown as Latest;
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const LANG: Record<string, string> = { am: "Amharic", om: "Afaan Oromo" };
@@ -19,7 +22,8 @@ export default function ResultsPage() {
   const s = data.summary;
   const audio = s.byLanguage.filter(l => l.meanCer !== null);
   const audioRan = audio.length > 0;
-  const visitsRan = (s.visits?.audioTakes ?? 0) > 0;
+  const visitsRan = (s.visits?.audio.takes ?? 0) > 0;
+  const agg = visitsRan ? s.visits!.audio : s.visits?.text;
   return (
     <>
       <header className="wrap top">
@@ -59,20 +63,20 @@ export default function ResultsPage() {
 
         <section className="panel">
           <h2>The interpreter checked both ways</h2>
-          <p className="hint">Four scripted visits, each with a take in which the interpreter gets a dose, a date, a duration or a &quot;do not&quot; wrong on purpose. {visitsRan ? "Through the live pipeline." : "On the script's own text only: the core, not the models. The audio takes are listed as skipped."}</p>
-          {s.visits && (
+          <p className="hint">{visitCount} scripted visit{visitCount === 1 ? "" : "s"}, each with a take in which the interpreter gets a {plantedKinds.join(", a ")} wrong on purpose. {visitsRan ? "The figures are the audio takes, clips through the live pipeline." : "The figures are the text takes: the core on the script's own English, not the models. The audio takes are listed as skipped."}</p>
+          {agg && (
             <div className="status">
-              <span>roles right <b>{s.visits.rolesRight} of {s.visits.rolesTotal}</b></span>
-              <span>planted interpreter errors flagged <b>{s.visits.plantedCaught} of {s.visits.plantedTotal}</b></span>
-              <span>false alarms on faithful lines <b>{s.visits.falseAlarms}</b></span>
+              <span>roles right <b>{agg.rolesRight} of {agg.rolesTotal}</b></span>
+              <span>planted interpreter errors flagged <b>{agg.plantedCaught} of {agg.plantedTotal}</b></span>
+              <span>false alarms on faithful lines <b>{agg.falseAlarms}</b></span>
             </div>
           )}
           <table className="results">
-            <thead><tr><th>Visit</th><th>Take</th><th>Roles</th><th>Planted</th><th>False alarms</th><th>Note</th></tr></thead>
+            <thead><tr><th>Visit</th><th>Take</th><th>Mode</th><th>Roles</th><th>Planted</th><th>False alarms</th><th>Note</th></tr></thead>
             <tbody>
               {data.visits.map((v, i) => (
                 <tr key={i} data-skipped={v.skipped ? "" : undefined}>
-                  <td>{v.id}</td><td>{v.take}</td>
+                  <td>{v.id}</td><td>{v.take}</td><td>{v.mode}</td>
                   {v.skipped ? <td colSpan={4} className="hint">{v.skipped}</td> : <><td>{v.rolesRight}/{v.rolesTotal}</td><td>{v.plantedCaught}/{v.plantedTotal}</td><td>{v.falseAlarms}</td><td /></>}
                 </tr>
               ))}

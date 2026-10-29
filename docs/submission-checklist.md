@@ -26,7 +26,7 @@ question nobody asked. Times are Eastern. Hard deadline Nov 4, 9:00 PM; internal
 ## Nov 1, measurement
 
 - [ ] Reviews applied: `npm run review:apply -- <file>` per file. Question templates show as reviewed on the screen.
-- [ ] Clips in `eval/audio/`, server configured and awake, then `EVAL_SERVER_URL=... EVAL_SPEAKERS=<n> npm run eval && npm run results`.
+- [ ] Clips in `eval/audio/`, local server started with `TEACH_BACK_PER_MINUTE=1000` and the services configured, Space awake, then `EVAL_SERVER_URL=http://localhost:3000 EVAL_SPEAKERS=<n> npm run eval && npm run results`. The run takes about ten seconds per clip; ninety clips is fifteen minutes. Keep the Space awake for it.
 - [ ] Read `eval/latest.md` before believing it: a clip that failed to upload or a Space that fell asleep mid-run shows as skipped, not as a result. Rerun those.
 - [ ] Commit `eval/latest.md`, `eval/latest.json`, README Results block and `docs/submission.md` together. CI checks the README block matches the run.
 - [ ] Decide on the numbers honestly: if a figure is poor, it goes in as measured with one sentence on why. A measured weak number beats an unmeasured strong claim with every judge who reads code.

@@ -12,6 +12,8 @@ export function startSegmenter(stream: MediaStream, onTurn: (wav: Blob, seconds:
   const silenceMs = opts.silenceMs ?? 1500, minMs = opts.minMs ?? 1200, maxMs = opts.maxMs ?? 45_000;
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ctx = new Ctx();
+  // Created after the microphone prompt, the context can start suspended once the click that started it has aged out.
+  void ctx.resume();
   const source = ctx.createMediaStreamSource(stream);
   const node = ctx.createScriptProcessor(4096, 1, 1);
   const rate = ctx.sampleRate;

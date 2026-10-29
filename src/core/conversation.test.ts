@@ -62,5 +62,16 @@ describe("a visit, turn by turn, with no buttons", () => {
     expect(again[2].role).toBe("provider");
     expect(again[3].role).toBe("interpreter_to_patient"); expect(again[3].rendersId).toBe("3");
   });
+
+  it("forcing an interpreter role next to a rendering checks against the real source, never an empty run", () => {
+    const turns: ConversationTurn[] = [];
+    const add = (t: ReturnType<typeof mk>) => { const placed = placeTurn(turns, t, "am"); turns.push(placed); return placed; };
+    add(mk("1", "en", "Take one tablet of 500 milligrams."));
+    add(mk("2", "am", "Take one tablet of 500 milligrams."));
+    add(mk("3", "en", "Take one tablet of 50 milligrams."));
+    const forced = relabel(turns, "3", { role: "interpreter_to_provider" }, "am");
+    // turn 3 follows a rendering; forced to be an interpreter it must not be checked against nothing
+    expect(forced[2].interpreterFlags.filter(f => f.kind === "interpreter_added")).toEqual([]);
+  });
 });
 

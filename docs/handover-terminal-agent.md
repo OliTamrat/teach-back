@@ -77,6 +77,9 @@ variable is non-empty, not that any service accepts it: no live call below has b
    `eval/audio/` (git-ignored unless released) and review files. Apply reviews with
    `npm run review:apply -- <file>`. Then, with the local server up and configured:
    `EVAL_SERVER_URL=http://localhost:3000 EVAL_SPEAKERS=<n> npm run eval && npm run results`.
+   Start that local server with `TEACH_BACK_PER_MINUTE=1000` (and no access code, or pass the code as
+   `TEACH_BACK_ACCESS_CODE` to the harness): the guard's per-minute cap is for a browser, and a
+   harness posting ninety clips hits it after twelve. The rehearsal on Oct 29 found exactly that.
    Commit `eval/latest.md`, `eval/latest.json`, the README Results block and `docs/submission.md`
    together. Every number in the README must come from that run.
 

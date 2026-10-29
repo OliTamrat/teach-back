@@ -93,10 +93,13 @@ export function relabel(turns: ConversationTurn[], id: string, change: { languag
 
 function applyForcedRole(placed: ConversationTurn, role: ConversationTurn["role"], history: ConversationTurn[], session: Language): ConversationTurn {
   if (role === "patient" || role === "provider") return { ...placed, role, rendersId: undefined, interpreterFlags: [], forcedRole: role };
-  // Forced to be the interpreter: render the run of the other side before this turn, whatever the language rule said.
-  const other = [...history].reverse().find(t => !sameSide(t.language, placed.language, session));
+  // Forced to be the interpreter: render the nearest run of the other side that is itself a source
+  // (a rendering is never a source), whatever the language rule said. With no such run there is
+  // nothing to check, and the turn says so by carrying no interpreter flags.
+  const other = [...history].reverse().find(t => !sameSide(t.language, placed.language, session) && !t.role.startsWith("interpreter"));
   if (!other) return { ...placed, role, rendersId: undefined, interpreterFlags: [], forcedRole: role };
   const run = sourceRun(history.slice(0, history.indexOf(other) + 1), session);
+  if (!run.length) return { ...placed, role, rendersId: undefined, interpreterFlags: [], forcedRole: role };
   const who = role === "interpreter_to_provider" ? "the interpreter, to the provider," : "the interpreter, to the patient,";
   return { ...placed, role, rendersId: run.map(t => t.id).join("+"), interpreterFlags: compareWithSource(run.flatMap(t => t.facts), placed.facts, who), forcedRole: role };
 }

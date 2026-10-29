@@ -6,7 +6,26 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { cer, runCase, scoreTurn, reportMarkdown, summarize, type CaseResult, type EvalCase } from "../src/core/eval";
-import { scoreVisit, textResults, visitsMarkdown, type LineResult, type Visit, type VisitScore } from "../src/core/visits";
+import { aggregateVisits, scoreVisit, textResults, visitsMarkdown, type LineResult, type Visit, type VisitScore } from "../src/core/visits";
+
+/**
+ * One call to the server, as a skip-able result. A refused connection or a non-JSON body is a skip
+ * with the reason, never a crash that leaves the previous report in place. A 429 from the guard
+ * (the per-minute cap meant for a browser, not a harness) waits out the minute once and tries again;
+ * running the local server with TEACH_BACK_PER_MINUTE=1000 avoids the wait altogether.
+ */
+async function post(route: string, form: FormData): Promise<{ ok: boolean; status: number; json: Record<string, unknown>; skip?: string }> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let res: Response;
+    try { res = await fetch(`${server}${route}`, { method: "POST", body: form, headers: process.env.TEACH_BACK_ACCESS_CODE ? { "x-access": process.env.TEACH_BACK_ACCESS_CODE } : undefined }); }
+    catch (e) { return { ok: false, status: 0, json: {}, skip: `server unreachable at ${server}: ${e instanceof Error ? e.message : String(e)}` }; }
+    let json: Record<string, unknown> = {};
+    try { json = await res.json(); } catch { return { ok: false, status: res.status, json: {}, skip: `server ${res.status} with a body that is not JSON` }; }
+    if (res.status === 429 && attempt === 0) { console.error("  rate-limited by the guard; waiting 61 s (set TEACH_BACK_PER_MINUTE=1000 on the server to avoid this)"); await new Promise(r => setTimeout(r, 61_000)); continue; }
+    return { ok: res.ok, status: res.status, json };
+  }
+  return { ok: false, status: 429, json: {}, skip: "rate-limited twice" };
+}
 import type { Fact, Flag } from "../src/core/types";
 
 const root = join(import.meta.dirname, "..");
@@ -29,9 +48,10 @@ async function runAudio(c: EvalCase): Promise<CaseResult> {
   form.append("audio", new Blob([readFileSync(file)], { type: `audio/${ext === "m4a" ? "mp4" : ext}` }), `${c.id}.${ext}`);
   form.append("language", c.language);
   form.append("reference", c.reference);
-  const res = await fetch(`${server}/api/turn`, { method: "POST", body: form });
-  const json = await res.json() as { primary?: { facts: Fact[] }; flags?: Flag[]; transcript?: string; notes?: string[]; error?: string };
-  if (!res.ok || !json.primary) return skip(`server ${res.status}: ${json.error || ""} ${(json.notes || []).join("; ")}`.trim());
+  const rp = await post("/api/turn", form);
+  if (rp.skip) return skip(rp.skip);
+  const json = rp.json as { primary?: { facts: Fact[] }; flags?: Flag[]; transcript?: string; notes?: string[]; error?: string };
+  if (!rp.ok || !json.primary) return skip(`server ${rp.status}: ${json.error || ""} ${(json.notes || []).join("; ")}`.trim());
   const r = scoreTurn(c, json.primary.facts, json.flags || []);
   if (c.text && json.transcript) r.cer = cer(c.text, json.transcript);
   return r;
@@ -44,7 +64,7 @@ async function runAudio(c: EvalCase): Promise<CaseResult> {
  */
 const visits = (JSON.parse(readFileSync(join(root, "eval", "visits.json"), "utf8")) as { visits: Visit[] }).visits;
 async function runVisitAudio(v: Visit, take: "faithful" | "planted"): Promise<VisitScore> {
-  const skip = (why: string): VisitScore => ({ id: v.id, take, rolesRight: 0, rolesTotal: v.turns.length, plantedCaught: 0, plantedTotal: 0, falseAlarms: 0, flags: [], missed: [], skipped: why });
+  const skip = (why: string): VisitScore => ({ id: v.id, take, mode: "audio", rolesRight: 0, rolesTotal: v.turns.length, plantedCaught: 0, plantedTotal: 0, falseAlarms: 0, flags: [], missed: [], skipped: why });
   if (!server) return skip("set EVAL_SERVER_URL to run audio visits");
   const results: LineResult[] = [];
   for (let i = 0; i < v.turns.length; i++) {
@@ -55,12 +75,13 @@ async function runVisitAudio(v: Visit, take: "faithful" | "planted"): Promise<Vi
     const form = new FormData();
     form.append("audio", new Blob([readFileSync(file)], { type: "audio/wav" }), `${id}.wav`);
     form.append("language", "auto"); form.append("session", v.session); form.append("reference", "2026-10-31");
-    const res = await fetch(`${server}/api/turn`, { method: "POST", body: form });
-    const json = await res.json() as { language?: LineResult["language"]; primary?: { english: string }; flags?: Flag[]; transcript?: string; error?: string; notes?: string[] };
-    if (!res.ok || !json.primary || !json.language) return skip(`server ${res.status} on ${id}: ${json.error || ""} ${(json.notes || []).join("; ")}`.trim());
+    const r = await post("/api/turn", form);
+    if (r.skip) return skip(`${id}: ${r.skip}`);
+    const json = r.json as { language?: LineResult["language"]; primary?: { english: string }; flags?: Flag[]; transcript?: string; error?: string; notes?: string[] };
+    if (!r.ok || !json.primary || !json.language) return skip(`server ${r.status} on ${id}: ${json.error || ""} ${(json.notes || []).join("; ")}`.trim());
     results.push({ language: json.language, english: json.primary.english, listenerFlags: json.flags || [], transcript: json.transcript });
   }
-  return scoreVisit(v, take, results);
+  return scoreVisit(v, take, results, "audio");
 }
 
 async function main() {
@@ -68,8 +89,8 @@ const results: CaseResult[] = [];
 for (const c of cases) results.push(c.audio ? await runAudio(c) : runCase(c));
 const visitScores: VisitScore[] = [];
 for (const v of visits) for (const take of ["faithful", "planted"] as const) {
-  visitScores.push(scoreVisit(v, take, textResults(v, take)));
-  visitScores.push(server ? await runVisitAudio(v, take) : { id: v.id, take, rolesRight: 0, rolesTotal: v.turns.length, plantedCaught: 0, plantedTotal: 0, falseAlarms: 0, flags: [], missed: [], skipped: "set EVAL_SERVER_URL to run audio visits" });
+  visitScores.push(scoreVisit(v, take, textResults(v, take), "text"));
+  visitScores.push(server ? await runVisitAudio(v, take) : { id: v.id, take, mode: "audio", rolesRight: 0, rolesTotal: v.turns.length, plantedCaught: 0, plantedTotal: 0, falseAlarms: 0, flags: [], missed: [], skipped: "set EVAL_SERVER_URL to run audio visits" });
 }
 const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 const md = reportMarkdown(results, `Teach-Back evaluation, ${stamp} (${files.join(", ")})`) + visitsMarkdown(visitScores).join("\n") + "\n";
@@ -78,9 +99,8 @@ writeFileSync(join(root, "eval", "runs", `${stamp}.md`), md);
 writeFileSync(join(root, "eval", "latest.md"), md);
 const s = summarize(results);
 if (process.env.EVAL_SPEAKERS) s.speakers = Number(process.env.EVAL_SPEAKERS) || undefined;
-const vr = visitScores.filter(x => !x.skipped);
-s.visits = { takes: vr.length, rolesRight: vr.reduce((n, x) => n + x.rolesRight, 0), rolesTotal: vr.reduce((n, x) => n + x.rolesTotal, 0), plantedCaught: vr.reduce((n, x) => n + x.plantedCaught, 0), plantedTotal: vr.reduce((n, x) => n + x.plantedTotal, 0), falseAlarms: vr.reduce((n, x) => n + x.falseAlarms, 0), audioTakes: visitScores.filter(x => !x.skipped).length - visits.length * 2 };
-writeFileSync(join(root, "eval", "latest.json"), JSON.stringify({ ranAt: new Date().toISOString(), files, summary: s, visits: visitScores.map(x => ({ id: x.id, take: x.take, rolesRight: x.rolesRight, rolesTotal: x.rolesTotal, plantedCaught: x.plantedCaught, plantedTotal: x.plantedTotal, falseAlarms: x.falseAlarms, skipped: x.skipped ?? null })), cases: results.map(r => ({ id: r.id, language: r.language, audio: r.audio, factsFound: r.factsFound, factsTotal: r.factsTotal, cer: r.cer ?? null, flags: r.flags.map(f => `${f.severity} ${f.kind}${f.type ? ":" + f.type : ""}`), missed: r.missed, skipped: r.skipped ?? null })) }, null, 1) + "\n");
+s.visits = { text: aggregateVisits(visitScores, "text"), audio: aggregateVisits(visitScores, "audio") };
+writeFileSync(join(root, "eval", "latest.json"), JSON.stringify({ ranAt: new Date().toISOString(), files, summary: s, visits: visitScores.map(x => ({ id: x.id, take: x.take, mode: x.mode, rolesRight: x.rolesRight, rolesTotal: x.rolesTotal, plantedCaught: x.plantedCaught, plantedTotal: x.plantedTotal, falseAlarms: x.falseAlarms, skipped: x.skipped ?? null })), cases: results.map(r => ({ id: r.id, language: r.language, audio: r.audio, factsFound: r.factsFound, factsTotal: r.factsTotal, cer: r.cer ?? null, flags: r.flags.map(f => `${f.severity} ${f.kind}${f.type ? ":" + f.type : ""}`), missed: r.missed, skipped: r.skipped ?? null })) }, null, 1) + "\n");
 console.log(md);
 const badVisits = visitScores.filter(x => !x.skipped && (x.missed.length || x.falseAlarms));
 const bad = [...results.filter(r => !r.skipped && (r.missed.length || r.falseAlarms)), ...badVisits];

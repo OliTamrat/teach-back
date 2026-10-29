@@ -18,6 +18,8 @@ export type LineResult = { language: SpeechLanguage; english: string; listenerFl
 
 export type VisitScore = {
   id: string; take: "faithful" | "planted";
+  /** text: the script's own English through the core; audio: clips through the live pipeline. */
+  mode: "text" | "audio";
   rolesRight: number; rolesTotal: number;
   plantedCaught: number; plantedTotal: number;
   falseAlarms: number;
@@ -30,7 +32,7 @@ const EXPECTED_ROLE = (speaker: VisitTurn["speaker"], language: SpeechLanguage):
   speaker === "patient" ? "patient" : speaker === "provider" ? "provider" : language === "en" ? "interpreter_to_provider" : "interpreter_to_patient";
 
 /** Score one take of a visit from its line results, in order. */
-export function scoreVisit(visit: Visit, take: "faithful" | "planted", results: LineResult[], reference = { year: 2026, month: 10, day: 31 }): VisitScore {
+export function scoreVisit(visit: Visit, take: "faithful" | "planted", results: LineResult[], mode: "text" | "audio" = "text", reference = { year: 2026, month: 10, day: 31 }): VisitScore {
   const placed: ConversationTurn[] = [];
   let rolesRight = 0;
   visit.turns.forEach((t, i) => {
@@ -51,7 +53,7 @@ export function scoreVisit(visit: Visit, take: "faithful" | "planted", results: 
   }
   const plantedTypes = new Set(plantedErrors.map(e => e.type));
   const falseAlarms = crit.filter(f => !plantedTypes.has(f.type as FactType) || placed.indexOf(placed.find(p => p.interpreterFlags.includes(f))!) !== placed.length - 1).length;
-  return { id: visit.id, take, rolesRight, rolesTotal: visit.turns.length, plantedCaught, plantedTotal: plantedErrors.length, falseAlarms, flags: interp, missed };
+  return { id: visit.id, take, mode, rolesRight, rolesTotal: visit.turns.length, plantedCaught, plantedTotal: plantedErrors.length, falseAlarms, flags: interp, missed };
 }
 
 /** A text run: every line's rendering is its own English, the planted take swapping in the planted line. */
@@ -62,22 +64,25 @@ export function textResults(visit: Visit, take: "faithful" | "planted"): LineRes
   });
 }
 
-export function visitsMarkdown(scores: VisitScore[]): string[] {
-  const ran = scores.filter(s => !s.skipped);
-  if (!ran.length) return [];
+export type VisitAggregate = { takes: number; rolesRight: number; rolesTotal: number; plantedCaught: number; plantedTotal: number; falseAlarms: number };
+export function aggregateVisits(scores: VisitScore[], mode: "text" | "audio"): VisitAggregate {
+  const ran = scores.filter(s => !s.skipped && s.mode === mode);
   const sum = (f: (s: VisitScore) => number) => ran.reduce((n, s) => n + f(s), 0);
+  return { takes: ran.length, rolesRight: sum(s => s.rolesRight), rolesTotal: sum(s => s.rolesTotal), plantedCaught: sum(s => s.plantedCaught), plantedTotal: sum(s => s.plantedTotal), falseAlarms: sum(s => s.falseAlarms) };
+}
+export function visitsMarkdown(scores: VisitScore[]): string[] {
+  if (!scores.some(s => !s.skipped)) return [];
+  const row = (label: string, a: VisitAggregate) => a.takes ? [`| ${label}: takes | ${a.takes} |`, `| ${label}: roles from the alternation rule that matched the script | ${a.rolesRight} of ${a.rolesTotal} |`, `| ${label}: planted interpreter errors flagged | ${a.plantedCaught} of ${a.plantedTotal} |`, `| ${label}: false alarms on faithful lines | ${a.falseAlarms} |`] : [`| ${label} | not run |`];
   const lines = [
     "", `## Visits: the interpreter checked both ways`, "",
     `| Measure | Value |`, `| --- | --- |`,
-    `| Visits scored (takes) | ${ran.length} |`,
-    `| Roles assigned by the alternation rule that matched the script | ${sum(s => s.rolesRight)} of ${sum(s => s.rolesTotal)} |`,
-    `| Planted interpreter errors flagged | ${sum(s => s.plantedCaught)} of ${sum(s => s.plantedTotal)} |`,
-    `| False alarms (critical interpreter flags on faithful lines) | ${sum(s => s.falseAlarms)} |`,
-    "", `| Visit | Take | Roles | Planted | False alarms | Flags | Missed |`, `| --- | --- | --- | --- | --- | --- | --- |`,
+    ...row("Text (the core on the script's English)", aggregateVisits(scores, "text")),
+    ...row("Audio (clips through the live pipeline)", aggregateVisits(scores, "audio")),
+    "", `| Visit | Take | Mode | Roles | Planted | False alarms | Flags | Missed |`, `| --- | --- | --- | --- | --- | --- | --- | --- |`,
   ];
   for (const s of scores) {
-    if (s.skipped) { lines.push(`| ${s.id} | ${s.take} | skipped | | | | ${s.skipped} |`); continue; }
-    lines.push(`| ${s.id} | ${s.take} | ${s.rolesRight}/${s.rolesTotal} | ${s.plantedCaught}/${s.plantedTotal} | ${s.falseAlarms} | ${s.flags.map(f => `${f.severity} ${f.kind}${f.type ? ":" + f.type : ""}`).join(", ") || "none"} | ${s.missed.join("; ")} |`);
+    if (s.skipped) { lines.push(`| ${s.id} | ${s.take} | ${s.mode} | skipped | | | | ${s.skipped} |`); continue; }
+    lines.push(`| ${s.id} | ${s.take} | ${s.mode} | ${s.rolesRight}/${s.rolesTotal} | ${s.plantedCaught}/${s.plantedTotal} | ${s.falseAlarms} | ${s.flags.map(f => `${f.severity} ${f.kind}${f.type ? ":" + f.type : ""}`).join(", ") || "none"} | ${s.missed.join("; ")} |`);
   }
   return lines;
 }

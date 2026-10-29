@@ -1,5 +1,5 @@
 {
- "ranAt": "2026-10-29T20:45:31.181Z",
+ "ranAt": "2026-10-29T21:01:00.664Z",
  "files": [
   "audio-v1.json",
   "text-v1.json"
@@ -34,19 +34,29 @@
   "skipped": 70,
   "meanCer": null,
   "visits": {
-   "takes": 8,
-   "rolesRight": 32,
-   "rolesTotal": 32,
-   "plantedCaught": 7,
-   "plantedTotal": 7,
-   "falseAlarms": 0,
-   "audioTakes": 0
+   "text": {
+    "takes": 8,
+    "rolesRight": 32,
+    "rolesTotal": 32,
+    "plantedCaught": 7,
+    "plantedTotal": 7,
+    "falseAlarms": 0
+   },
+   "audio": {
+    "takes": 0,
+    "rolesRight": 0,
+    "rolesTotal": 0,
+    "plantedCaught": 0,
+    "plantedTotal": 0,
+    "falseAlarms": 0
+   }
   }
  },
  "visits": [
   {
    "id": "V01",
    "take": "faithful",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -57,6 +67,7 @@
   {
    "id": "V01",
    "take": "faithful",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -67,6 +78,7 @@
   {
    "id": "V01",
    "take": "planted",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 2,
@@ -77,6 +89,7 @@
   {
    "id": "V01",
    "take": "planted",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -87,6 +100,7 @@
   {
    "id": "V02",
    "take": "faithful",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -97,6 +111,7 @@
   {
    "id": "V02",
    "take": "faithful",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -107,6 +122,7 @@
   {
    "id": "V02",
    "take": "planted",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 2,
@@ -117,6 +133,7 @@
   {
    "id": "V02",
    "take": "planted",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -127,6 +144,7 @@
   {
    "id": "V03",
    "take": "faithful",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -137,6 +155,7 @@
   {
    "id": "V03",
    "take": "faithful",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -147,6 +166,7 @@
   {
    "id": "V03",
    "take": "planted",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 2,
@@ -157,6 +177,7 @@
   {
    "id": "V03",
    "take": "planted",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -167,6 +188,7 @@
   {
    "id": "V04",
    "take": "faithful",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -177,6 +199,7 @@
   {
    "id": "V04",
    "take": "faithful",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
@@ -187,6 +210,7 @@
   {
    "id": "V04",
    "take": "planted",
+   "mode": "text",
    "rolesRight": 4,
    "rolesTotal": 4,
    "plantedCaught": 1,
@@ -197,6 +221,7 @@
   {
    "id": "V04",
    "take": "planted",
+   "mode": "audio",
    "rolesRight": 0,
    "rolesTotal": 4,
    "plantedCaught": 0,
