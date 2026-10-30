@@ -476,3 +476,17 @@ only copy until then.
 `/api/health` says what is configured as JSON; a person running a session or a demo needs to know
 whether the Space is awake, in a sentence, and needs the page itself to wake it. `/status` does
 that, re-checks every minute, and says what to do when a row is red. It prints no secret.
+
+## 45. Say what it is not, first (Oct 30)
+
+The organisers' rules session listed "AI-generated medical advice" at the top of the projects to
+skip, with mental-health advisors and skin-blemish detectors as examples, alongside "simple image
+analyzers" and "dashboards as the main feature". Teach-Back is none of those by design (decisions
+3, 7 and 13), but the sentence saying so sat eight paragraphs into the README and at the end of the
+submission. A judge screening against that list decides in the first lines, so the statement now
+opens both documents, in the slide's own words: no medical advice, no model output reaches a
+patient, a person decides every flag. The label photo is described as an input to the comparison,
+which is what it is, not as an analyzer; the results page stays a report of a measurement, not a
+feature.
+
+Revisit: if the rules text is published, quote it exactly where the submission form asks.

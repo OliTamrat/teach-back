@@ -8,6 +8,10 @@ sides of the table.**
 Live: https://teach-back-phi.vercel.app · Built Oct 26 to Nov 4, 2026 for the **Meta Global AI
 Developer Hackathon** (Indie Developer track, theme Build for Your World) by Oli Tamrat.
 
+Teach-Back gives no medical advice and no model output ever reaches a patient. It checks a human
+interpreter, in both directions, and a person decides every flag. The rest of this page explains
+how that is enforced in code, not just promised.
+
 ## Why I built this
 
 I am Ethiopian. I grew up speaking Afaan Oromo and Amharic, and I live in the Washington DC area,

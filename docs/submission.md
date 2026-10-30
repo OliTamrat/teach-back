@@ -31,7 +31,9 @@ same thing happens: a family member or a phone interpreter carries a conversatio
 diagnosis, a benefit or an asylum claim depends, and nobody can check it. Federal policy now pushes
 machine translation into those rooms while leaving providers responsible for its mistakes.
 
-Teach-Back is the second pair of ears I wished I had, and it listens both ways. When the patient
+Teach-Back is not that. It gives no medical advice, diagnoses nothing, and no model output ever
+reaches the patient: it checks a human interpreter, in both directions, and a person decides every
+flag. It is the second pair of ears I wished I had, and it listens both ways. When the patient
 speaks, Omnilingual ASR, Meta's open-weights model with published results for both languages,
 transcribes on a GPU I run myself; Muse Spark renders the transcript in English, and a second Spark
 call hears the same audio on its own; code, never a model, extracts and compares the critical
@@ -50,9 +52,9 @@ the instruction back. Only when a person has decided every flag is the English l
 Every line of the repository was written during the event. The evaluation ran on scripted sentences
 read by consenting volunteers from my community: [N] speakers, [N] clips, [x]% character error rate
 in Amharic and [y]% in Afaan Oromo, [n] of [m] planted errors caught, [k] false alarms. Teach-Back
-is not a medical device, gives no advice, and never speaks to a patient. Clinics first, because a
-wrong dose is the fastest harm; the same facts decide immigration interviews and benefits
-applications, and the same tool checks them.
+is not a medical device and never speaks to a patient. Clinics first, because a wrong dose is the
+fastest harm; the same facts decide immigration interviews and benefits applications, and the same
+tool checks them.
 
 **Meta tools used:** Omnilingual ASR 7B (open weights, self-hosted); Muse Spark 1.3 and 1.2, SAM 3.1
 and Muse Voice Transcribe 1.0 through the Meta Model API.
