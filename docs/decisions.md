@@ -482,7 +482,7 @@ that, re-checks every minute, and says what to do when a row is red. It prints n
 The organisers' rules session listed "AI-generated medical advice" at the top of the projects to
 skip, with mental-health advisors and skin-blemish detectors as examples, alongside "simple image
 analyzers" and "dashboards as the main feature". Teach-Back is none of those by design (decisions
-3, 7 and 13), but the sentence saying so sat eight paragraphs into the README and at the end of the
+4, 5, 9 and 32), but the sentence saying so sat eight paragraphs into the README and at the end of the
 submission. A judge screening against that list decides in the first lines, so the statement now
 opens both documents, in the slide's own words: no medical advice, no model output reaches a
 patient, a person decides every flag. The label photo is described as an input to the comparison,
