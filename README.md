@@ -171,9 +171,14 @@ sentence read. A case with no recording is reported as skipped and never counts 
 
 ### Results
 
-Measured results over real recordings land here on Nov 1, from the Oct 31 session described in
-[`docs/recording-session.md`](docs/recording-session.md). This block is written by `npm run results`
-from `eval/latest.json`; no number appears here that was not produced by a run that can be repeated
+The numbers below are from the text cases, which exercise the extraction, calendar, comparison and
+flagging code with planted errors. **The audio run over recorded speech did not happen before the
+deadline**: the recording session in [`docs/recording-session.md`](docs/recording-session.md) could
+not be held in the event window, so the 70 audio cases and the four scripted visits are built,
+rehearsed on mocks, and reported as skipped. I would rather show that gap than a number I did not
+measure. The harness, the clips' format and the consent protocol are all in `eval/`, and the first
+real session fills this block with one command. This block is written by `npm run results` from
+`eval/latest.json`; no number appears here that was not produced by a run that can be repeated
 from the files in `eval/`.
 
 <!-- results:start -->
@@ -219,11 +224,12 @@ docs/          build log, decisions, recording session and consent, demo script,
 
 ## Data and consent
 
-No real patient data is used or stored. The test recordings are scripted sentences read by
-volunteers from my own community who sign the consent form in `docs/recording-session.md`; a
-recording is published only with the release box ticked, and never with a name. The draft
-translations and the teach-back questions are reviewed by native speakers through `/review`, and
-the repository records who signed off which language. The session log lives in the interpreter's
+No real patient data is used or stored. Test recordings are scripted sentences read by volunteers
+from my own community who sign the consent form in `docs/recording-session.md`; a recording is
+published only with the release box ticked, and never with a name. The draft translations and the
+teach-back questions are reviewed by native speakers through `/review`, which records who signed
+off which language; as submitted, the Amharic and Afaan Oromo questions are my own drafts and the
+screen marks them as unreviewed until that happens. The session log lives in the interpreter's
 browser and nowhere else. Server logs carry timings and counts, never content.
 
 ## Licence

@@ -1,7 +1,7 @@
 # Submission text
 
-Everything the hackathon form asks for, ready to paste. Bracketed items are filled on Nov 3 from
-`eval/latest.md` and the video upload. Nothing here claims a number that has not been measured.
+Everything the hackathon form asks for, ready to paste. The only bracket left is the video URL.
+Nothing here claims a number that has not been measured.
 
 **Project name:** Teach-Back
 
@@ -49,10 +49,12 @@ browser crops it, Spark reads it, and a contradiction with what was said is flag
 question from a template reviewed by native speakers lets the interpreter ask the patient to say
 the instruction back. Only when a person has decided every flag is the English line final.
 
-Every line of the repository was written during the event. The evaluation ran on scripted sentences
-read by consenting volunteers from my community: [N] speakers, [N] clips, [x]% character error rate
-in Amharic and [y]% in Afaan Oromo, [n] of [m] planted errors caught, [k] false alarms. Teach-Back
-is not a medical device and never speaks to a patient. Clinics first, because a wrong dose is the
+Every line of the repository was written during the event. The evaluation harness scores the
+deterministic core over 22 text cases with planted errors: every critical fact found, 17 of 17
+planted errors flagged, no false alarms. The 70 audio cases and four scripted two-person visits are
+built and rehearsed on mocks, but the recording session with volunteers could not be held in the
+window, so they are reported as skipped rather than guessed; the first real session fills the
+results with one command. Teach-Back is not a medical device and never speaks to a patient. Clinics first, because a wrong dose is the
 fastest harm; the same facts decide immigration interviews and benefits applications, and the same
 tool checks them.
 
@@ -61,6 +63,7 @@ and Muse Voice Transcribe 1.0 through the Meta Model API.
 
 **What was built during the hackathon:** all of it. See `docs/build-log.md`.
 
-**Team:** Oli Tamrat, solo. Native-speaker review of translations by [names, with permission].
+**Team:** Oli Tamrat, solo. The Amharic and Afaan Oromo question templates are my own drafts and are
+marked unreviewed in the product until a second native speaker signs them off through `/review`.
 
 **Demo video:** three minutes, live site only, scripted sentences only. Script in `docs/demo-script.md`.

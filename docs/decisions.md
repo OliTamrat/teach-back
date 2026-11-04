@@ -490,3 +490,17 @@ which is what it is, not as an analyzer; the results page stays a report of a me
 feature.
 
 Revisit: if the rules text is published, quote it exactly where the submission form asks.
+
+## 46. Submit the gap, not a guess (Nov 4)
+
+The volunteer recording session did not happen before the deadline, so the 70 audio cases and the
+four scripted visits were never run against real speech. The choice was between a number from my
+own voice alone, recorded in the last hours and reviewed by nobody, and no audio number. The
+submission carries the text-case results, which measure the code that holds every rule, and says in
+the README and the form that the audio run is built, rehearsed on mocks and not yet performed. A
+judge who reads code can see the harness, the clip format and the consent protocol and confirm the
+claim is one command away; a one-speaker, self-reviewed figure would have told them less and looked
+like more.
+
+Revisit: the first real session. `EVAL_SERVER_URL=... EVAL_SPEAKERS=<n> npm run eval && npm run
+results` replaces this entry's gap with measured figures and the README block updates itself.
